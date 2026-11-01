@@ -122,7 +122,6 @@
     <string name="ai_ready">Model ready (%1$d MB)</string>
     <string name="ai_import">Choose a model file…</string>
     <string name="ai_importing">Copying the model…</string>
-    <string name="ai_failed">Failed: %1$s</string>
     <string name="ai_delete">Delete model</string>
     <string name="ai_delete_confirm">Yes, delete</string>
     <string name="ai_setup">Set up AI</string>
@@ -136,7 +135,6 @@
     <string name="photo_privacy">The photo is analysed on the phone and is not sent anywhere.</string>
     <string name="analyzing">Analysing… %1$d s</string>
     <string name="analyzing_hint">The first run takes longer while the model loads.</string>
-    <string name="ai_error">Could not analyse: %1$s</string>
     <string name="try_again">Try again</string>
     <string name="no_food_found">No food found on the photo. Try another angle or add the food by hand.</string>
     <string name="review_hint">Check the weights: the AI estimates portions from the photo and can be off. Values come from the database when a food is recognised.</string>
@@ -150,6 +148,7 @@
     <string name="lang_system">System</string>
     <string name="about">About</string>
     <string name="about_text">Tarilka is a free, open-source, offline food and weight tracker. Data stays on your phone. Food values: USDA FoodData Central (public domain), typical Ukrainian labels and recipe calculations; the source is shown for each food. This app is not medical advice; for health conditions, pregnancy or eating disorders please talk to a doctor.</string>
+    <string name="about_licences">Licence: GNU GPL-3.0, free software with no warranty. Source code: github.com/Marybezu/tarilka. Uses SQLCipher (© Zetetic LLC, BSD licence), AndroidX, Kotlin and LiteRT-LM (Apache 2.0). The optional Gemma model is Google\'s, under the terms on its model page. Food data: U.S. Department of Agriculture, Agricultural Research Service, FoodData Central.</string>
     <string name="water">Fluids</string>
     <string name="water_title">Drinks</string>
     <string name="water_hint">Water, tea, coffee and other drinks. Juice, kefir and other drinks logged as food are counted automatically.</string>
@@ -174,12 +173,19 @@
     <string name="dynamic_color">Colours from wallpaper</string>
     <string name="dynamic_color_hint">Material You: accent colours follow your wallpaper.</string>
     <string name="data_title">Data</string>
-    <string name="data_hint">Everything is stored only on this phone. Make a backup from time to time, or before switching phones.</string>
+    <string name="data_hint">Everything is stored only on this phone. Make a backup from time to time, or before switching phones: Android's phone-to-phone transfer does not copy Tarilka, only a backup file does.</string>
     <string name="export_backup">Export backup</string>
     <string name="import_backup">Import</string>
     <string name="export_csv">Diary as CSV</string>
     <string name="export_done">Saved.</string>
-    <string name="data_error">Error: %1$s</string>
+    <string name="import_not_backup">This file is not a Tarilka backup.</string>
+    <string name="import_newer">This backup was made by a newer version of Tarilka. Update the app first.</string>
+    <string name="import_too_large">The file is too large for a Tarilka backup. Nothing was changed.</string>
+    <string name="import_damaged">The file is damaged or was edited. Nothing was restored.</string>
+    <string name="export_failed">Could not save the file. Nothing was changed. Try again or choose another place.</string>
+    <string name="ai_import_failed">Could not add the model file. Try again or download it once more.</string>
+    <string name="ai_summary_failed">The AI could not write a summary on this phone, perhaps there is not enough memory. Everything else works without it.</string>
+    <string name="ai_error">Could not recognise the food. Try again or add it by hand.</string>
     <string name="import_title">Restore from backup?</string>
     <string name="import_confirm">In the file: %1$d food entries, %2$d drinks, %3$d weigh-ins, %4$d own foods. Everything current will be replaced: diary, sleep, cycle, bowel, workouts, waist, notes, own foods and favourites, and the profile if the backup has one.</string>
     <string name="import_replace">Replace</string>
@@ -293,7 +299,7 @@
     <string name="hard_to_stop">It was hard to stop</string>
     <string name="habit_sleep">😴 Sleep: %1$s h on average</string>
     <string name="habit_sleep_info">Average sleep. Adults are advised 7–9 hours; under 18, 8–10. With less sleep, appetite and sweet cravings go up. If you regularly sleep over 10 hours and still feel tired in the day, that is worth discussing with a doctor too.</string>
-    <string name="habit_reasons">💭 Not from hunger: %1$d / %2$d meals</string>
+    <string name="habit_reasons">💭 Not hungry: %1$d / %2$d meals</string>
     <string name="habit_reasons_info">How often you ate for a reason other than hunger (of the times you answered Why I eat). Eating for company or pleasure now and then is normal.</string>
     <string name="ai_download">Download model</string>
     <string name="alcohol_many">Noticed: more than 7 drinks a week.</string>
@@ -566,7 +572,7 @@
     <string name="m_activity">Activity</string>
     <string name="m_alcohol">Alcohol</string>
     <string name="m_fastfood">Fast food</string>
-    <string name="m_reasons">Not from hunger</string>
+    <string name="m_reasons">Not hungry</string>
     <string name="m_bowel">Bowel</string>
     <string name="m_weight">Weight</string>
     <string name="mv_kcal">%1$s of %2$s kcal</string>

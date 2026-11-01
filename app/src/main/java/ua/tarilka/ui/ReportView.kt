@@ -43,6 +43,16 @@ fun levelColor(level: Level): Color = when (level) {
     Level.WATCH -> Color(0xFFF4511E)
 }
 
+/** The same colours for text: darker on a light background so they stay readable (WCAG AA). */
+@Composable
+fun levelTextColor(level: Level): Color =
+    if (MaterialTheme.colorScheme.surface.luminance() < 0.5f) levelColor(level)
+    else when (level) {
+        Level.GOOD -> Color(0xFF2E7D32)
+        Level.OK -> Color(0xFF8A6100)
+        Level.WATCH -> Color(0xFFC43E12)
+    }
+
 /**
  * The week / month / year summary: "the main points" first, then one line per measure with
  * its value and target, a word on the change, and a small bar chart.

@@ -53,7 +53,7 @@ class ModelStore(private val context: Context) {
             val total = cr.openAssetFileDescriptor(uri, "r")?.use { it.length } ?: -1L
             val tmp = File(dir, "import.tmp")
             tmp.delete() // a leftover from a failed copy must not block the space check
-            if (total > 0) require(dir.usableSpace > total + 200 * MB) { context.getString(ua.tarilka.R.string.ai_no_space) }
+            if (total > 0 && dir.usableSpace <= total + 200 * MB) throw UserFacingException(context.getString(ua.tarilka.R.string.ai_no_space))
             // Only the exact published file is accepted: it is checked by its SHA-256 while copying.
             val sha = java.security.MessageDigest.getInstance("SHA-256")
             try {
@@ -70,7 +70,7 @@ class ModelStore(private val context: Context) {
                         sha.update(buf, 0, n)
                         copied += n
                         // A wrong, huge file must not fill the phone before the checksum says no.
-                        if (copied > E2B_BYTES) error(context.getString(ua.tarilka.R.string.ai_wrong_file, E2B_FILE))
+                        if (copied > E2B_BYTES) throw UserFacingException(context.getString(ua.tarilka.R.string.ai_wrong_file, E2B_FILE))
                         if (total > 0) onProgress(copied.toFloat() / total)
                     }
                 }
@@ -82,7 +82,7 @@ class ModelStore(private val context: Context) {
             val hex = sha.digest().joinToString("") { "%02x".format(it) }
             if (tmp.length() <= MIN_SIZE || hex != E2B_SHA256) {
                 tmp.delete()
-                error(context.getString(ua.tarilka.R.string.ai_wrong_file, E2B_FILE))
+                throw UserFacingException(context.getString(ua.tarilka.R.string.ai_wrong_file, E2B_FILE))
             }
             dir.listFiles { f -> f.name.endsWith(".litertlm") }?.forEach { it.delete() }
             legacyDir?.listFiles()?.forEach { it.delete() }
@@ -118,3 +118,6 @@ class ModelStore(private val context: Context) {
         private const val MIN_SIZE = 100L * MB
     }
 }
+
+/** An error whose message is already written for people (localised); other errors get a general message. */
+class UserFacingException(message: String) : Exception(message)

@@ -1,6 +1,6 @@
 # Тарілка · Tarilka
 
-Приватний офлайн-трекер харчування для Android. Українська та англійська. Безкоштовно, без реклами й акаунтів.
+Приватний офлайн-трекер харчування для Android. Українська та англійська. Безкоштовно, без реклами й акаунтів. Потрібен Android 12 або новіший; для ШІ — телефон від 6 ГБ оперативної памʼяті.
 
 > Відгуки й помилки: Опції → Про застосунок → «Написати відгук» або [Issues](../../issues).
 
@@ -37,7 +37,7 @@ Kotlin · Jetpack Compose · Room · [LiteRT-LM](https://github.com/google-ai-ed
 
 # Tarilka · English
 
-A private, offline food tracker for Android. Ukrainian and English. Free, no ads, no accounts.
+A private, offline food tracker for Android. Ukrainian and English. Free, no ads, no accounts. Requires Android 12 or newer; the AI needs a phone with 6 GB of RAM or more.
 
 > Feedback and bugs: Options → About → Send feedback, or [Issues](../../issues).
 

@@ -285,9 +285,15 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     fun deletePeriod(start: Long) = viewModelScope.launch {
-        val end = periods.value.firstOrNull { it.start == start }?.end ?: (start + 10)
+        val period = periods.value.firstOrNull { it.start == start }
+        val end = maxOf(period?.end ?: (start + 10), start + 10)
+        val days = db.cycle().daysOnce().filter { it.day in start..end }
         db.cycle().delete(start)
-        db.cycle().deleteDays(start, maxOf(end, start + 10))
+        db.cycle().deleteDays(start, end)
+        if (period != null) offerUndo(1) {
+            db.cycle().upsert(period)
+            days.forEach { db.cycle().upsertDay(it) }
+        }
     }
 
     fun setPeriodDay(d: LocalDate, flow: Int?, pain: Int?) = viewModelScope.launch {
@@ -413,6 +419,8 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     private fun sync(block: suspend () -> Unit) {
+        // Under 18 no calorie number leaves the app either.
+        health.writeKcal = targets.value.showKcal
         if (prefs.healthSync) tapp.scope.launch { runCatching { block() } }
     }
 
@@ -1145,7 +1153,12 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
         if (f.id == 0L) db.foods().insert(f) else db.foods().update(f)
     }
 
-    fun deleteFood(food: Food) = viewModelScope.launch { if (food.isCustom) db.foods().delete(food) }
+    fun deleteFood(food: Food) = viewModelScope.launch {
+        if (!food.isCustom) return@launch
+        db.foods().delete(food)
+        // Same id back, so diary entries and recipes that point at it still match.
+        offerUndo(1) { db.foods().insert(food) }
+    }
     fun toggleFavorite(food: Food) = viewModelScope.launch { db.foods().update(food.copy(favorite = !food.favorite)) }
 
     fun saveWeight(kg: Double, date: LocalDate = LocalDate.now(), time: LocalTime? = null) = viewModelScope.launch {
@@ -1159,14 +1172,29 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
 
     fun saveWaist(cm: Double) = viewModelScope.launch { db.waist().upsert(ua.tarilka.data.WaistEntry(LocalDate.now().toEpochDay(), cm)) }
 
-    fun deleteWaist(w: ua.tarilka.data.WaistEntry) = viewModelScope.launch { db.waist().delete(w) }
+    fun deleteWaist(w: ua.tarilka.data.WaistEntry) = viewModelScope.launch {
+        db.waist().delete(w)
+        offerUndo(1) { db.waist().upsert(w) }
+    }
 
     fun deleteWeight(w: WeightEntry) = viewModelScope.launch {
         db.weights().delete(w)
         sync { health.deleteWeight(w) }
+        offerUndo(1) {
+            db.weights().upsert(w)
+            sync { health.writeWeight(w) }
+        }
     }
 
-    fun saveProfile(p: Profile) = prefs.saveProfile(p)
+    fun saveProfile(p: Profile) {
+        val wasPregnant = profile.value.pregnant
+        prefs.saveProfile(p)
+        // Pregnancy switches the cycle reminders off and on.
+        if (p.pregnant != wasPregnant) runCatching {
+            ua.tarilka.notify.Reminders.schedule(getApplication(), only = ua.tarilka.notify.Reminders.CYCLE_BEFORE)
+            ua.tarilka.notify.Reminders.schedule(getApplication(), only = ua.tarilka.notify.Reminders.CYCLE_LATE)
+        }
+    }
 
     val missing: StateFlow<Map<String, Int>> = prefs.missing
     fun recordMissing(q: String) = prefs.recordMissing(q)
@@ -1199,7 +1227,7 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
     private fun failedExport(uri: android.net.Uri, t: Throwable): String {
         val app = getApplication<Application>()
         runCatching { android.provider.DocumentsContract.deleteDocument(app.contentResolver, uri) }
-        return app.getString(ua.tarilka.R.string.data_error, t.message ?: "")
+        return app.getString(ua.tarilka.R.string.export_failed)
     }
 
     fun exportCsv(uri: android.net.Uri) = viewModelScope.launch {
@@ -1211,6 +1239,19 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     private val MAX_BACKUP_BYTES = 64 * 1024 * 1024
+
+    /** What went wrong with a backup, in words people understand (never raw exception text). */
+    private fun importError(t: Throwable): String {
+        val app = getApplication<Application>()
+        return app.getString(
+            when ((t as? ua.tarilka.data.Backup.BackupError)?.kind) {
+                ua.tarilka.data.Backup.BackupError.Kind.NOT_BACKUP -> ua.tarilka.R.string.import_not_backup
+                ua.tarilka.data.Backup.BackupError.Kind.NEWER -> ua.tarilka.R.string.import_newer
+                ua.tarilka.data.Backup.BackupError.Kind.TOO_LARGE -> ua.tarilka.R.string.import_too_large
+                null -> if (t is OutOfMemoryError) ua.tarilka.R.string.import_too_large else ua.tarilka.R.string.import_damaged
+            },
+        )
+    }
 
     /** Password chosen for the export in progress ("" = no encryption, null = unknown). */
     var exportPassword: String? = null
@@ -1230,7 +1271,7 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
                         val n = input.read(buf)
                         if (n < 0) break
                         out.write(buf, 0, n)
-                        require(out.size() <= MAX_BACKUP_BYTES) { "file too large" }
+                        if (out.size() > MAX_BACKUP_BYTES) throw ua.tarilka.data.Backup.BackupError(ua.tarilka.data.Backup.BackupError.Kind.TOO_LARGE)
                     }
                     out.toString(Charsets.UTF_8.name())
                 }
@@ -1241,7 +1282,7 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
                 pendingImport.value = text to kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Default) { ua.tarilka.data.Backup.peek(text) }
             }
         }.onFailure {
-            dataMessage.value = getApplication<Application>().getString(ua.tarilka.R.string.data_error, it.message ?: "")
+            dataMessage.value = importError(it)
         }
     }
 
@@ -1259,7 +1300,7 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
         // Decrypted, but maybe not a Tarilka backup at all.
         runCatching { kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Default) { ua.tarilka.data.Backup.peek(plain) } }
             .onSuccess { pendingImport.value = plain to it }
-            .onFailure { dataMessage.value = getApplication<Application>().getString(ua.tarilka.R.string.data_error, it.message ?: "") }
+            .onFailure { dataMessage.value = importError(it) }
     }
 
     fun confirmImport() = viewModelScope.launch {
@@ -1268,7 +1309,7 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
         dataMessage.value = runCatching {
             val s = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Default) { ua.tarilka.data.Backup.restore(db, prefs, text) }
             getApplication<Application>().getString(ua.tarilka.R.string.import_done, s.diary, s.weights)
-        }.getOrElse { getApplication<Application>().getString(ua.tarilka.R.string.data_error, it.message ?: "") }
+        }.getOrElse { importError(it) }
     }
 
     private suspend fun writeText(uri: android.net.Uri, text: String) =

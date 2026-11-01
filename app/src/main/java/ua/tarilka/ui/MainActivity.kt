@@ -293,7 +293,7 @@ private fun Tabs(vm: MainViewModel, ai: AiViewModel, tab: Int, onTab: (Int) -> U
         val seq = undoEvent?.first ?: return@LaunchedEffect
         if (deletedText == null) return@LaunchedEffect
         try {
-            val r = snackbar.showSnackbar(deletedText, actionLabel = undoText, duration = androidx.compose.material3.SnackbarDuration.Short)
+            val r = snackbar.showSnackbar(deletedText, actionLabel = undoText, duration = androidx.compose.material3.SnackbarDuration.Long)
             if (r == androidx.compose.material3.SnackbarResult.ActionPerformed) vm.undo()
         } finally {
             // Also when this screen is left mid-snackbar: an old undo must not come back later.

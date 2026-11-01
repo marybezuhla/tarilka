@@ -53,6 +53,10 @@ data class PhotoUi(
 
 class AiViewModel(app: Application) : AndroidViewModel(app) {
     private val tapp = app as TarilkaApp
+
+    /** Raw exception text (often English, technical) is never shown; only messages written for people. */
+    private fun userText(t: Throwable, fallback: Int): String =
+        (t as? ua.tarilka.ai.UserFacingException)?.message ?: getApplication<Application>().getString(fallback)
     private val models = tapp.models
     private val gemma = tapp.gemma
 
@@ -101,7 +105,7 @@ class AiViewModel(app: Application) : AndroidViewModel(app) {
                     null -> null
                 }
             }
-            .onFailure { _model.value = ModelStore.State.Failed(it.message ?: "import failed") }
+            .onFailure { _model.value = ModelStore.State.Failed(userText(it, ua.tarilka.R.string.ai_import_failed)) }
         _importProgress.value = null
     }
 
@@ -168,7 +172,7 @@ class AiViewModel(app: Application) : AndroidViewModel(app) {
                 items.filter { it.food == null }.forEach { tapp.prefs.recordMissing(it.detected.nameEn) }
                 update(gen) { it.copy(items = items, analyzed = true) }
             } catch (t: Throwable) {
-                update(gen) { it.copy(error = t.message ?: t.javaClass.simpleName) }
+                update(gen) { it.copy(error = userText(t, ua.tarilka.R.string.ai_error)) }
             } finally {
                 // Nothing of the photo stays on disk (a cancelled old run must not delete a newer photo).
                 if (gen == generation) PhotoUtil.clear(getApplication())
@@ -200,7 +204,7 @@ class AiViewModel(app: Application) : AndroidViewModel(app) {
                 items.filter { it.food == null }.forEach { tapp.prefs.recordMissing(it.detected.nameEn) }
                 update(gen) { it.copy(items = items, analyzed = true) }
             } catch (t: Throwable) {
-                update(gen) { it.copy(error = t.message ?: t.javaClass.simpleName) }
+                update(gen) { it.copy(error = userText(t, ua.tarilka.R.string.ai_error)) }
             } finally {
                 update(gen) { it.copy(working = false) }
             }
@@ -246,7 +250,7 @@ class AiViewModel(app: Application) : AndroidViewModel(app) {
             } catch (t: kotlinx.coroutines.CancellationException) {
                 throw t
             } catch (t: Throwable) {
-                update(gen) { it.copy(items = before, error = t.message ?: t.javaClass.simpleName) }
+                update(gen) { it.copy(items = before, error = userText(t, ua.tarilka.R.string.ai_error)) }
             } finally {
                 ticker.cancel()
                 update(gen) { it.copy(working = false) }
@@ -321,7 +325,7 @@ class AiViewModel(app: Application) : AndroidViewModel(app) {
             try {
                 val prompt = runCatching { text() }.getOrElse {
                     if (it is kotlinx.coroutines.CancellationException) throw it
-                    _summary.value = "⚠ ${it.message}"
+                    _summary.value = "⚠ " + userText(it, ua.tarilka.R.string.ai_summary_failed)
                     return@launch
                 }
                 ask(prompt, ukrainian, _summary, _summaryLoading, 600, noKcal)
@@ -347,7 +351,7 @@ class AiViewModel(app: Application) : AndroidViewModel(app) {
             fun ok(t: String) = ua.tarilka.data.Lang.isClean(t, ukrainian) && !(noKcal && ua.tarilka.data.Lang.mentionsCalories(t))
             if (!ok(text)) text = gemma.advice(summary, ukrainian, maxTokens)
             if (ok(text)) text else null
-        }.getOrElse { if (it is kotlinx.coroutines.CancellationException) throw it else "⚠ ${it.message}" }
+        }.getOrElse { if (it is kotlinx.coroutines.CancellationException) throw it else "⚠ " + userText(it, ua.tarilka.R.string.ai_summary_failed) }
         // The model may finish after the request was replaced: its answer belongs to another day or period.
         kotlinx.coroutines.currentCoroutineContext().ensureActive()
         out.value = result

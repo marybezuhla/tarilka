@@ -102,6 +102,7 @@ fun SettingsScreen(vm: MainViewModel, ai: AiViewModel, padding: PaddingValues) {
                 val title = stringResource(R.string.feedback_title)
                 val body = stringResource(R.string.feedback_body, Feedback.version(context))
                 Text(stringResource(R.string.about_text), style = MaterialTheme.typography.bodySmall)
+                Text(stringResource(R.string.about_licences), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 OutlinedButton(onClick = { Feedback.open(context, title, body) }) { Text(stringResource(R.string.feedback)) }
                 Text(stringResource(R.string.feedback_hint), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
@@ -236,7 +237,7 @@ private fun ModelSection(ai: AiViewModel) {
                 }
                 else -> {
                     if (s is ModelStore.State.Failed) {
-                        Text(stringResource(R.string.ai_failed, s.reason), color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
+                        Text(s.reason, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
                     }
                     Text(stringResource(R.string.ai_steps, ModelStore.E2B_FILE), style = MaterialTheme.typography.bodySmall)
                     fun open(url: String) = runCatching {
@@ -649,7 +650,7 @@ private fun DataSection(vm: MainViewModel) {
                             Text(
                                 androidx.compose.ui.res.stringArrayResource(R.array.password_strength)[strength],
                                 style = MaterialTheme.typography.bodySmall,
-                                color = levelColor(listOf(ua.tarilka.data.Habits.Level.WATCH, ua.tarilka.data.Habits.Level.OK, ua.tarilka.data.Habits.Level.GOOD)[strength]),
+                                color = levelTextColor(listOf(ua.tarilka.data.Habits.Level.WATCH, ua.tarilka.data.Habits.Level.OK, ua.tarilka.data.Habits.Level.GOOD)[strength]),
                             )
                         }
                     } else {

@@ -77,8 +77,9 @@ private val Dark = darkColorScheme(
 data class MacroColors(val protein: Color, val fat: Color, val carbs: Color, val fiber: Color, val kcal: Color)
 
 private val LightMacros = MacroColors(
-    protein = Color(0xFFB8483D), fat = Color(0xFFC98A16), carbs = Color(0xFF3F6FA3),
-    fiber = Color(0xFF5B8A3A), kcal = Color(0xFF4B7A5C),
+    // Dark enough to read as text on the light background (WCAG AA, at least 4.5:1).
+    protein = Color(0xFFB8483D), fat = Color(0xFF8F6200), carbs = Color(0xFF3F6FA3),
+    fiber = Color(0xFF4E7A30), kcal = Color(0xFF4B7A5C),
 )
 private val DarkMacros = MacroColors(
     protein = Color(0xFFF0A196), fat = Color(0xFFF2C46B), carbs = Color(0xFF9CC0EA),

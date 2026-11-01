@@ -35,6 +35,11 @@ object Backup {
             .put("data", b64.encodeToString(data)).toString(1)
     }
 
+    /** Problems with a backup file that people can act on; anything else is "damaged". */
+    class BackupError(val kind: Kind) : Exception(kind.name) {
+        enum class Kind { NOT_BACKUP, NEWER, TOO_LARGE }
+    }
+
     fun isEncrypted(text: String): Boolean = runCatching { JSONObject(text).optString("format") == ENCRYPTED }.getOrDefault(false)
 
     /** Throws if the password is wrong (GCM checks integrity). */
@@ -154,7 +159,7 @@ object Backup {
     /** Checks the file and counts what is inside, without changing anything. */
     fun peek(json: String): Summary {
         val o = JSONObject(json)
-        require(o.optString("format") == FORMAT) { "not a Tarilka backup" }
+        if (o.optString("format") != FORMAT) throw BackupError(BackupError.Kind.NOT_BACKUP)
         return Summary(
             o.optJSONArray("diary")?.length() ?: 0,
             o.optJSONArray("fluids")?.length() ?: 0,
@@ -166,9 +171,9 @@ object Backup {
     /** Replaces all user data with the backup. Built-in foods stay. */
     suspend fun restore(db: AppDatabase, prefs: Prefs, json: String): Summary {
         val o = JSONObject(json)
-        require(o.optString("format") == FORMAT) { "not a Tarilka backup" }
+        if (o.optString("format") != FORMAT) throw BackupError(BackupError.Kind.NOT_BACKUP)
         // A newer file may hold data this version would silently drop.
-        require(o.optInt("version", 1) <= VERSION) { "made by a newer version of Tarilka: update the app first" }
+        if (o.optInt("version", 1) > VERSION) throw BackupError(BackupError.Kind.NEWER)
         val summary = peek(json)
         db.withTransaction {
             db.clearDiary()

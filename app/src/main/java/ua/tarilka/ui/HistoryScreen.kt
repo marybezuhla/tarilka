@@ -86,7 +86,7 @@ fun HistoryScreen(vm: MainViewModel, ai: AiViewModel, onBack: () -> Unit, onOpen
         val seq = undoEvent?.first ?: return@LaunchedEffect
         if (deletedText == null) return@LaunchedEffect
         try {
-            if (snackbar.showSnackbar(deletedText, actionLabel = undoText, duration = SnackbarDuration.Short) == SnackbarResult.ActionPerformed) vm.undo()
+            if (snackbar.showSnackbar(deletedText, actionLabel = undoText, duration = SnackbarDuration.Long) == SnackbarResult.ActionPerformed) vm.undo()
         } finally {
             vm.undoShown(seq)
         }

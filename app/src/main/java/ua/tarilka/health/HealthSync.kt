@@ -157,6 +157,9 @@ class HealthSync(private val context: Context) {
     private fun mealId(e: DiaryEntry) = "diary-${e.id}-${e.createdAt}"
     private fun fluidId(f: FluidEntry) = "fluid-${f.id}-${f.createdAt}"
 
+    /** False under 18: meals go to Health Connect without energy, so no calorie number appears there. */
+    @Volatile var writeKcal: Boolean = true
+
     suspend fun writeMeal(e: DiaryEntry) {
         val c = client ?: return
         if (!canWrite(NutritionRecord::class)) return
@@ -166,7 +169,7 @@ class HealthSync(private val context: Context) {
             startTime = t, startZoneOffset = off,
             endTime = t.plusSeconds(60), endZoneOffset = off,
             metadata = Metadata.manualEntry(clientRecordId = mealId(e)),
-            energy = Energy.kilocalories(e.kcal),
+            energy = if (writeKcal) Energy.kilocalories(e.kcal) else null,
             protein = Mass.grams(e.protein),
             totalFat = Mass.grams(e.fat),
             totalCarbohydrate = Mass.grams(e.carbs),

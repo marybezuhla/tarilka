@@ -209,7 +209,7 @@ fun PhotoScreen(
                         // The rules' result stays below; only the AI attempt failed.
                         Text(err, color = MaterialTheme.colorScheme.tertiary)
                     } else {
-                        Text(stringResource(R.string.ai_error, err), color = MaterialTheme.colorScheme.error)
+                        Text(err, color = MaterialTheme.colorScheme.error)
                         TextButton(onClick = ai::resetPhoto) { Text(stringResource(R.string.try_again)) }
                     }
                 }

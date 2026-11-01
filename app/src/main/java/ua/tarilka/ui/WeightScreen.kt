@@ -174,7 +174,7 @@ private fun WaistSection(vm: MainViewModel) {
                 "● " + stringResource(R.string.waist_last, last.cm.f1(), shortDate(last.day)) +
                     (if (list.size > 1) " · " + stringResource(R.string.waist_change, (if (last.cm - first.cm > 0) "+" else "") + (last.cm - first.cm).f1(), shortDate(first.day)) else ""),
                 style = MaterialTheme.typography.bodyMedium,
-                color = level?.let { levelColor(it) } ?: MaterialTheme.colorScheme.onSurface,
+                color = level?.let { levelTextColor(it) } ?: MaterialTheme.colorScheme.onSurface,
             )
             Text(
                 if (rated) stringResource(R.string.waist_info, raised.f0(), high.f0()) else stringResource(R.string.waist_not_rated),
