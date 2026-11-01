@@ -7,9 +7,14 @@ plugins {
     id("com.google.devtools.ksp")
 }
 
-val ciVersionCode = System.getenv("VERSION_CODE")?.toIntOrNull() ?: 1
 // The version people see (major.minor.patch), set by hand before each release in version.txt.
 val appVersion = rootProject.file("version.txt").readText().trim()
+// versionCode comes from the same file, so anyone can rebuild the same APK from source:
+// 1.2.0 -> 10200 (always above the CI run numbers used up to 1.1.1).
+val appVersionCode = appVersion.split(".").map { it.toInt() }.let { (a, b, c) ->
+    require(b < 100 && c < 100) { "version.txt: minor and patch must be below 100" }
+    a * 10000 + b * 100 + c
+}
 
 android {
     namespace = "ua.tarilka"
@@ -19,8 +24,14 @@ android {
         applicationId = "ua.tarilka"
         minSdk = 31
         targetSdk = 36
-        versionCode = ciVersionCode
+        versionCode = appVersionCode
         versionName = appVersion
+    }
+
+    // No Google-encrypted dependency list in the APK (F-Droid and IzzyOnDroid reject it).
+    dependenciesInfo {
+        includeInApk = false
+        includeInBundle = false
     }
 
     buildTypes {

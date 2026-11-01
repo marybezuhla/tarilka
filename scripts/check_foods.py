@@ -9,6 +9,7 @@
 Exit code 1 if any problem is found.
 """
 import csv
+import re
 import sys
 from pathlib import Path
 
@@ -18,9 +19,8 @@ COLUMNS = ["code", "category", "name_uk", "name_en", "kcal", "protein", "fat", "
 CATEGORIES = {"grains", "bread", "veg", "fruit", "meat", "fish", "dairy", "eggs", "legumes",
               "nuts", "fats", "sweets", "drinks", "dishes", "fastfood", "sauces"}
 SOURCES = {"USDA", "LABEL", "RECIPE"}
-# USDA uses food-specific Atwater factors, so for a few foods the general 4/9/4 rule
-# overshoots. These are the published USDA values, not typos.
-KCAL_EXCEPTIONS = {"v23", "f06"}
+# Kvass, okroshka on kvass and non-alcoholic beer are not counted as alcohol in the app on purpose.
+ALCOHOL_EXEMPT = {"dr10", "dr32", "u07"}
 
 
 def rows():
@@ -73,7 +73,7 @@ def main() -> int:
         tol = max(12.0, 0.15 * kcal)
         # USDA rows are official values (food-specific Atwater factors, fiber, organic acids):
         # check the hand-entered rows only.
-        if d["source"] != "USDA" and abs(calc - kcal) > tol and code not in KCAL_EXCEPTIONS:
+        if d["source"] != "USDA" and abs(calc - kcal) > tol:
             problems.append(f"{code} {d['name_en']}: kcal {kcal} vs macros {calc:.0f}")
     # Food groups: known names, existing codes.
     groups_file = Path(__file__).resolve().parent.parent / "app/src/main/assets/food_groups.csv"
@@ -88,6 +88,29 @@ def main() -> int:
             problems.append(f"food_groups: unknown code {c}")
         if g not in known:
             problems.append(f"food_groups: unknown group {g} for {c}")
+    # Hand-kept code lists in the app must match the database.
+    src = Path(__file__).resolve().parent.parent / "app/src/main/java/ua/tarilka/data"
+    habits = (src / "Habits.kt").read_text(encoding="utf-8")
+    m = re.search(r"ALCOHOL_G = mapOf\((.*?)\)\n", habits, re.S)
+    app_alc = dict((c, float(v)) for c, v in re.findall(r'"(\w+)" to ([\d.]+)', m.group(1))) if m else {}
+    if not app_alc:
+        problems.append("Habits.kt: ALCOHOL_G not found")
+    csv_alc = {r[0]: float(r[9] or 0) for r in data if len(r) == len(COLUMNS) and float(r[9] or 0) > 0}
+    for c, v in csv_alc.items():
+        if c not in ALCOHOL_EXEMPT and abs(app_alc.get(c, -1) - v) > 0.05:
+            problems.append(f"Habits.kt ALCOHOL_G: {c} should be {v}")
+    for c in app_alc:
+        if c not in csv_alc:
+            problems.append(f"Habits.kt ALCOHOL_G: {c} has no alcohol in foods.csv")
+    daos = (src / "Daos.kt").read_text(encoding="utf-8")
+    for name in ("MILK_DRINKS", "SOUPS"):
+        m = re.search(name + r" = listOf\((.*?)\)", daos, re.S)
+        if not m:
+            problems.append(f"Daos.kt: {name} not found")
+            continue
+        for c in re.findall(r'"(\w+)"', m.group(1)):
+            if c not in codes:
+                problems.append(f"Daos.kt {name}: unknown code {c}")
     print(f"{len(data)} foods checked")
     for p in problems:
         print("PROBLEM:", p)

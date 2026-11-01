@@ -48,8 +48,6 @@ jobs:
           gradle-version: "8.14.3"
 
       - name: Test and build (unsigned)
-        env:
-          VERSION_CODE: ${{ github.run_number }}
         shell: bash
         run: |
           set -o pipefail
