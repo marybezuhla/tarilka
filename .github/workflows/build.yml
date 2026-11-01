@@ -86,32 +86,13 @@ jobs:
         with:
           name: build-log
           path: log/
+          retention-days: 14
 
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: tarilka-unsigned
           path: app/build/outputs/apk/release/app-release-unsigned.apk
-
-  # Saves the build log to the ci-logs branch. Runs no project code.
-  logs:
-    needs: build
-    if: always() && github.event_name != 'pull_request'
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
-        with:
-          name: build-log
-          path: log
-      - name: Push the log
-        shell: bash
-        env:
-          TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          cd log
-          git init -q && git checkout -q -b ci-logs && git add . && git -c user.name=ci -c user.email=ci@localhost commit -qm "build log ${{ github.run_number }}"
-          git push -qf "https://x-access-token:${TOKEN}@github.com/${{ github.repository }}" ci-logs
+          retention-days: 14
 
   # Signs. Only for main, only in the "release" environment (needs the owner's approval), and with
   # no Gradle or other third-party build code: just the Android SDK's own zipalign and apksigner.
@@ -133,8 +114,9 @@ jobs:
         env:
           PASS: ${{ secrets.TARILKA_SIGNING_PASS }}
           STORE: ${{ secrets.TARILKA_STORE_PASS }}
+          KEYSTORE: ${{ secrets.TARILKA_KEYSTORE }}
         run: |
-          if [ -n "$PASS" ] && [ -n "$STORE" ]; then
+          if [ -n "$PASS" ] && [ -n "$STORE" ] && [ -n "$KEYSTORE" ]; then
             echo "ready=true" >> "$GITHUB_OUTPUT"
           else
             echo "::error::Signing secrets are not set in the release environment; nothing is published."
@@ -146,7 +128,6 @@ jobs:
         with:
           persist-credentials: false
           sparse-checkout: |
-            signing
             .github
 
       - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
@@ -167,13 +148,16 @@ jobs:
         env:
           PASS: ${{ secrets.TARILKA_SIGNING_PASS }}
           STORE: ${{ secrets.TARILKA_STORE_PASS }}
+          KEYSTORE: ${{ secrets.TARILKA_KEYSTORE }}
         shell: bash
         run: |
           set -e
           BT=$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -1)
+          # The encrypted keystore lives only in the release environment's secrets, not in the repository.
+          printf %s "$KEYSTORE" | base64 -d > "$RUNNER_TEMP/k.enc"
           printf %s "$PASS" > "$RUNNER_TEMP/p"
-          openssl enc -d -aes-256-cbc -pbkdf2 -iter 600000 -in signing/tarilka.jks.enc -out "$RUNNER_TEMP/tarilka.jks" -pass file:"$RUNNER_TEMP/p"
-          rm "$RUNNER_TEMP/p"
+          openssl enc -d -aes-256-cbc -pbkdf2 -iter 600000 -in "$RUNNER_TEMP/k.enc" -out "$RUNNER_TEMP/tarilka.jks" -pass file:"$RUNNER_TEMP/p"
+          rm "$RUNNER_TEMP/p" "$RUNNER_TEMP/k.enc"
           mkdir -p out
           "$BT/zipalign" -P 16 -f 4 unsigned/app-release-unsigned.apk "$RUNNER_TEMP/aligned.apk"
           OUT="out/tarilka-$(tr -d '[:space:]' < version.txt).apk"
@@ -188,13 +172,14 @@ jobs:
 
       - name: Remove the decrypted key
         if: always()
-        run: rm -f "$RUNNER_TEMP/tarilka.jks" "$RUNNER_TEMP/p"
+        run: rm -f "$RUNNER_TEMP/tarilka.jks" "$RUNNER_TEMP/p" "$RUNNER_TEMP/k.enc"
 
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         if: steps.secrets.outputs.ready == 'true'
         with:
           name: tarilka-signed
           path: out/*.apk
+          retention-days: 7
 
   # Publishes the signed APK. Never sees the signing key; uses only GitHub's own gh tool.
   publish:
