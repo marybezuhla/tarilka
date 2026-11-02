@@ -19,12 +19,17 @@ data class Profile(
     /** User can type their own calorie target instead of the calculated one. */
     val customKcal: Int? = null,
     val isSet: Boolean = false,
-    /** Pregnant or breastfeeding: no weight-loss target. */
+    /** Pregnant: no weight-loss target, about +300 kcal, no cycle reminders. */
     val pregnant: Boolean = false,
-)
+    /** Breastfeeding: no weight-loss target, +500 kcal (EFSA). */
+    val breastfeeding: Boolean = false,
+) {
+    /** Either one: weight loss is not offered and alcohol is best avoided. */
+    val pregnantOrBreastfeeding: Boolean get() = sex == Sex.FEMALE && (pregnant || breastfeeding)
+}
 
 /** Values that are personal health data: encrypted with the diary while app protection is on (see [Prefs.sealed]). */
-private val PERSONAL_KEYS = listOf("sex", "age", "height", "weight", "activity", "goal", "customKcal", "profileSet", "pregnant", "cycleTypical", "missing", "under18")
+private val PERSONAL_KEYS = listOf("sex", "age", "height", "weight", "activity", "goal", "customKcal", "profileSet", "pregnant", "breastfeeding", "cycleTypical", "missing", "under18")
 
 class Prefs(context: Context) {
     private val sp = context.getSharedPreferences("tarilka", Context.MODE_PRIVATE).also { sp ->
@@ -132,6 +137,15 @@ class Prefs(context: Context) {
         set(v) { sp.edit().putBoolean("introShown", v).apply(); _introShown.value = v }
 
     /** App protection: the diary is encrypted and opens only after fingerprint or the phone PIN. */
+    private val _lastBackupAt = MutableStateFlow(sp.getLong("lastBackupAt", 0L))
+    /** When a full backup was last saved (0 = never), for the reminder while app protection is on. */
+    val lastBackupAt: StateFlow<Long> = _lastBackupAt.asStateFlow()
+    fun backupDone() {
+        val now = System.currentTimeMillis()
+        sp.edit().putLong("lastBackupAt", now).apply()
+        _lastBackupAt.value = now
+    }
+
     var appLock: Boolean
         get() = sp.getBoolean("appLock", false)
         set(v) = sp.edit().putBoolean("appLock", v).commit().let { }
@@ -319,6 +333,14 @@ class Prefs(context: Context) {
         get() = sp.getInt("themeMode", 0)
         set(v) = sp.edit().putInt("themeMode", v).apply()
 
+    private val _hideKcal = MutableStateFlow(sp.getBoolean("hideKcal", false))
+    /** No calorie numbers anywhere, chosen by the person. */
+    val hideKcal: StateFlow<Boolean> = _hideKcal.asStateFlow()
+    fun setHideKcal(on: Boolean) {
+        sp.edit().putBoolean("hideKcal", on).apply()
+        _hideKcal.value = on
+    }
+
     private val _dynamicColor = MutableStateFlow(sp.getBoolean("dynamicColor", false))
     /** Material You: colors from the wallpaper. */
     val dynamicColor: StateFlow<Boolean> = _dynamicColor.asStateFlow()
@@ -394,7 +416,7 @@ class Prefs(context: Context) {
             mapOf(
                 "sex" to p.sex.name, "age" to p.age, "height" to p.heightCm, "weight" to p.weightKg,
                 "activity" to p.activity, "goal" to p.goal.name, "customKcal" to (p.customKcal ?: -1),
-                "profileSet" to true, "pregnant" to p.pregnant,
+                "profileSet" to true, "pregnant" to p.pregnant, "breastfeeding" to p.breastfeeding,
             ),
         ).let { ok -> if (!ok) { if (strict) error("the diary is locked") else return } }
         _profile.value = p.copy(isSet = true)
@@ -414,6 +436,7 @@ class Prefs(context: Context) {
             customKcal = int("customKcal", -1).takeIf { it > 0 },
             isSet = true,
             pregnant = personal("pregnant") == true,
+            breastfeeding = personal("breastfeeding") == true,
         )
     }
 }

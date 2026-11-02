@@ -76,7 +76,7 @@ object Backup {
             .put("profile", prefs.profile.value.let { p ->
                 JSONObject().put("sex", p.sex.name).put("age", p.age).put("heightCm", p.heightCm)
                     .put("weightKg", p.weightKg).put("activity", p.activity).put("goal", p.goal.name)
-                    .put("customKcal", p.customKcal ?: JSONObject.NULL).put("isSet", p.isSet).put("pregnant", p.pregnant)
+                    .put("customKcal", p.customKcal ?: JSONObject.NULL).put("isSet", p.isSet).put("pregnant", p.pregnant).put("breastfeeding", p.breastfeeding)
             })
             .put("customFoods", JSONArray().apply {
                 custom.forEach { f ->
@@ -343,6 +343,7 @@ object Backup {
                         goal = runCatching { Goal.valueOf(p.getString("goal")) }.getOrDefault(Goal.MAINTAIN),
                         customKcal = if (p.isNull("customKcal")) null else p.optInt("customKcal").takeIf { it in 800..6000 },
                         pregnant = p.optBoolean("pregnant", false),
+                        breastfeeding = p.optBoolean("breastfeeding", false),
                     ),
                 )
             }

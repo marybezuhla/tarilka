@@ -22,12 +22,14 @@ data class Targets(
     val customRaised: Boolean = false,
     /** Under 18 (also when pregnant or breastfeeding). */
     val teen: Boolean = false,
+    /** The person chose to see no calorie numbers (e.g. in recovery from an eating disorder). */
+    val hideKcal: Boolean = false,
 ) {
     /**
      * Under 18 no calorie number is shown (AAP 2016/2023: no calorie counting for teenagers; adult formulas
      * underestimate growing bodies). Protein, fibre, vegetables and fluids stay.
      */
-    val showKcal: Boolean get() = !teen
+    val showKcal: Boolean get() = !teen && !hideKcal
 }
 
 /** When a calorie deficit is not appropriate without a doctor. */
@@ -49,11 +51,16 @@ object Nutrition {
         val bmi = bmi(w, p.heightCm)
         // No unsupervised dieting in pregnancy and breastfeeding (NICE PH27), under 18 (AAP 2016)
         // or with a BMI under 18.5 (WHO: underweight).
-        val limit = limitFor(p.sex, p.pregnant, p.age, bmi)
+        val limit = limitFor(p.sex, p.pregnant || p.breastfeeding, p.age, bmi)
         val goal = if (limit != null && p.goal == Goal.LOSE) Goal.MAINTAIN else p.goal
-        // Pregnancy and breastfeeding need more: EFSA +70 / +260 / +500 kcal by trimester, +500 while breastfeeding.
-        // One switch covers both, so about +300 is added; the doctor knows better.
-        val extra = if (limit == Limit.PREGNANT) 300.0 else 0.0
+        // Pregnancy and breastfeeding need more: EFSA +70 / +260 / +500 kcal by trimester (about +300 on average;
+        // the doctor knows better), +500 while breastfeeding.
+        val female = p.sex == Sex.FEMALE
+        val extra = when {
+            female && p.breastfeeding -> 500.0
+            female && p.pregnant -> 300.0
+            else -> 0.0
+        }
         val goalKcal = extra + when (goal) {
             Goal.LOSE -> tdee - minOf(500.0, tdee * 0.2)
             Goal.MAINTAIN -> tdee
@@ -80,9 +87,9 @@ object Nutrition {
         // Drinks and soups: the EFSA adequate intake (2.0 / 2.5 L of water a day, about 80 % of it from drinks)
         // as the minimum; a bigger body that uses more energy needs a little more, so also about 1 ml of water
         // per kcal used a day, 80 % of it from drinks (an approximation, not an EFSA value), at most 3 L.
-        // More in pregnancy and breastfeeding (EFSA +0.3 / +0.7 L; one switch covers both, so +0.5 L) and with a very active day.
+        // More in pregnancy and breastfeeding (EFSA +0.3 / +0.7 L) and with a very active day.
         val water = max(if (p.sex == Sex.MALE) 2000.0 else 1600.0, (tdee * 0.8).coerceAtMost(3000.0)) +
-            (if (limit == Limit.PREGNANT) 500.0 else 0.0) + (if (p.activity >= 3) 500.0 else 0.0)
+            (if (female && p.breastfeeding) 700.0 else if (female && p.pregnant) 300.0 else 0.0) + (if (p.activity >= 3) 500.0 else 0.0)
         return Targets(
             kcal, protein, fat, carbs, fiber, bmr, tdee, water,
             bmi = bmi, limit = limit, goal = goal, customRaised = custom != null && custom < floor, teen = p.age < 18,

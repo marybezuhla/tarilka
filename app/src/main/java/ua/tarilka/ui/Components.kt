@@ -47,8 +47,11 @@ import ua.tarilka.ui.theme.Numbers
 import java.util.Locale
 import kotlin.math.roundToInt
 
-/** Whether calorie numbers are shown at all: not under 18 (see Targets.showKcal). Set once at the root. */
+/** Whether calorie numbers are shown at all: not under 18, nor when the person hid them (see Targets.showKcal). Set once at the root. */
 val LocalShowKcal = androidx.compose.runtime.compositionLocalOf { true }
+
+/** Under 18: no alcohol is advised at all (independent of whether calories are hidden by choice). */
+val LocalTeen = androidx.compose.runtime.compositionLocalOf { false }
 
 fun Double.f0(): String = if (isFinite()) roundToInt().toString() else "—"
 fun Double.f1(): String = String.format(Locale.getDefault(), "%.1f", this)

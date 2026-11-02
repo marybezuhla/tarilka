@@ -147,7 +147,7 @@ fun HabitChips(
         }
         if (h.alcoholPerWeek > 0) {
             // In pregnancy, while breastfeeding and under 18 the advice is simply none: any amount is worth attention.
-            val noneAdvised = pregnant || !LocalShowKcal.current
+            val noneAdvised = pregnant || LocalTeen.current
             val noticed = buildList {
                 if (h.alcoholPerWeek > 7) add(stringResource(R.string.alcohol_many))
                 if (h.perWeek(h.alcoholDays) >= 4) add(stringResource(R.string.alcohol_often))
@@ -200,7 +200,7 @@ fun HabitChips(
             } else null,
         )
     }
-    if (audit) AuditCDialog(sex, pregnant || !LocalShowKcal.current, onSaveNote) { audit = false }
+    if (audit) AuditCDialog(sex, pregnant || LocalTeen.current, onSaveNote) { audit = false }
 }
 
 @Composable

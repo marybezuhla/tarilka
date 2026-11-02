@@ -68,6 +68,7 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
     val query = MutableStateFlow("")
 
     val profile: StateFlow<Profile> = prefs.profile
+    val lastBackupAt: StateFlow<Long> = prefs.lastBackupAt
 
     val weights: StateFlow<List<WeightEntry>> =
         db.weights().all().stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
@@ -83,7 +84,7 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
     val latestWeight: StateFlow<Double?> =
         weights.map { it.lastOrNull()?.kg }.stateIn(viewModelScope, SharingStarted.Eagerly, null)
 
-    val targets: StateFlow<Targets> = combine(profile, latestWeight) { p, w -> Nutrition.targets(p, w) }
+    val targets: StateFlow<Targets> = combine(profile, latestWeight, prefs.hideKcal) { p, w, hide -> Nutrition.targets(p, w).copy(hideKcal = hide) }
         .stateIn(viewModelScope, SharingStarted.Eagerly, Nutrition.targets(Profile(), null))
 
     val entries: StateFlow<List<DiaryEntry>> = day.flatMapLatest { db.diary().forDay(it.toEpochDay()) }
@@ -421,7 +422,7 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
 
     private fun sync(block: suspend () -> Unit) {
         // Under 18 no calorie number leaves the app either.
-        health.writeKcal = targets.value.showKcal
+        health.writeKcal = !targets.value.teen
         if (prefs.healthSync) tapp.scope.launch { runCatching { block() } }
     }
 
@@ -1026,7 +1027,7 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
                 (if (tg.showKcal) "Daily targets: ${tg.kcal.r()} kcal, protein ${tg.protein.r()} g, fat ${tg.fat.r()} g, carbs ${tg.carbs.r()} g, "
                 else "Daily targets: protein ${tg.protein.r()} g, ") +
                     "fiber ${tg.fiber.r()} g, fluids ${tg.waterMl.r()} ml." +
-                    (if (tg.limit == ua.tarilka.data.Limit.PREGNANT) " Goal: no weight loss; weight gain in pregnancy is expected." else " Goal: ${tg.goal.name.lowercase()} weight.") +
+                    (if (tg.limit == ua.tarilka.data.Limit.PREGNANT) (if (prefs.profile.value.pregnant) " Goal: no weight loss; weight gain in pregnancy is expected." else " Goal: no weight loss while breastfeeding.") else " Goal: ${tg.goal.name.lowercase()} weight.") +
                     " " + tg.aiSafety(),
             )
             when (period) {
@@ -1131,7 +1132,7 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
             appendLine("Techniques you may suggest (pick 1–2 that fit what you see, explain simply):")
             Habits.TECHNIQUES.forEach { appendLine("- $it") }
             // Cutting-down tips ("alcohol-free days") would read as permission under 18 or in pregnancy.
-            val noAlcohol = !tg.showKcal || tg.limit == ua.tarilka.data.Limit.PREGNANT
+            val noAlcohol = tg.teen || tg.limit == ua.tarilka.data.Limit.PREGNANT
             if (h.alcoholPerWeek > 0 && noAlcohol) {
                 appendLine("Alcohol was logged. For this person no amount of alcohol is advised: say kindly that the safest is none, give no tips for drinking less, and mention a doctor or a trusted adult can help.")
             } else if (h.alcoholPerWeek > 0) {
@@ -1214,6 +1215,8 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
         ua.tarilka.applyThemeMode(mode)
     }
     fun setDynamicColor(on: Boolean) = prefs.setDynamicColor(on)
+    val hideKcal: StateFlow<Boolean> = prefs.hideKcal
+    fun setHideKcal(on: Boolean) = prefs.setHideKcal(on)
 
     // ---- export / import ----
 
@@ -1226,6 +1229,7 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
             writeText(uri, if (password.isEmpty()) json else kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Default) {
                 ua.tarilka.data.Backup.encrypt(json, password)
             })
+            prefs.backupDone()
             getApplication<Application>().getString(ua.tarilka.R.string.export_done)
         }.getOrElse { failedExport(uri, it) }
     }

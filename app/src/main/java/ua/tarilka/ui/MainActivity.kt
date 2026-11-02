@@ -55,6 +55,7 @@ class MainActivity : AppCompatActivity() {
             val protectedOn by Protection.enabled.collectAsState()
             val noShots by prefs.noScreenshots.collectAsState()
             val profile by prefs.profile.collectAsState()
+            val hideKcal by prefs.hideKcal.collectAsState()
             LaunchedEffect(protectedOn, noShots) { Protection.applyRecents(this@MainActivity) }
             TarilkaTheme(dynamicColor = dynamic) {
                 // Opened by Health Connect to explain why Tarilka asks for access: only the explanation, no diary.
@@ -67,7 +68,7 @@ class MainActivity : AppCompatActivity() {
                     )
                     return@TarilkaTheme
                 }
-                androidx.compose.runtime.CompositionLocalProvider(LocalShowKcal provides (profile.age >= 18)) {
+                androidx.compose.runtime.CompositionLocalProvider(LocalShowKcal provides (profile.age >= 18 && !hideKcal), LocalTeen provides (profile.age < 18)) {
                 if (dbBroken) {
                     DbBrokenScreen()
                 } else if (db == null) {

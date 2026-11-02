@@ -379,4 +379,19 @@ class LogicTest {
         assertTrue(ua.tarilka.data.Lang.NO_KCAL_MARK in teen.aiSafety())
         assertTrue("no alcohol for teens", "no alcohol" in teen.aiSafety())
     }
+
+    @Test
+    fun breastfeedingAndHiddenCalories() {
+        val adult = Profile(sex = Sex.FEMALE, age = 30, heightCm = 165, weightKg = 65.0, activity = 1, goal = Goal.LOSE, isSet = true)
+        val bf = Nutrition.targets(adult.copy(breastfeeding = true), null)
+        // No weight loss while breastfeeding, and +500 kcal (EFSA).
+        assertEquals(ua.tarilka.data.Limit.PREGNANT, bf.limit)
+        assertEquals(bf.tdee + 500.0, bf.kcal, 0.01)
+        assertEquals(bf.tdee + 300.0, Nutrition.targets(adult.copy(pregnant = true), null).kcal, 0.01)
+        // A man's switch does nothing.
+        assertNull(Nutrition.targets(adult.copy(sex = Sex.MALE, breastfeeding = true), null).limit)
+        // Hidden by choice: no calorie numbers, but not treated as under 18.
+        val hidden = Nutrition.targets(adult, null).copy(hideKcal = true)
+        assertTrue(!hidden.showKcal && !hidden.teen)
+    }
 }

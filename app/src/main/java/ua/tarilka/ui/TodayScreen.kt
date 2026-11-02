@@ -76,6 +76,8 @@ fun TodayScreen(
     val tips by vm.tips.collectAsState()
     val week by vm.week.collectAsState()
     val profile by vm.profile.collectAsState()
+    val lastBackup by vm.lastBackupAt.collectAsState()
+    val protectedDiary by Protection.enabled.collectAsState()
     val model by ai.model.collectAsState()
     val advice by ai.advice.collectAsState()
     val adviceLoading by ai.adviceLoading.collectAsState()
@@ -138,6 +140,19 @@ fun TodayScreen(
             item {
                 Section {
                     Text(stringResource(R.string.profile_hint), style = MaterialTheme.typography.bodyMedium)
+                }
+            }
+        }
+
+        // With protection on, a lost screen lock means a lost key: a backup is the only way back.
+        if (protectedDiary && System.currentTimeMillis() - lastBackup > 30L * 24 * 3600 * 1000) {
+            item {
+                Section {
+                    Text(
+                        if (lastBackup == 0L) stringResource(R.string.backup_never)
+                        else stringResource(R.string.backup_old, java.time.Instant.ofEpochMilli(lastBackup).atZone(java.time.ZoneId.systemDefault()).toLocalDate().format(java.time.format.DateTimeFormatter.ofLocalizedDate(java.time.format.FormatStyle.MEDIUM))),
+                        style = MaterialTheme.typography.bodyMedium,
+                    )
                 }
             }
         }
@@ -385,7 +400,7 @@ fun TodayScreen(
                     }
                     habits?.let {
                         Spacer(Modifier.height(10.dp))
-                        HabitChips(it, sex = profile.sex, pregnant = profile.sex == ua.tarilka.data.Sex.FEMALE && profile.pregnant, onSaveNote = vm::appendNoteToday, workoutsTracked = vm.workoutsTracked.collectAsState().value)
+                        HabitChips(it, sex = profile.sex, pregnant = profile.pregnantOrBreastfeeding, onSaveNote = vm::appendNoteToday, workoutsTracked = vm.workoutsTracked.collectAsState().value)
                     }
                     TextButton(onClick = onHistory) { Text(stringResource(R.string.summaries_link)) }
                 }

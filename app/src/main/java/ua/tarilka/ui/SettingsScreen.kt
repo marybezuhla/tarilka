@@ -79,12 +79,12 @@ fun SettingsScreen(vm: MainViewModel, ai: AiViewModel, padding: PaddingValues) {
                     Text(stringResource(R.string.custom_raised), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.tertiary)
                 }
                 targets.limit?.let { l ->
-                    Text(stringResource(limitText(l, teen = !targets.showKcal)), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(stringResource(limitText(l, teen = targets.teen)), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
                 Spacer(Modifier.height(6.dp))
                 Text(stringResource(R.string.water_target, (targets.waterMl / 1000).f1()), style = MaterialTheme.typography.bodyMedium)
                 Text(stringResource(R.string.water_own_note), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                if (profile.isSet) BmiLine(targets.bmi, profile.age, targets.limit == ua.tarilka.data.Limit.PREGNANT)
+                if (profile.isSet) BmiLine(targets.bmi, profile.age, profile.sex == ua.tarilka.data.Sex.FEMALE && profile.pregnant)
             }
         }
         item { ActivitySection(vm) }
@@ -121,6 +121,7 @@ private fun ProfileSection(profile: Profile, onSave: (Profile) -> Unit) {
     var goal by remember(profile) { mutableStateOf(profile.goal) }
     var custom by remember(profile) { mutableStateOf(profile.customKcal?.toString() ?: "") }
     var pregnant by remember(profile) { mutableStateOf(profile.pregnant) }
+    var breastfeeding by remember(profile) { mutableStateOf(profile.breastfeeding) }
 
     val ageN = age.toNumber()?.toInt()
     val heightN = height.toNumber()?.toInt()
@@ -143,6 +144,14 @@ private fun ProfileSection(profile: Profile, onSave: (Profile) -> Unit) {
                     androidx.compose.material3.Switch(checked = pregnant, onCheckedChange = { pregnant = it })
                     Spacer(Modifier.width(10.dp))
                     Text(stringResource(R.string.pregnant), style = MaterialTheme.typography.bodyMedium)
+                }
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth().clickable { breastfeeding = !breastfeeding },
+                ) {
+                    androidx.compose.material3.Switch(checked = breastfeeding, onCheckedChange = { breastfeeding = it })
+                    Spacer(Modifier.width(10.dp))
+                    Text(stringResource(R.string.breastfeeding), style = MaterialTheme.typography.bodyMedium)
                 }
             }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -168,7 +177,7 @@ private fun ProfileSection(profile: Profile, onSave: (Profile) -> Unit) {
             Text(stringResource(R.string.goal), style = MaterialTheme.typography.labelLarge)
             // Weight loss is not offered in pregnancy and breastfeeding, under 18 or with a BMI under 18.5.
             val limit = if (weightN != null && heightN != null && heightN > 0 && ageN != null) {
-                ua.tarilka.data.Nutrition.limitFor(sex, pregnant, ageN, ua.tarilka.data.Nutrition.bmi(weightN, heightN))
+                ua.tarilka.data.Nutrition.limitFor(sex, pregnant || breastfeeding, ageN, ua.tarilka.data.Nutrition.bmi(weightN, heightN))
             } else null
             // Shown and saved as "Maintain" while a limit applies; the choice itself is kept (half-typed values pass).
             val shown = if (limit != null && goal == Goal.LOSE) Goal.MAINTAIN else goal
@@ -192,6 +201,7 @@ private fun ProfileSection(profile: Profile, onSave: (Profile) -> Unit) {
                             activity = activity, goal = if (limit != null && goal == Goal.LOSE) Goal.MAINTAIN else goal,
                             customKcal = custom.toNumber()?.toInt()?.takeIf { it in 800..6000 && (ageN ?: 0) >= 18 },
                             pregnant = sex == Sex.FEMALE && pregnant,
+                            breastfeeding = sex == Sex.FEMALE && breastfeeding,
                         ),
                     )
                 },
@@ -528,6 +538,11 @@ private fun AppearanceSection(vm: MainViewModel) {
         }
         Spacer(Modifier.height(6.dp))
         SwitchRow(stringResource(R.string.dynamic_color), stringResource(R.string.dynamic_color_hint), dynamic, vm::setDynamicColor)
+        // Under 18 calories are hidden anyway.
+        if (vm.profile.collectAsState().value.age >= 18) {
+            val hide by vm.hideKcal.collectAsState()
+            SwitchRow(stringResource(R.string.hide_kcal), stringResource(R.string.hide_kcal_hint), hide, vm::setHideKcal)
+        }
     }
 }
 

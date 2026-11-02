@@ -136,7 +136,7 @@ object Report {
             add(
                 Metric.Key.ALCOHOL, h.alcoholPerWeek, null,
                 // Under 18 and in pregnancy no amount is advised: the same colour as on the Today screen.
-                if (!targets.showKcal || targets.limit == Limit.PREGNANT) Habits.Level.WATCH else h.alcoholLevel, ph?.alcoholPerWeek, 1.0, false, { it.habits.foodOrNull { alcoholPerWeek / 7 } }, null,
+                if (targets.teen || targets.limit == Limit.PREGNANT) Habits.Level.WATCH else h.alcoholLevel, ph?.alcoholPerWeek, 1.0, false, { it.habits.foodOrNull { alcoholPerWeek / 7 } }, null,
                 cause = Metric.Cause.HEAVY_DRINKING.takeIf { h.heavyDrinkDays > 0 }, causeCount = h.heavyDrinkDays,
             )
         }

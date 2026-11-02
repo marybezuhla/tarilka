@@ -116,7 +116,7 @@ fun WeightScreen(vm: MainViewModel, padding: PaddingValues) {
                     )
                 }
                 val profile by vm.profile.collectAsState()
-                if (profile.isSet) BmiLine(targets.bmi, profile.age, targets.limit == ua.tarilka.data.Limit.PREGNANT)
+                if (profile.isSet) BmiLine(targets.bmi, profile.age, profile.sex == ua.tarilka.data.Sex.FEMALE && profile.pregnant)
             }
         }
         if (weights.isNotEmpty()) {
