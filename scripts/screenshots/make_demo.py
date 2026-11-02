@@ -13,6 +13,8 @@ rows = [r for r in csv.reader((l for l in open(ROOT / "app/src/main/assets/foods
 head = rows[0]; F = {r[0]: dict(zip(head, r)) for r in rows[1:]}
 
 def item(code, grams, meal, day, time):
+    if not code.startswith("dr"):
+        grams = round(grams * 1.12 / 5) * 5  # a little more food: close to the target, as most days are
     f = F[code]; k = grams / 100
     n = lambda c: round(float(f[c] or 0) * k, 1)
     return {"day": f"@D{day}@", "meal": meal, "nameUk": f["name_uk"], "nameEn": f["name_en"], "grams": grams,
@@ -20,13 +22,13 @@ def item(code, grams, meal, day, time):
             "fromAi": False, "createdAt": f"@T{day} {time}@", "foodCode": code}
 
 random.seed(7)
-BREAKFAST = [[("g06", 250), ("f03", 120), ("dr01", 200)], [("e01", 100), ("b02", 60), ("v15", 120), ("u65", 260)],
-             [("u14", 150), ("d07", 150), ("dr02", 250)], [("d12", 150), ("f01", 180), ("dr01", 200)]]
-LUNCH = [[("u01", 350), ("b02", 60), ("u24", 150)], [("g01", 200), ("u17", 100), ("v14", 120)],
-         [("u32", 350), ("e01", 50), ("b24", 60)], [("m24", 150), ("g01", 180), ("u54", 150)]]
-DINNER = [[("u08", 250), ("d07", 100)], [("u70", 150), ("g01", 150), ("v15", 120)],
-          [("u02", 350), ("b02", 30), ("d12", 100)], [("m06", 150), ("u25", 150)]]
-SNACK = [[("f01", 180)], [("d08", 150)], [("f03", 120)], [("dr14", 250)]]
+BREAKFAST = [[("g06", 300), ("f03", 120), ("d08", 150), ("dr01", 200)], [("e04", 150), ("b02", 60), ("v15", 150), ("u65", 260)],
+             [("u14", 200), ("d07", 150), ("f01", 180), ("dr02", 250)], [("d12", 200), ("f01", 180), ("b02", 40), ("dr01", 200)]]
+LUNCH = [[("u01", 400), ("b02", 60), ("u24", 200)], [("g01", 250), ("u17", 150), ("v14", 150), ("v15", 150)],
+         [("u32", 400), ("e01", 50), ("b24", 60), ("u54", 150)], [("m24", 180), ("g01", 220), ("u54", 200)]]
+DINNER = [[("u08", 300), ("u25", 200)], [("u70", 180), ("g01", 200), ("v15", 150), ("v14", 120)],
+          [("u02", 400), ("b02", 60), ("d12", 150)], [("m06", 150), ("u24", 200), ("b02", 40)]]
+SNACK = [[("f01", 180), ("d08", 150)], [("f03", 120), ("d07", 150)], [("f01", 180), ("dr14", 250)], [("d54", 250), ("f03", 120)]]
 
 diary, fluids, weights, sleep, workouts = [], [], [], [], []
 for day in range(20, -1, -1):
@@ -39,7 +41,7 @@ for day in range(20, -1, -1):
         fluids.append({"day": f"@D{day}@", "ml": 250, "createdAt": f"@T{day} {t}@"})
     if day % 2 == 0:
         weights.append({"day": f"@D{day}@", "kg": round(66.9 - (20 - day) * 0.045 + random.uniform(-0.15, 0.15), 1), "minutes": 7 * 60 + 15})
-    if day:
+    if True:
         sleep.append({"day": f"@D{day}@", "hours": random.choice([6.5, 7, 7.5, 8, 7, 7.5]), "quality": random.choice([1, 2, 2])})
     if day % 3 == 1:
         workouts.append({"day": f"@D{day}@", "type": random.choice([0, 3, 4]), "minutes": random.choice([30, 40, 45]),
@@ -57,4 +59,7 @@ demo = {
 }
 out = ROOT / "app/src/debug/assets/demo.json"
 out.write_text(json.dumps(demo, ensure_ascii=False, indent=1), encoding="utf-8")
-print(f"{len(diary)} entries written to {out.relative_to(ROOT)}")
+days = {}
+for e in diary: days[e["day"]] = days.get(e["day"], 0) + e["kcal"]
+full = [v for k, v in days.items() if k != "@D0@"]
+print(f"{len(diary)} entries written to {out.relative_to(ROOT)}; about {sum(full) / len(full):.0f} kcal a day")

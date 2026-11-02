@@ -10,7 +10,7 @@ adb install -r "$APK" >/dev/null
 # A tidy status bar: fixed clock, full battery, no notifications.
 adb shell settings put global sysui_demo_allowed 1
 demo() { adb shell am broadcast -a com.android.systemui.demo -e command "$@" >/dev/null; }
-demo enter; demo clock -e hhmm 0941; demo battery -e level 100 -e plugged false
+demo enter; demo clock -e hhmm 1405; demo battery -e level 100 -e plugged false
 demo network -e wifi show -e level 4; demo network -e mobile show -e level 4; demo notifications -e visible false
 
 tap() {
@@ -36,7 +36,7 @@ run() {
   sleep 10; adb wait-for-device
   for i in $(seq 1 60); do [ "$(adb shell getprop sys.boot_completed | tr -d '\r')" = 1 ] && break; sleep 3; done
   sleep 15
-  demo enter; demo clock -e hhmm 0941; demo notifications -e visible false
+  demo enter; demo clock -e hhmm 1405; demo notifications -e visible false
   adb shell am start -W -n $PKG/.DemoActivity >/dev/null
   sleep 6
   # Opened again, so the chosen language is surely applied everywhere.
