@@ -44,11 +44,15 @@ jobs:
           export PATH="$ANDROID_HOME/platform-tools:$ANDROID_HOME/emulator:$PATH"
           echo "$ANDROID_HOME/platform-tools" >> "$GITHUB_PATH"
           IMG="system-images;android-34;google_apis;x86_64"
+          export ANDROID_AVD_HOME="$HOME/.android/avd"; mkdir -p "$ANDROID_AVD_HOME"
+          echo "ANDROID_AVD_HOME=$ANDROID_AVD_HOME" >> "$GITHUB_ENV"
+          ls -l /dev/kvm
           yes | "$SDK/sdkmanager" --licenses >/dev/null || true
           "$SDK/sdkmanager" "emulator" "platform-tools" "$IMG" >/dev/null
           echo no | "$SDK/avdmanager" create avd -n shot -k "$IMG" -d pixel_6
-          nohup "$ANDROID_HOME/emulator/emulator" -avd shot -no-window -no-audio -no-boot-anim -no-snapshot -gpu swiftshader_indirect > emulator.log 2>&1 &
-          adb wait-for-device
+          "$ANDROID_HOME/emulator/emulator" -list-avds
+          nohup "$ANDROID_HOME/emulator/emulator" -avd shot -no-window -no-audio -no-boot-anim -no-snapshot -accel on -gpu swiftshader_indirect > emulator.log 2>&1 &
+          timeout 300 adb wait-for-device || { tail -60 emulator.log; echo "::error::emulator did not appear"; exit 1; }
           for i in $(seq 1 90); do [ "$(adb shell getprop sys.boot_completed | tr -d '\r')" = 1 ] && break; sleep 5; done
           [ "$(adb shell getprop sys.boot_completed | tr -d '\r')" = 1 ] || { tail -50 emulator.log; echo "::error::emulator did not start"; exit 1; }
           adb shell settings put global window_animation_scale 0
