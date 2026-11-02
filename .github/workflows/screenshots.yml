@@ -1,0 +1,64 @@
+name: Screenshots
+
+# Store screenshots of the real app on an emulator, with the invented demo diary (debug build only).
+# The pictures are printed into the log (base64), checked by a person, and copied into fastlane/ by hand.
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ["scripts/screenshots/**", "app/src/debug/**", ".github/workflows/screenshots.yml"]
+
+permissions:
+  contents: read
+
+jobs:
+  shoot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - uses: gradle/actions/setup-gradle@ed408507eac070d1f99cc633dbcf757c94c7933a # v4
+        with:
+          gradle-version: "8.14.3"
+
+      - name: Build the debug app (F-Droid variant)
+        run: gradle --no-daemon assembleFdroidDebug 2>&1 | tail -40
+
+      - name: Start an emulator
+        shell: bash
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules && sudo udevadm trigger --name-match=kvm
+          SDK="$ANDROID_HOME/cmdline-tools/latest/bin"
+          IMG="system-images;android-34;google_apis;x86_64"
+          yes | "$SDK/sdkmanager" --licenses >/dev/null || true
+          "$SDK/sdkmanager" "emulator" "platform-tools" "$IMG" >/dev/null
+          echo no | "$SDK/avdmanager" create avd -n shot -k "$IMG" -d pixel_6
+          nohup "$ANDROID_HOME/emulator/emulator" -avd shot -no-window -no-audio -no-boot-anim -no-snapshot -gpu swiftshader_indirect > emulator.log 2>&1 &
+          adb wait-for-device
+          for i in $(seq 1 90); do [ "$(adb shell getprop sys.boot_completed | tr -d '\r')" = 1 ] && break; sleep 5; done
+          adb shell settings put global window_animation_scale 0
+          adb shell settings put global transition_animation_scale 0
+          adb shell settings put global animator_duration_scale 0
+
+      - name: Take the screenshots
+        run: bash scripts/screenshots/shoot.sh app/build/outputs/apk/fdroid/debug/app-fdroid-debug.apk
+
+      - name: Print the screenshots (base64 between markers)
+        if: always()
+        shell: bash
+        run: |
+          sudo apt-get install -y -qq pngquant >/dev/null || true
+          cd fastlane/metadata/android
+          for f in */images/phoneScreenshots/*.png; do pngquant --force --quality 75-95 --output "$f" "$f" || true; done
+          ls -l */images/phoneScreenshots/ || true
+          tar czf /tmp/shots.tgz */images/phoneScreenshots
+          echo "SHOTS-BEGIN"; base64 -w 100 /tmp/shots.tgz; echo "SHOTS-END"
