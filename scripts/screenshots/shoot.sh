@@ -23,20 +23,20 @@ tap() {
   echo "::error::'$1' not found on screen"; adb exec-out screencap -p > "$TMP/missing.png"; return 1
 }
 shot() { sleep 2; adb exec-out screencap -p > "$OUT/$1.png"; echo "shot $LANG_DIR/$1"; }
-up() { adb shell input swipe 540 1700 540 700 400; sleep 2; }
+up() { adb shell input swipe 540 1900 540 900 600; sleep 2; }
 
 run() {
   local LOCALE="$1"; LANG_DIR="$2"; local WEIGHT="$3" FOODS="$4" HISTORY="$5"
   OUT="$ROOT/fastlane/metadata/android/$LANG_DIR/images/phoneScreenshots"
   rm -rf "$OUT"; mkdir -p "$OUT"
   adb shell am force-stop $PKG
-  adb shell cmd locale set-app-locales $PKG --locales "$LOCALE"
-  adb shell am start -W -n $PKG/.DemoActivity >/dev/null
-  sleep 8
+  adb shell am start -W -n $PKG/.DemoActivity --es lang "$LOCALE" >/dev/null
+  sleep 6
+  # Opened again, so the chosen language is surely applied everywhere.
+  adb shell am force-stop $PKG; adb shell am start -W -n $PKG/.ui.MainActivity >/dev/null; sleep 6
   shot 1_today
-  up; shot 2_meals
-  adb shell am force-stop $PKG; adb shell am start -W -n $PKG/.ui.MainActivity >/dev/null; sleep 5
-  tap "$HISTORY"; sleep 3; shot 3_history
+  tap "$HISTORY"; sleep 3; shot 2_history
+  up; shot 3_history_charts
   adb shell input keyevent KEYCODE_BACK; sleep 2
   tap "$WEIGHT"; shot 4_weight
   tap "$FOODS"; shot 5_foods
