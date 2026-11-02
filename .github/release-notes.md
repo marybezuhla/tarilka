@@ -1,4 +1,4 @@
-**Тарілка 1.2.2** — приватний офлайн-трекер харчування для Android: без інтернету, акаунтів і реклами. Українська та англійська.
+**Тарілка 1.2.3** — приватний офлайн-трекер харчування для Android: без інтернету, акаунтів і реклами. Українська та англійська.
 
 - 🔒 **Приватність.** Дозволу на інтернет немає, дані лише на телефоні, хмарну копію вимкнено. За бажанням щоденник і профіль шифруються й відкриваються відбитком або PIN-кодом телефону; експорт і видалення ще раз просять підтвердження; можна заборонити знімки екрана. Резервна копія вручну, якщо з паролем, то шифрування AES-256.
 - 🔬 **711 продуктів офлайн.** Дані USDA, етикетки українських продуктів і ~140 страв за рецептами: борщ, вареники, сочник, фастфуд, суші, торти тощо. Біля кожного продукту видно джерело.
@@ -10,7 +10,7 @@
 - 🌙 **За бажанням:** сон, «Чому я їм», тренування, кишківник, цикл, AUDIT-C (щодо алкоголю), нагадування.
 - 🤖 **Локальний ШІ (Gemma 4), за бажанням:** розпізнає їжу на фото й пише підсумки. Усе на телефоні.
 
-**1.2.2:** підготовка до F-Droid (окрема збірка без ШІ), для вас без змін.
+**1.2.2–1.2.3:** підготовка до F-Droid (окрема збірка без ШІ, опис і знімки екрана), для вас без змін.
 
 **Нове в 1.2:** нова іконка; режим «Не показувати калорії»; окремо вагітність і годування груддю (+500 ккал за EFSA); нагадування про резервну копію, коли ввімкнено захист; ліцензія GPL-3.0; будь-яке видалення можна одразу «Повернути»; зрозумілі повідомлення про помилки; до 18 років калорії не йдуть і в Health Connect; у вагітність немає нагадувань про цикл; читабельніші кольори; захист від пошкоджених чи підроблених резервних копій; ліцензії й джерела в «Про застосунок».
 
@@ -22,7 +22,7 @@
 
 ---
 
-**Tarilka 1.2.2** — a private, offline food tracker for Android: no internet, no accounts, no ads. Ukrainian and English.
+**Tarilka 1.2.3** — a private, offline food tracker for Android: no internet, no accounts, no ads. Ukrainian and English.
 
 - 🔒 **Privacy.** No internet permission, data stays on the phone, cloud backup is off. Optionally the diary and profile are encrypted and open with fingerprint or the phone PIN; export and deleting ask again; screenshots can be blocked. Backups by hand; with a password they are AES-256 encrypted.
 - 🔬 **711 foods offline.** USDA data, Ukrainian product labels and ~140 dishes calculated from recipes: borscht, varenyky, sochnyk, fast food, sushi, cakes and more. Every food shows its source.
@@ -34,7 +34,7 @@
 - 🌙 **Optional:** sleep, Why I eat, workouts, bowel, cycle, AUDIT-C (about alcohol), reminders.
 - 🤖 **On-device AI (Gemma 4), optional:** recognises food on photos and writes summaries. Everything stays on the phone.
 
-**1.2.2:** groundwork for F-Droid (a separate build without the AI); nothing changes for you.
+**1.2.2–1.2.3:** groundwork for F-Droid (a separate build without the AI, description and screenshots); nothing changes for you.
 
 **New in 1.2:** a new icon; a Hide calories mode; pregnancy and breastfeeding set separately (+500 kcal while breastfeeding, EFSA); a backup reminder while protection is on; GPL-3.0 licence; every delete can be undone right away; error messages in plain words; under 18 no calories go to Health Connect either; no cycle reminders in pregnancy; easier-to-read colours; protection against damaged or crafted backups; licences and sources in About.
 
