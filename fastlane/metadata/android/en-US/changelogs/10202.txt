@@ -1,1 +1,0 @@
-New icon; GPL-3.0 licence; Hide calories mode; pregnancy and breastfeeding set separately; backup reminder; Undo for every delete; error messages in plain words; protection against damaged backups; easier-to-read colours.
