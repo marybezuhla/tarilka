@@ -8,7 +8,8 @@ object FoodSeeder {
     const val VERSION = 9
 
     suspend fun seedIfNeeded(context: Context, db: AppDatabase, prefs: Prefs) {
-        if (prefs.seedVersion >= VERSION) return
+        // Also when the database is new but the setting survived (e.g. "Start fresh"): never an empty food list.
+        if (prefs.seedVersion >= VERSION && db.foods().codes().isNotEmpty()) return
         val parsed = parse(context.assets.open("foods.csv").bufferedReader(Charsets.UTF_8).readLines())
         val existing = db.foods().codes().associateBy { it.code }
         db.foods().upsertAll(parsed.map { f ->

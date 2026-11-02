@@ -7,10 +7,14 @@ import org.json.JSONObject
 data class RecipeItem(val food: Food, val grams: Double)
 
 object Recipe {
+    /** Cooking changes weight by water: from about a fifth (drying) to three times (grains, pasta). */
+    fun cookedWeightOk(raw: Double, cooked: Double) = cooked > 0 && raw > 0 && cooked in raw * 0.2..raw * 3.0
+
     /** Nutrients per 100 g of the finished dish. [cookedWeight] accounts for water lost or added while cooking. */
     fun per100(items: List<RecipeItem>, cookedWeight: Double?): Totals {
         val raw = items.sumOf { it.grams }
-        val weight = cookedWeight?.takeIf { it > 0 } ?: raw
+        // A cooked weight far from the ingredients' (a typo like "1" for 1 kg) would give absurd values: ignored.
+        val weight = cookedWeight?.takeIf { cookedWeightOk(raw, it) } ?: raw
         if (weight <= 0) return Totals()
         fun sum(f: (Food) -> Double) = items.sumOf { f(it.food) * it.grams / 100 } / weight * 100
         return Totals(sum { it.kcal }, sum { it.protein }, sum { it.fat }, sum { it.carbs }, sum { it.fiber })

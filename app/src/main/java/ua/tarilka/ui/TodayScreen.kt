@@ -597,6 +597,9 @@ private fun MealSection(
                     style = MaterialTheme.typography.labelLarge.merge(Numbers),
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
+            }
+            // The menu also under 18, when the calories above are hidden.
+            if (entries.isNotEmpty()) {
                 Box {
                     IconButton(onClick = { menu = true }, modifier = Modifier.size(32.dp)) {
                         Icon(Icons.Filled.MoreVert, stringResource(R.string.more))

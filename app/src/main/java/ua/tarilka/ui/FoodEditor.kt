@@ -67,7 +67,9 @@ class FoodDraft(val initial: Food?) {
     /** Calories as typed, or from protein, fat and carbs (4/9/4) when left empty or hidden. */
     private val kcalValue: Double? get() = kcal.toNumber()?.takeIf { !autoKcal } ?: listOf(protein, fat, carbs).map { it.toNumber() }
         .takeIf { l -> l.any { it != null } }?.let { l -> 4 * (l[0] ?: 0.0) + 9 * (l[1] ?: 0.0) + 4 * (l[2] ?: 0.0) }
-    val valid: Boolean get() = name && if (isRecipe) items.isNotEmpty() else kcalValue?.let { it <= 900 } == true
+    /** Empty, or a believable weight for the finished dish. */
+    val cookedOk: Boolean get() = cooked.isBlank() || cooked.toNumber()?.let { ua.tarilka.data.Recipe.cookedWeightOk(items.sumOf { it.grams }, it) } == true
+    val valid: Boolean get() = name && if (isRecipe) items.isNotEmpty() && cookedOk else kcalValue?.let { it <= 900 } == true
 
     fun build(): Food {
         val uk = nameUk.trim().ifEmpty { nameEn.trim() }
@@ -160,7 +162,8 @@ fun EditFoodScreen(
                 item { Field(stringResource(R.string.fiber), draft.fiber, { draft.fiber = it }) }
             } else {
                 item { Text(stringResource(R.string.recipe_hint), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant) }
-                itemsIndexed(draft.items) { i, it -> IngredientRow(it, onGrams = { g -> draft.items.indexOf(it).takeIf { n -> n >= 0 }?.let { n -> draft.items[n] = it.copy(grams = g) } }, onRemove = { draft.items.remove(it) }) }
+                // By position, not by value: two identical rows must not edit each other.
+                itemsIndexed(draft.items) { i, it -> IngredientRow(it, onGrams = { g -> if (i < draft.items.size) draft.items[i] = draft.items[i].copy(grams = g) }, onRemove = { if (i < draft.items.size) draft.items.removeAt(i) }) }
                 item {
                     FilledTonalButton(onClick = onAddIngredient) {
                         Icon(Icons.Filled.Add, null)
@@ -170,6 +173,7 @@ fun EditFoodScreen(
                 }
                 item {
                     Field(stringResource(R.string.cooked_weight), draft.cooked, { draft.cooked = it })
+                    if (!draft.cookedOk) Text(stringResource(R.string.cooked_weight_bad), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error)
                     Text(
                         stringResource(R.string.cooked_weight_hint, draft.items.sumOf { it.grams }.f0()),
                         style = MaterialTheme.typography.bodySmall,

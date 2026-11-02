@@ -242,8 +242,9 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
     ) { on, periods, days, t, (typical, teen) ->
         if (!on) null else ua.tarilka.data.CycleInfo.of(periods, days, t.toEpochDay(), typical.takeIf { it > 0 }, teen = teen)
     }.onEach { info ->
-        // Reminders read the expected date from preferences (they run without the app open).
-        val next = info?.nextStart ?: -1
+        // Reminders read the expected date from preferences (they run without the app open, often while the
+        // protected profile is locked). In pregnancy no date is stored, so no cycle reminder can fire.
+        val next = if (prefs.profile.value.pregnant) -1 else info?.nextStart ?: -1
         if (next != prefs.cycleNext) {
             prefs.cycleNext = next
             val app = getApplication<Application>()
@@ -255,7 +256,7 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
     }.stateIn(viewModelScope, SharingStarted.Eagerly, null)
 
     /** The expected start for the cycle reminders, stored only while one of them is on (see Prefs.cycleNext). */
-    fun syncCycleNext() { prefs.cycleNext = cycle.value?.nextStart ?: -1 }
+    fun syncCycleNext() { prefs.cycleNext = if (prefs.profile.value.pregnant) -1 else cycle.value?.nextStart ?: -1 }
 
     val periodDays: StateFlow<List<ua.tarilka.data.PeriodDay>> = db.cycle().days()
         .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
@@ -615,7 +616,9 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
 
     private fun offerUndo(count: Int, restore: suspend () -> Unit) {
         val earlier = undoAction
-        undoAction = if (earlier == null) restore else ({ earlier(); restore() })
+        // Each step on its own: a double-tapped delete must not make Undo crash on a row that is already back.
+        val safe: suspend () -> Unit = { runCatching { restore() } }
+        undoAction = if (earlier == null) safe else ({ earlier(); safe() })
         undoEvent.value = ++undoSeq to count + (if (earlier != null) undoEvent.value?.second ?: 0 else 0)
     }
 
@@ -1181,8 +1184,11 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
         db.weights().delete(w)
         sync { health.deleteWeight(w) }
         offerUndo(1) {
-            db.weights().upsert(w)
-            sync { health.writeWeight(w) }
+            // A weight saved for that day in the meantime is newer: it stays.
+            if (db.weights().allOnce().none { it.day == w.day }) {
+                db.weights().upsert(w)
+                sync { health.writeWeight(w) }
+            }
         }
     }
 
@@ -1191,6 +1197,7 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
         prefs.saveProfile(p)
         // Pregnancy switches the cycle reminders off and on.
         if (p.pregnant != wasPregnant) runCatching {
+            syncCycleNext()
             ua.tarilka.notify.Reminders.schedule(getApplication(), only = ua.tarilka.notify.Reminders.CYCLE_BEFORE)
             ua.tarilka.notify.Reminders.schedule(getApplication(), only = ua.tarilka.notify.Reminders.CYCLE_LATE)
         }

@@ -79,7 +79,7 @@ fun SettingsScreen(vm: MainViewModel, ai: AiViewModel, padding: PaddingValues) {
                     Text(stringResource(R.string.custom_raised), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.tertiary)
                 }
                 targets.limit?.let { l ->
-                    Text(stringResource(limitText(l)), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(stringResource(limitText(l, teen = !targets.showKcal)), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
                 Spacer(Modifier.height(6.dp))
                 Text(stringResource(R.string.water_target, (targets.waterMl / 1000).f1()), style = MaterialTheme.typography.bodyMedium)
@@ -177,7 +177,7 @@ private fun ProfileSection(profile: Profile, onSave: (Profile) -> Unit) {
                 FilterChip(shown == Goal.MAINTAIN, { goal = Goal.MAINTAIN }, { Text(stringResource(R.string.goal_maintain)) })
                 FilterChip(goal == Goal.GAIN, { goal = Goal.GAIN }, { Text(stringResource(R.string.goal_gain)) })
             }
-            limit?.let { Text(stringResource(limitText(it)), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant) }
+            limit?.let { Text(stringResource(limitText(it, teen = (ageN ?: 18) < 18)), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant) }
             // Under 18 there is no calorie target, so no own one either.
             if (ageN == null || ageN >= 18) {
                 Field(stringResource(R.string.custom_kcal), custom, { custom = it })
@@ -751,8 +751,9 @@ private fun MissingSection(vm: MainViewModel) {
     }
 }
 
-fun limitText(l: ua.tarilka.data.Limit): Int = when (l) {
-    ua.tarilka.data.Limit.PREGNANT -> R.string.limit_pregnant
+/** Under 18 the pregnancy text has no calorie numbers either. */
+fun limitText(l: ua.tarilka.data.Limit, teen: Boolean = false): Int = when (l) {
+    ua.tarilka.data.Limit.PREGNANT -> if (teen) R.string.limit_pregnant_teen else R.string.limit_pregnant
     ua.tarilka.data.Limit.TEEN -> R.string.limit_teen
     ua.tarilka.data.Limit.UNDERWEIGHT -> R.string.limit_underweight
 }

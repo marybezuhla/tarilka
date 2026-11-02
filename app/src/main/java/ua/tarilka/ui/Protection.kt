@@ -252,6 +252,7 @@ object Protection {
         app.scope.launch {
             app.closeDb().join()
             activity.deleteDatabase(AppDatabase.NAME)
+            app.prefs.seedVersion = 0 // the built-in foods went with the database
             KeyVault(app).reset()
             app.prefs.appLock = false
             app.prefs.clearCache()

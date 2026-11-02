@@ -351,7 +351,8 @@ class AiViewModel(app: Application) : AndroidViewModel(app) {
             // Under 18 the app never shows a calorie number; the prompt says so, and the answer is checked too.
             fun ok(t: String) = ua.tarilka.data.Lang.isClean(t, ukrainian) && !(noKcal && ua.tarilka.data.Lang.mentionsCalories(t))
             if (!ok(text)) text = gemma.advice(summary, ukrainian, maxTokens)
-            if (ok(text)) text else null
+            // Two unusable answers: say so, rather than silently showing the button again.
+            if (ok(text)) text else "⚠ " + getApplication<Application>().getString(ua.tarilka.R.string.ai_answer_unusable)
         }.getOrElse { if (it is kotlinx.coroutines.CancellationException) throw it else "⚠ " + userText(it, ua.tarilka.R.string.ai_summary_failed) }
         // The model may finish after the request was replaced: its answer belongs to another day or period.
         kotlinx.coroutines.currentCoroutineContext().ensureActive()
