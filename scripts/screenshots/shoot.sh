@@ -30,7 +30,14 @@ run() {
   OUT="$ROOT/fastlane/metadata/android/$LANG_DIR/images/phoneScreenshots"
   rm -rf "$OUT"; mkdir -p "$OUT"
   adb shell am force-stop $PKG
-  adb shell am start -W -n $PKG/.DemoActivity --es lang "$LOCALE" >/dev/null
+  # The whole phone in this language, as people have it (a restart of the Android framework).
+  adb root >/dev/null; sleep 3
+  adb shell "setprop persist.sys.locale $LOCALE; setprop ctl.restart zygote"
+  sleep 10; adb wait-for-device
+  for i in $(seq 1 60); do [ "$(adb shell getprop sys.boot_completed | tr -d '\r')" = 1 ] && break; sleep 3; done
+  sleep 15
+  demo enter; demo clock -e hhmm 0941; demo notifications -e visible false
+  adb shell am start -W -n $PKG/.DemoActivity >/dev/null
   sleep 6
   # Opened again, so the chosen language is surely applied everywhere.
   adb shell am force-stop $PKG; adb shell am start -W -n $PKG/.ui.MainActivity >/dev/null; sleep 6
@@ -42,5 +49,5 @@ run() {
   tap "$FOODS"; shot 5_foods
 }
 
-run uk uk Вага Продукти "$(grep -o 'name="history_title">[^<]*' "$ROOT/app/src/main/res/values-uk/strings.xml" | cut -d'>' -f2)"
-run en en-US Weight Foods "$(grep -o 'name="history_title">[^<]*' "$ROOT/app/src/main/res/values/strings.xml" | cut -d'>' -f2)"
+run uk-UA uk Вага Продукти "$(grep -o 'name="history_title">[^<]*' "$ROOT/app/src/main/res/values-uk/strings.xml" | cut -d'>' -f2)"
+run en-US en-US Weight Foods "$(grep -o 'name="history_title">[^<]*' "$ROOT/app/src/main/res/values/strings.xml" | cut -d'>' -f2)"
