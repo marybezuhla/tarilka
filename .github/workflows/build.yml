@@ -35,6 +35,13 @@ jobs:
             echo "::error::v$V is already released; raise version.txt first."; exit 1
           fi
 
+      - name: Check the Gradle version and checksum that F-Droid builds with
+        run: |
+          P=gradle/wrapper/gradle-wrapper.properties
+          grep -q 'gradle-8.14.3-bin.zip' "$P" || { echo "::error::$P must name the same Gradle as this workflow (8.14.3)"; exit 1; }
+          WANT="$(curl -fsSL https://services.gradle.org/distributions/gradle-8.14.3-bin.zip.sha256)"
+          grep -q "^distributionSha256Sum=$WANT$" "$P" || { echo "::error::$P checksum differs from Gradle's: $WANT"; exit 1; }
+
       - name: Check food database
         run: python3 scripts/check_foods.py
 
@@ -54,7 +61,8 @@ jobs:
           # Every library is checked against gradle/verification-metadata.xml (refreshed only by deps.yml);
           # the build fails on any changed library, and without the file.
           test -f gradle/verification-metadata.xml || { echo "gradle/verification-metadata.xml is missing" | tee build.log; exit 1; }
-          gradle --no-daemon testReleaseUnitTest assembleRelease 2>&1 | tee build.log
+          # "full" is the GitHub build (with the optional AI); "fdroid" is built too, so F-Droid's build is known to work.
+          gradle --no-daemon testFullReleaseUnitTest assembleFullRelease assembleFdroidRelease 2>&1 | tee build.log
 
       - name: Check database updates (migrations from version 1 against Room's schema)
         run: |
@@ -63,7 +71,17 @@ jobs:
 
       - name: Check permissions (no internet, only what is expected)
         shell: bash
-        run: bash .github/check-permissions.sh app/build/outputs/apk/release/app-release-unsigned.apk
+        run: |
+          bash .github/check-permissions.sh app/build/outputs/apk/full/release/app-full-release-unsigned.apk
+          bash .github/check-permissions.sh app/build/outputs/apk/fdroid/release/app-fdroid-release-unsigned.apk
+
+      - name: Check the F-Droid build has no AI runtime (no prebuilt AI libraries)
+        shell: bash
+        run: |
+          if unzip -l app/build/outputs/apk/fdroid/release/app-fdroid-release-unsigned.apk | grep -i -E "litert|tflite"; then
+            echo "::error::The fdroid build contains the AI runtime"; exit 1
+          fi
+          ls -l app/build/outputs/apk/*/release/*.apk
 
       - name: Prepare build log
         if: always()
@@ -89,7 +107,7 @@ jobs:
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: tarilka-unsigned
-          path: app/build/outputs/apk/release/app-release-unsigned.apk
+          path: app/build/outputs/apk/full/release/app-full-release-unsigned.apk
           retention-days: 14
 
   # Signs. Only for main, only in the "release" environment (needs the owner's approval), and with
@@ -139,7 +157,7 @@ jobs:
       - name: Check permissions again
         if: steps.secrets.outputs.ready == 'true'
         shell: bash
-        run: bash .github/check-permissions.sh unsigned/app-release-unsigned.apk
+        run: bash .github/check-permissions.sh unsigned/app-full-release-unsigned.apk
 
       - name: Sign
         if: steps.secrets.outputs.ready == 'true'
@@ -157,7 +175,7 @@ jobs:
           openssl enc -d -aes-256-cbc -pbkdf2 -iter 600000 -in "$RUNNER_TEMP/k.enc" -out "$RUNNER_TEMP/tarilka.jks" -pass file:"$RUNNER_TEMP/p"
           rm "$RUNNER_TEMP/p" "$RUNNER_TEMP/k.enc"
           mkdir -p out
-          "$BT/zipalign" -P 16 -f 4 unsigned/app-release-unsigned.apk "$RUNNER_TEMP/aligned.apk"
+          "$BT/zipalign" -P 16 -f 4 unsigned/app-full-release-unsigned.apk "$RUNNER_TEMP/aligned.apk"
           OUT="out/tarilka-$(tr -d '[:space:]' < version.txt).apk"
           "$BT/apksigner" sign --ks "$RUNNER_TEMP/tarilka.jks" --ks-key-alias tarilka \
             --ks-pass env:STORE --key-pass env:STORE --out "$OUT" "$RUNNER_TEMP/aligned.apk"

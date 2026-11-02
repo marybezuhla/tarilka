@@ -33,7 +33,8 @@ class ModelStore(private val context: Context) {
     private fun models(d: File?): List<File> =
         d?.listFiles { f -> f.name.endsWith(".litertlm") && f.length() > MIN_SIZE }?.toList() ?: emptyList()
 
-    fun modelFile(): File? = models(dir).maxByOrNull { it.lastModified() }
+    /** None in a build without the AI runtime (F-Droid), so the AI is never offered there. */
+    fun modelFile(): File? = if (!AiRuntime.AVAILABLE) null else models(dir).maxByOrNull { it.lastModified() }
 
     fun state(): State {
         val f = modelFile() ?: return State.Missing

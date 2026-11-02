@@ -90,7 +90,7 @@ fun SettingsScreen(vm: MainViewModel, ai: AiViewModel, padding: PaddingValues) {
         item { ActivitySection(vm) }
         item { SelfSection(vm) }
         item { RemindersSection(vm) }
-        item { ModelSection(ai) }
+        if (ua.tarilka.ai.AiRuntime.AVAILABLE) item { ModelSection(ai) }
         item { MissingSection(vm) }
         item { DataSection(vm) }
         item { ProtectionSection() }

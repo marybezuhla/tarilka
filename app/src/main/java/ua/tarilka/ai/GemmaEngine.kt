@@ -1,15 +1,6 @@
 package ua.tarilka.ai
 
 import android.content.Context
-import com.google.ai.edge.litertlm.Backend
-import com.google.ai.edge.litertlm.Content
-import com.google.ai.edge.litertlm.Contents
-import com.google.ai.edge.litertlm.ConversationConfig
-import com.google.ai.edge.litertlm.Engine
-import com.google.ai.edge.litertlm.EngineConfig
-import com.google.ai.edge.litertlm.ResponseFormat
-import com.google.ai.edge.litertlm.SamplerConfig
-import com.google.ai.edge.litertlm.ThinkingConfig
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -37,7 +28,7 @@ data class PhotoResult(
     val analyzeSec: Int,
 )
 
-/** Runs Gemma 4 fully on the phone via LiteRT-LM. Nothing leaves the device. */
+/** Runs Gemma 4 fully on the phone (the runtime is in [AiRuntime]). Nothing leaves the device. */
 class GemmaEngine(
     private val context: Context,
     private val models: ModelStore,
@@ -53,7 +44,7 @@ class GemmaEngine(
         }
     }
 
-    private var engine: Engine? = null
+    private var engine: AiSession? = null
     private var loadedPath: String? = null
 
     /** "GPU" or "CPU": which processor the model ended up on. */
@@ -64,7 +55,7 @@ class GemmaEngine(
     private val mutex = Mutex()
 
     /** Must be called with [mutex] held. */
-    private fun engineLocked(): Engine {
+    private fun engineLocked(): AiSession {
         val path = models.modelFile()?.absolutePath ?: error("Model not installed")
         engine?.takeIf { loadedPath == path }?.let { return it }
         engine?.close()
@@ -76,22 +67,12 @@ class GemmaEngine(
         return created
     }
 
-    private fun create(path: String, gpu: Boolean): Engine {
-        val b = if (gpu) Backend.GPU() else Backend.CPU()
-        val config = EngineConfig(
-            modelPath = path,
-            backend = b,
-            visionBackend = if (gpu) Backend.GPU() else Backend.CPU(),
-            maxNumTokens = 8192,
-            cacheDir = context.cacheDir.absolutePath,
-        )
-        return Engine(config).also { it.initialize() }
-    }
+    private fun create(path: String, gpu: Boolean): AiSession = AiRuntime.open(context, path, gpu)
 
     /** Time the last call spent loading the model, ms. */
     private var lastLoadMs = 0L
 
-    private suspend fun <T> withEngine(block: (Engine) -> T): T {
+    private suspend fun <T> withEngine(block: (AiSession) -> T): T {
         idleJob?.cancel()
         try {
             return mutex.withLock {
@@ -142,38 +123,15 @@ class GemmaEngine(
         return parseFoods(raw)
     }
 
-    private fun ask(e: Engine, image: File?, prompt: String, constrained: Boolean): String =
-        e.createConversation(
-            ConversationConfig(
-                systemInstruction = Contents.of(SYSTEM_PHOTO),
-                samplerConfig = SamplerConfig(topK = 20, topP = 0.9, temperature = 0.2),
-                // No hidden "thinking": it would use up the output before the list is written.
-                thinkingConfig = ThinkingConfig(enableThinking = false),
-                maxOutputToken = 512,
-                enableResponseFormat = constrained,
-            ),
-        ).use { conv ->
-            val contents = if (image != null) Contents.of(Content.ImageFile(image.absolutePath), Content.Text(prompt)) else Contents.of(Content.Text(prompt))
-            if (constrained) {
-                conv.sendMessage(contents, responseFormat = ResponseFormat.json(SCHEMA)).toString()
-            } else {
-                conv.sendMessage(contents).toString()
-            }
-        }
+    private fun ask(e: AiSession, image: File?, prompt: String, constrained: Boolean): String =
+        e.ask(SYSTEM_PHOTO, prompt, image, topK = 20, topP = 0.9, temperature = 0.2, maxTokens = 512, jsonSchema = if (constrained) SCHEMA else null)
 
     /** Loads the model in the background so the first photo doesn't wait for it. */
     suspend fun warmUp() = runCatching { withEngine { } }
 
     /** Short, friendly advice based on the day's numbers. */
     suspend fun advice(summary: String, ukrainian: Boolean, maxTokens: Int = 400): String = withEngine { e ->
-        e.createConversation(
-            ConversationConfig(
-                systemInstruction = Contents.of(if (ukrainian) SYSTEM_ADVICE_UK else SYSTEM_ADVICE_EN),
-                samplerConfig = SamplerConfig(topK = 40, topP = 0.95, temperature = 0.6),
-                thinkingConfig = ThinkingConfig(enableThinking = false),
-                maxOutputToken = maxTokens,
-            ),
-        ).use { conv -> conv.sendMessage(summary).toString().trim() }
+        e.ask(if (ukrainian) SYSTEM_ADVICE_UK else SYSTEM_ADVICE_EN, summary, null, topK = 40, topP = 0.95, temperature = 0.6, maxTokens = maxTokens).trim()
     }
 
     companion object {
