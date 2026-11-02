@@ -529,6 +529,7 @@
     <string name="breastfeeding">Breastfeeding</string>
     <string name="limit_pregnant">During pregnancy and breastfeeding the app does not offer weight loss or a calorie deficit. More is added to the target, as EFSA advises: about 300 kcal in pregnancy (from +70 early on to +500 late in pregnancy) and 500 kcal while breastfeeding. In pregnancy weight gradually goes up, and that is normal. Your doctor can tell you how much to eat and how your weight should change.</string>
     <string name="limit_pregnant_teen">During pregnancy and breastfeeding the app does not offer weight loss, and under 18 it shows no calories. In pregnancy weight gradually goes up, and that is normal. Please see your doctor or midwife: they will tell you how to eat for you and the baby.</string>
+    <string name="limit_pregnant_nokcal">During pregnancy and breastfeeding the app does not offer weight loss, and a little more food is added to your targets, as EFSA advises. In pregnancy weight gradually goes up, and that is normal. Your doctor can tell you how to eat and how your weight should change.</string>
     <string name="limit_teen">Under 18 the app shows no calories and does not offer weight loss: the body is still growing, and counting calories at this age can do harm. Instead of calories you see protein, fibre, fluids and habits. If your weight worries you, including when it is high, see a paediatrician or family doctor: programmes for the whole family help most. What works at home: regular meals, more vegetables and fruit, water instead of sugary drinks, daily movement, enough sleep and less screen time.</string>
     <string name="limit_underweight">BMI is under 18.5, so weight loss is not offered. If your weight is dropping on its own, or thoughts about food and weight get in the way of life, it is worth talking to a doctor.</string>
     <string name="custom_kcal_hint">Not below the safety floor: if you enter less, the app raises it to the floor.</string>
@@ -732,15 +733,17 @@
     <string name="src_fish">EFSA, NHS</string>
     <string name="src_nuts">EAT-Lancet</string>
     <string name="waist_not_rated">In pregnancy, while breastfeeding and under 18 we do not rate waist size: the adult thresholds do not apply, and the body is changing, which is normal.</string>
-    <string name="bmi_pregnant">BMI %1$s. In pregnancy and while breastfeeding we do not rate BMI: the body is changing, and that is normal.</string>
+    <string name="bmi_pregnant">BMI %1$s. In pregnancy we do not rate BMI: the body is changing, and that is normal.</string>
     <string name="audit_pregnant">In pregnancy, while breastfeeding and under 18, the safest choice is no alcohol at all. If stopping is hard, tell your doctor: it is common, and help is available.</string>
     <string name="week_under">If everything is logged, this week you ate clearly less on average than your body uses even at rest. Long-term undereating takes energy, muscle and sleep, and often leads to overeating. If this comes from worries about weight or food, talk to a doctor or a psychologist: help works.</string>
     <string name="targets_text_teen">Protein %1$s g · fibre %2$s g a day. Under 18 we do not show a calorie target: needs differ a lot while the body is growing. Go by hunger and fullness, regular meals and a variety of foods.</string>
+    <string name="targets_text_hidden">Protein %1$s g · fibre %2$s g a day. Calories are hidden: go by hunger and fullness, regular meals and a variety of foods.</string>
     <string name="reminders_cycle_title">Cycle reminders</string>
     <string name="week_avg_protein">Average: protein %1$s of %2$s g</string>
     <string name="ai_no_space">Not enough free space on the phone for the model.</string>
     <string name="ai_wrong_file">This is not the right model file, or it is damaged. Download %1$s with the Download model button and choose it again.</string>
     <string name="tip_under_teen">Very little food is logged today. If that is real, it is too little for a growing body: regular meals are needed. Check whether something is missing.</string>
+    <string name="tip_under_hidden">Very little food is logged today. If that is real, it is too little to feel well: regular meals help. Check whether something is missing.</string>
     <string name="ring_protein">of %1$s g protein</string>
     <string name="pdf_bars_hint">Each bar is the daily average of its stretch; the dashed line is the target.</string>
     <string name="no_camera">There is no camera app on this phone. You can choose a photo from the gallery.</string>

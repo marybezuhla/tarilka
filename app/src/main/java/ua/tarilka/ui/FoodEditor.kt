@@ -122,7 +122,8 @@ fun EditFoodScreen(
 
     // Under 18 no calorie field: the app works the number out from protein, fat and carbs.
     val showKcal = LocalShowKcal.current
-    draft.autoKcal = !showKcal
+    // Under 18 calories always come from the macros; with calories only hidden, a stored (label) value is kept.
+    draft.autoKcal = LocalTeen.current
     Scaffold(
         topBar = {
             TopAppBar(

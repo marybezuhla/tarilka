@@ -12,6 +12,8 @@
 
 **Нове в 1.2.0:** нова іконка; режим «Не показувати калорії»; окремо вагітність і годування груддю (+500 ккал за EFSA); нагадування про резервну копію, коли ввімкнено захист; ліцензія GPL-3.0; будь-яке видалення можна одразу «Повернути»; зрозумілі повідомлення про помилки; до 18 років калорії не йдуть і в Health Connect; у вагітність немає нагадувань про цикл; читабельніші кольори; захист від пошкоджених чи підроблених резервних копій; ліцензії й джерела в «Про застосунок».
 
+Якщо ви годуєте груддю й раніше вмикали «Вагітність або грудне вигодовування», перемкніть в Опціях → Профіль на «Годування груддю».
+
 Потрібен Android 12 або новіший; для ШІ — телефон від 6 ГБ оперативної памʼяті.
 
 📲 Завантажте файл .apk нижче й відкрийте його на телефоні. 🔄 Для оновлень — Obtainium (є в F-Droid): «Додати застосунок» → `github.com/Marybezu/tarilka`.
@@ -33,6 +35,8 @@
 - 🤖 **On-device AI (Gemma 4), optional:** recognises food on photos and writes summaries. Everything stays on the phone.
 
 **New in 1.2.0:** a new icon; a Hide calories mode; pregnancy and breastfeeding set separately (+500 kcal while breastfeeding, EFSA); a backup reminder while protection is on; GPL-3.0 licence; every delete can be undone right away; error messages in plain words; under 18 no calories go to Health Connect either; no cycle reminders in pregnancy; easier-to-read colours; protection against damaged or crafted backups; licences and sources in About.
+
+If you are breastfeeding and had "Pregnant or breastfeeding" on before, switch to "Breastfeeding" in Options → Profile.
 
 Requires Android 12 or newer; the AI needs a phone with 6 GB of RAM or more.
 

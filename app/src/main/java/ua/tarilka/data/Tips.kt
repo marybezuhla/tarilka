@@ -39,13 +39,13 @@ object Tips {
             val left = (targets.kcal - totals.kcal).roundToInt()
             when {
                 // No "over the target" when eating less is not advised (pregnancy, under 18, low BMI).
-                totals.kcal > targets.kcal * 1.1 && targets.limit == null ->
+                totals.kcal > targets.kcal * 1.1 && targets.limit == null && targets.showKcal ->
                     tips += Tip(R.string.tip_over, listOf(-left), Tip.Kind.WARN, Advice.sources(dayEntries, { it.kcal }), R.string.unit_kcal)
                 !dayFinished && left > 0 && targets.showKcal ->
                     tips += Tip(R.string.tip_remaining, listOf(left))
                 dayFinished && totals.kcal < targets.kcal * 0.7 ->
                     tips += if (targets.showKcal) Tip(R.string.tip_under, listOf(totals.kcal.roundToInt()), Tip.Kind.WARN)
-                    else Tip(R.string.tip_under_teen, kind = Tip.Kind.WARN)
+                    else Tip(if (targets.teen) R.string.tip_under_teen else R.string.tip_under_hidden, kind = Tip.Kind.WARN)
                 abs(left) <= targets.kcal * 0.1 && targets.showKcal ->
                     tips += Tip(R.string.tip_on_target, kind = Tip.Kind.GOOD)
             }

@@ -147,6 +147,7 @@ object Backup {
             })
             .put("settings", JSONObject()
                 .put("cycleTypical", prefs.cycleTypical.value)
+                .put("hideKcal", prefs.hideKcal.value)
                 .put("stepLog", JSONObject(prefs.loggedSteps().mapKeys { it.key.toString() })))
             .put("waist", JSONArray().apply {
                 db.waist().allOnce().forEach { put(JSONObject().put("day", LocalDate.ofEpochDay(it.day).toString()).put("cm", it.cm)) }
@@ -320,6 +321,8 @@ object Backup {
         prefs.clearCycle()
         o.optJSONObject("settings")?.let { st ->
             st.optInt("cycleTypical", -1).let { prefs.setCycleTypical(if (it in 15..60) it else -1) }
+            // Only ever turned on by a restore: someone who hid calories must not see them again on a new phone.
+            if (st.optBoolean("hideKcal")) prefs.setHideKcal(true)
             st.optJSONObject("stepLog")?.let { log ->
                 // One write for all days (the log keeps every year); days and counts in a sane range only.
                 val max = java.time.LocalDate.now().toEpochDay()

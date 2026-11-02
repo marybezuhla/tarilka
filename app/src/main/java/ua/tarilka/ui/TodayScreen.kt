@@ -781,7 +781,7 @@ private fun adviceSummary(
                 "carbs ${totals.carbs.f0()} g (target ${targets.carbs.f0()}), fiber ${totals.fiber.f0()} g (target ${targets.fiber.f0()})."
         } else {
             "Totals: protein ${totals.protein.f0()} g (target ${targets.protein.f0()}), fiber ${totals.fiber.f0()} g " +
-                "(target ${targets.fiber.f0()}). The person is under 18: never mention calories or calorie targets."
+                "(target ${targets.fiber.f0()})." + if (targets.teen) " The person is under 18: never mention calories or calorie targets." else " Never mention calories or calorie numbers."
         },
     )
     appendLine("Important: " + targets.aiSafety())

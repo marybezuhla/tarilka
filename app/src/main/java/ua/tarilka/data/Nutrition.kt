@@ -149,4 +149,5 @@ fun Targets.aiSafety(): String = when (limit) {
     Limit.UNDERWEIGHT -> "BMI is under 18.5: never suggest eating less or losing weight; gently suggest a doctor if weight is falling. "
     null -> ""
 } + (if (teen && limit != Limit.TEEN) "The person is under 18: never mention calories or calorie targets; the safest is no alcohol at all. " else "") +
+    (if (hideKcal && !teen) "Never mention calories or calorie numbers. " else "") +
     "Never comment on body shape or size, never suggest skipping meals or burning off food with exercise."
