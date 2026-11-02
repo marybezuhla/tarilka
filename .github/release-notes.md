@@ -1,4 +1,4 @@
-**Тарілка 1.1.1** — приватний офлайн-трекер харчування для Android: без інтернету, акаунтів і реклами. Українська та англійська.
+**Тарілка 1.2.0** — приватний офлайн-трекер харчування для Android: без інтернету, акаунтів і реклами. Українська та англійська.
 
 - 🔒 **Приватність.** Дозволу на інтернет немає, дані лише на телефоні, хмарну копію вимкнено. За бажанням щоденник і профіль шифруються й відкриваються відбитком або PIN-кодом телефону; експорт і видалення ще раз просять підтвердження; можна заборонити знімки екрана. Резервна копія вручну, якщо з паролем, то шифрування AES-256.
 - 🔬 **711 продуктів офлайн.** Дані USDA, етикетки українських продуктів і ~140 страв за рецептами: борщ, вареники, сочник, фастфуд, суші, торти тощо. Біля кожного продукту видно джерело.
@@ -10,13 +10,17 @@
 - 🌙 **За бажанням:** сон, «Чому я їм», тренування, кишківник, цикл, AUDIT-C (щодо алкоголю), нагадування.
 - 🤖 **Локальний ШІ (Gemma 4), за бажанням:** розпізнає їжу на фото й пише підсумки. Усе на телефоні.
 
+**Нове в 1.2.0:** нова іконка; ліцензія GPL-3.0; будь-яке видалення можна одразу «Повернути»; зрозумілі повідомлення про помилки; до 18 років калорії не йдуть і в Health Connect; у вагітність немає нагадувань про цикл; читабельніші кольори; захист від пошкоджених чи підроблених резервних копій; ліцензії й джерела в «Про застосунок».
+
+Потрібен Android 12 або новіший; для ШІ — телефон від 6 ГБ оперативної памʼяті.
+
 📲 Завантажте файл .apk нижче й відкрийте його на телефоні. 🔄 Для оновлень — Obtainium (є в F-Droid): «Додати застосунок» → `github.com/Marybezu/tarilka`.
 
 Відгук або помилка: Опції → Про застосунок → «Написати відгук», або Issues.
 
 ---
 
-**Tarilka 1.1.1** — a private, offline food tracker for Android: no internet, no accounts, no ads. Ukrainian and English.
+**Tarilka 1.2.0** — a private, offline food tracker for Android: no internet, no accounts, no ads. Ukrainian and English.
 
 - 🔒 **Privacy.** No internet permission, data stays on the phone, cloud backup is off. Optionally the diary and profile are encrypted and open with fingerprint or the phone PIN; export and deleting ask again; screenshots can be blocked. Backups by hand; with a password they are AES-256 encrypted.
 - 🔬 **711 foods offline.** USDA data, Ukrainian product labels and ~140 dishes calculated from recipes: borscht, varenyky, sochnyk, fast food, sushi, cakes and more. Every food shows its source.
@@ -27,6 +31,10 @@
 - 💧 **Fluids, steps, weight, waist.** Soups and drinks count as fluid; steps from Health Connect or the phone's sensor.
 - 🌙 **Optional:** sleep, Why I eat, workouts, bowel, cycle, AUDIT-C (about alcohol), reminders.
 - 🤖 **On-device AI (Gemma 4), optional:** recognises food on photos and writes summaries. Everything stays on the phone.
+
+**New in 1.2.0:** a new icon; GPL-3.0 licence; every delete can be undone right away; error messages in plain words; under 18 no calories go to Health Connect either; no cycle reminders in pregnancy; easier-to-read colours; protection against damaged or crafted backups; licences and sources in About.
+
+Requires Android 12 or newer; the AI needs a phone with 6 GB of RAM or more.
 
 📲 Download the .apk below and open it on your phone. 🔄 For updates, use Obtainium (on F-Droid): "Add App" → `github.com/Marybezu/tarilka`.
 

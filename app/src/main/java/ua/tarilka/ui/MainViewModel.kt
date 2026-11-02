@@ -1294,7 +1294,12 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
         val text = encryptedImport.value ?: return@launch
         val plain = runCatching {
             kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Default) { ua.tarilka.data.Backup.decrypt(text, password) }
-        }.getOrElse { wrongPassword.value = true; return@launch }
+        }.getOrElse {
+            // Only a failed integrity check means a wrong password; anything else (memory, a damaged file) is said plainly.
+            if (it is javax.crypto.AEADBadTagException) wrongPassword.value = true
+            else { encryptedImport.value = null; dataMessage.value = importError(it) }
+            return@launch
+        }
         encryptedImport.value = null
         wrongPassword.value = false
         // Decrypted, but maybe not a Tarilka backup at all.

@@ -29,10 +29,11 @@ object Backup {
         c.init(javax.crypto.Cipher.ENCRYPT_MODE, key(password, salt, ITERATIONS), javax.crypto.spec.GCMParameterSpec(128, iv))
         val data = c.doFinal(plain.toByteArray(Charsets.UTF_8))
         val b64 = java.util.Base64.getEncoder()
-        return JSONObject().put("format", ENCRYPTED).put("version", 1)
+        val head = JSONObject().put("format", ENCRYPTED).put("version", 1)
             .put("kdf", "PBKDF2WithHmacSHA256").put("iterations", ITERATIONS)
-            .put("salt", b64.encodeToString(salt)).put("iv", b64.encodeToString(iv))
-            .put("data", b64.encodeToString(data)).toString(1)
+            .put("salt", b64.encodeToString(salt)).put("iv", b64.encodeToString(iv)).toString()
+        // The long data goes last, so the format is always near the start (see isEncrypted). Base64 needs no escaping.
+        return head.dropLast(1) + ",\"data\":\"" + b64.encodeToString(data) + "\"}"
     }
 
     /** Problems with a backup file that people can act on; anything else is "damaged". */
@@ -40,7 +41,9 @@ object Backup {
         enum class Kind { NOT_BACKUP, NEWER, TOO_LARGE }
     }
 
-    fun isEncrypted(text: String): Boolean = runCatching { JSONObject(text).optString("format") == ENCRYPTED }.getOrDefault(false)
+    /** Looks only at the start of the file (the format comes first), so a large backup is not parsed twice. */
+    fun isEncrypted(text: String): Boolean =
+        text.take(400).contains("\"$ENCRYPTED\"") && runCatching { JSONObject(text).optString("format") == ENCRYPTED }.getOrDefault(false)
 
     /** Throws if the password is wrong (GCM checks integrity). */
     fun decrypt(text: String, password: String): String {
@@ -153,12 +156,13 @@ object Backup {
                     put(JSONObject().put("day", LocalDate.ofEpochDay(it.day).toString()).put("kg", it.kg).put("minutes", it.minutes ?: JSONObject.NULL))
                 }
             })
-        return root.toString(1)
+        return root.toString()
     }
 
     /** Checks the file and counts what is inside, without changing anything. */
-    fun peek(json: String): Summary {
-        val o = JSONObject(json)
+    fun peek(json: String): Summary = peek(JSONObject(json))
+
+    private fun peek(o: JSONObject): Summary {
         if (o.optString("format") != FORMAT) throw BackupError(BackupError.Kind.NOT_BACKUP)
         return Summary(
             o.optJSONArray("diary")?.length() ?: 0,
@@ -174,7 +178,7 @@ object Backup {
         if (o.optString("format") != FORMAT) throw BackupError(BackupError.Kind.NOT_BACKUP)
         // A newer file may hold data this version would silently drop.
         if (o.optInt("version", 1) > VERSION) throw BackupError(BackupError.Kind.NEWER)
-        val summary = peek(json)
+        val summary = peek(o)
         db.withTransaction {
             db.clearDiary()
             db.foods().deleteCustom()
@@ -183,18 +187,18 @@ object Backup {
             o.optJSONArray("customFoods")?.let { arr ->
                 for (i in 0 until arr.length()) {
                     val f = arr.getJSONObject(i)
-                    val uk = f.getString("nameUk")
-                    val en = f.getString("nameEn")
+                    val uk = f.text("nameUk", 1000)
+                    val en = f.text("nameEn", 1000)
                     val newId = db.foods().insert(
                         Food(
                             category = OwnKinds.clean(f.optString("category", "custom")), nameUk = uk, nameEn = en,
-                            kcal = f.amount("kcal"), protein = f.amount("protein"), fat = f.amount("fat"),
-                            carbs = f.amount("carbs"), fiber = f.amount("fiber", 0.0),
-                            portionG = if (f.isNull("portionG")) null else f.amount("portionG"),
+                            kcal = f.amount("kcal", 10_000.0), protein = f.amount("protein", 1000.0), fat = f.amount("fat", 1000.0),
+                            carbs = f.amount("carbs", 1000.0), fiber = f.amount("fiber", 1000.0, 0.0),
+                            portionG = if (f.isNull("portionG")) null else f.amount("portionG", 10_000.0),
                             portionUk = if (f.isNull("portionG")) null else "порція",
                             portionEn = if (f.isNull("portionG")) null else "serving",
-                            source = f.optString("source", "CUSTOM"), favorite = f.optBoolean("favorite"),
-                            recipe = if (f.isNull("recipe")) null else f.optString("recipe"),
+                            source = f.optString("source", "CUSTOM").take(16), favorite = f.optBoolean("favorite"),
+                            recipe = if (f.isNull("recipe")) null else f.text("recipe", 64_000),
                         ),
                     )
                     idMap[f.getLong("id")] = newId
@@ -226,10 +230,10 @@ object Backup {
                         else -> null
                     }
                     DiaryEntry(
-                        day = LocalDate.parse(e.getString("day")).toEpochDay(), meal = e.getInt("meal").coerceIn(0, 3),
-                        foodId = foodId, nameUk = e.getString("nameUk"), nameEn = e.getString("nameEn"),
-                        grams = e.amount("grams"), kcal = e.amount("kcal"), protein = e.amount("protein"),
-                        fat = e.amount("fat"), carbs = e.amount("carbs"), fiber = e.amount("fiber", 0.0),
+                        day = e.day("day"), meal = e.getInt("meal").coerceIn(0, 3),
+                        foodId = foodId, nameUk = e.text("nameUk", 1000), nameEn = e.text("nameEn", 1000),
+                        grams = e.amount("grams", 10_000.0), kcal = e.amount("kcal", 1_000_000.0), protein = e.amount("protein", 100_000.0),
+                        fat = e.amount("fat", 100_000.0), carbs = e.amount("carbs", 100_000.0), fiber = e.amount("fiber", 100_000.0, 0.0),
                         fromAi = e.optBoolean("fromAi"), createdAt = e.optLong("createdAt", System.currentTimeMillis()),
                         // Values out of range (an edited file, a newer version) are dropped, never shown.
                         reason = e.optInt("reason", -1).takeIf { it in Reasons.ALL },
@@ -241,22 +245,22 @@ object Backup {
             o.optJSONArray("fluids")?.let { arr ->
                 db.fluids().insertAll((0 until arr.length()).map { i ->
                     val e = arr.getJSONObject(i)
-                    val day = LocalDate.parse(e.getString("day"))
+                    val day = LocalDate.ofEpochDay(e.day("day"))
                     val noon = day.atTime(12, 0).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
-                    FluidEntry(day = day.toEpochDay(), ml = e.amount("ml"), createdAt = e.optLong("createdAt", noon).takeIf { it > 0 } ?: noon)
+                    FluidEntry(day = day.toEpochDay(), ml = e.amount("ml", 100_000.0), createdAt = e.optLong("createdAt", noon).takeIf { it > 0 } ?: noon)
                 })
             }
             o.optJSONArray("notes")?.let { arr ->
                 for (i in 0 until arr.length()) {
                     val e = arr.getJSONObject(i)
-                    db.notes().upsert(DayNote(LocalDate.parse(e.getString("day")).toEpochDay(), e.getString("text")))
+                    db.notes().upsert(DayNote(e.day("day"), e.text("text", 50_000)))
                 }
             }
             o.optJSONArray("sleep")?.let { arr ->
                 for (i in 0 until arr.length()) {
                     val e = arr.getJSONObject(i)
                     db.sleep().upsert(
-                        SleepEntry(LocalDate.parse(e.getString("day")).toEpochDay(), e.amount("hours"), e.optInt("quality", -1).takeIf { it in 0..2 }),
+                        SleepEntry(e.day("day"), e.amount("hours", 100.0), e.optInt("quality", -1).takeIf { it in 0..2 }),
                     )
                 }
             }
@@ -264,7 +268,7 @@ object Backup {
                 for (i in 0 until arr.length()) {
                     val e = arr.getJSONObject(i)
                     db.bowel().upsert(
-                        BowelEntry(LocalDate.parse(e.getString("day")).toEpochDay(), e.getInt("count").coerceIn(0, 3), e.optInt("form", -1).takeIf { it in 0..2 }),
+                        BowelEntry(e.day("day"), e.getInt("count").coerceIn(0, 3), e.optInt("form", -1).takeIf { it in 0..2 }),
                     )
                 }
             }
@@ -272,7 +276,7 @@ object Backup {
                 db.workouts().insertAll((0 until arr.length()).map { i ->
                     val e = arr.getJSONObject(i)
                     WorkoutEntry(
-                        day = LocalDate.parse(e.getString("day")).toEpochDay(),
+                        day = e.day("day"),
                         type = e.optInt("type", Workouts.TYPES.size - 1).coerceIn(0, Workouts.TYPES.size - 1),
                         minutes = e.optInt("minutes", 30).coerceIn(1, 600),
                         intensity = e.optInt("intensity", 1).coerceIn(0, 2),
@@ -284,7 +288,7 @@ object Backup {
                 for (i in 0 until arr.length()) {
                     val e = arr.getJSONObject(i)
                     db.cycle().upsert(
-                        PeriodEntry(LocalDate.parse(e.getString("start")).toEpochDay(), if (e.isNull("end")) null else LocalDate.parse(e.getString("end")).toEpochDay()),
+                        PeriodEntry(e.day("start"), if (e.isNull("end")) null else e.day("end")),
                     )
                 }
             }
@@ -292,7 +296,7 @@ object Backup {
                 for (i in 0 until arr.length()) {
                     val e = arr.getJSONObject(i)
                     db.cycle().upsertDay(
-                        PeriodDay(LocalDate.parse(e.getString("day")).toEpochDay(), e.optInt("flow", -1).takeIf { it in 0..2 }, e.optInt("pain", -1).takeIf { it in 0..2 }),
+                        PeriodDay(e.day("day"), e.optInt("flow", -1).takeIf { it in 0..2 }, e.optInt("pain", -1).takeIf { it in 0..2 }),
                     )
                 }
             }
@@ -300,13 +304,15 @@ object Backup {
                 for (i in 0 until arr.length()) {
                     val e = arr.getJSONObject(i)
                     val cm = e.optDouble("cm", -1.0)
-                    if (cm in 40.0..250.0) db.waist().upsert(WaistEntry(LocalDate.parse(e.getString("day")).toEpochDay(), cm))
+                    if (cm in 40.0..250.0) db.waist().upsert(WaistEntry(e.day("day"), cm))
                 }
             }
             o.optJSONArray("weights")?.let { arr ->
                 for (i in 0 until arr.length()) {
                     val e = arr.getJSONObject(i)
-                    db.weights().upsert(WeightEntry(LocalDate.parse(e.getString("day")).toEpochDay(), e.amount("kg"), e.optInt("minutes", -1).takeIf { it in 0..1439 }))
+                    // Weights out of a human range (a damaged or edited file) are skipped, never shown.
+                    val kg = e.optDouble("kg", -1.0)
+                    if (kg in 20.0..400.0) db.weights().upsert(WeightEntry(e.day("day"), kg, e.optInt("minutes", -1).takeIf { it in 0..1439 }))
                 }
             }
         }
@@ -360,8 +366,9 @@ object Backup {
         db.diary().allOnce().forEach { e ->
             val time = Instant.ofEpochMilli(e.createdAt).atZone(zone).toLocalTime().withNano(0).withSecond(0)
             // A name from someone else's backup must not become a spreadsheet formula.
-            val name = (if (ukrainian) e.nameUk else e.nameEn).replace(';', ',').replace('\n', ' ')
-                .let { if (it.firstOrNull() in listOf('=', '+', '-', '@', '\t', '\r')) "'$it" else it }
+            val name = (if (ukrainian) e.nameUk else e.nameEn).replace(';', ',')
+                .replace(Regex("[\\r\\n\\t\"]"), " ").trimStart()
+                .let { if (it.firstOrNull() in listOf('=', '+', '-', '@')) "'$it" else it }
             sb.append(LocalDate.ofEpochDay(e.day)).append(';').append(time).append(';')
                 .append(meals.getOrElse(e.meal) { "" }).append(';').append(name).append(';')
                 .append(n(e.grams)).append(';')
@@ -377,11 +384,24 @@ object Backup {
 }
 
 /**
- * A number from a backup: a damaged or crafted file must not bring NaN, infinity or negative values into the diary
- * (they would break sums and rounding everywhere). Missing → [default], or an error if there is none.
+ * A number from a backup: a damaged or crafted file must not bring NaN, infinity, negative or absurdly large values
+ * into the diary (they would break sums and rounding everywhere, even on every start). Missing → [default], or an error.
  */
-private fun JSONObject.amount(key: String, default: Double? = null): Double {
+private fun JSONObject.amount(key: String, max: Double, default: Double? = null): Double {
     val v = if (has(key) && !isNull(key)) optDouble(key) else default ?: throw org.json.JSONException("no $key")
-    require(v.isFinite() && v >= 0) { "bad number: $key" }
+    require(v.isFinite() && v >= 0 && v <= max) { "bad number: $key" }
     return v
 }
+
+/** A text from a backup, with a length limit: one huge text could make its database row unreadable (2 MB per row). */
+private fun JSONObject.text(key: String, max: Int): String =
+    getString(key).also { require(it.length <= max) { "text too long: $key" } }
+
+/** A date from a backup, only from 2000 to a year ahead: an absurd date would make "all time" reports loop for ever. */
+private fun JSONObject.day(key: String): Long {
+    val d = LocalDate.parse(getString(key)).toEpochDay()
+    require(d in FIRST_DAY..LocalDate.now().plusYears(1).toEpochDay()) { "bad date: $key" }
+    return d
+}
+
+private val FIRST_DAY = LocalDate.of(2000, 1, 1).toEpochDay()

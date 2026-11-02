@@ -141,6 +141,7 @@ class AiViewModel(app: Application) : AndroidViewModel(app) {
         analysis = viewModelScope.launch {
             if (_importProgress.value != null) {
                 update(gen) { it.copy(error = getApplication<Application>().getString(ua.tarilka.R.string.ai_busy)) }
+                PhotoUtil.clear(getApplication())
                 return@launch
             }
             if (aiBusy()) {

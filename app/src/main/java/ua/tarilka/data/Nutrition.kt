@@ -123,7 +123,8 @@ object Nutrition {
             den += (pt.day - mx) * (pt.day - mx)
         }
         if (den == 0.0) return null
-        return num / den * 7
+        // Never NaN or infinity: they would break rounding everywhere the trend is shown.
+        return (num / den * 7).takeIf { it.isFinite() }
     }
 
     /** Rough energy of walking: ~0.04 kcal per step for 70 kg, scaled by weight. Shown only, not added to targets. */

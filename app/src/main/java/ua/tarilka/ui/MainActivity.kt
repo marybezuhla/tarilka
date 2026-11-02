@@ -159,8 +159,8 @@ private fun AppRoot() {
         if (ok && pendingMeal >= 0) {
             showPhoto(pendingMeal)
             ai.analyze(ua.tarilka.ai.PhotoUtil.captureUri(context))
-        } else if (!ok && !ai.photo.value.working) {
-            // Cancelled: a half-written photo must not stay in the cache.
+        } else if (!ai.photo.value.working) {
+            // Cancelled, or no meal to put it in: the photo must not stay in the cache.
             ua.tarilka.ai.PhotoUtil.clear(context)
         }
     }
