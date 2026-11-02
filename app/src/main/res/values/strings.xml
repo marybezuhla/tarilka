@@ -173,7 +173,7 @@
     <string name="dynamic_color">Colours from wallpaper</string>
     <string name="dynamic_color_hint">Material You: accent colours follow your wallpaper.</string>
     <string name="data_title">Data</string>
-    <string name="data_hint">Everything is stored only on this phone. Make a backup from time to time, or before switching phones: Android's phone-to-phone transfer does not copy Tarilka, only a backup file does.</string>
+    <string name="data_hint">Everything is stored only on this phone. Make a backup from time to time, or before switching phones: Android\'s phone-to-phone transfer does not copy Tarilka, only a backup file does.</string>
     <string name="export_backup">Export backup</string>
     <string name="import_backup">Import</string>
     <string name="export_csv">Diary as CSV</string>
