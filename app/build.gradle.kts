@@ -115,3 +115,8 @@ dependencies {
     // Real org.json for unit tests (Android provides it on the phone)
     testImplementation("org.json:json:20240303")
 }
+
+// Both flavors write the same Room schema file (app/schemas): never at the same time, or one reads it half-written.
+tasks.configureEach {
+    if (name.startsWith("kspFdroid") && name.endsWith("Kotlin")) mustRunAfter(name.replace("kspFdroid", "kspFull"))
+}
