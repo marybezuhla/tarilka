@@ -315,7 +315,7 @@
      "items": [["v05", 1000], ["v10", 150], ["v12", 150], ["o01", 40], ["dr13", 300]]},
     {"code": "u146", "category": "dishes", "uk": "Курка тушкована з овочами", "en": "Chicken stewed with vegetables", "portion": [250, "порція", "serving"], "yield": 1050,
      "items": [["m22", 600], ["v12", 150], ["v10", 150], ["v16", 150], ["v46", 40], ["o01", 20], ["dr13", 200]]},
-    {"code": "u147", "category": "dishes", "uk": "Печінка смажена з цибулею", "en": "Fried liver with onion", "portion": [150, "порція", "serving"], "yield": 560,
+    {"code": "u147", "category": "dishes", "uk": "Печінка куряча смажена з цибулею", "en": "Chicken liver fried with onion", "portion": [150, "порція", "serving"], "yield": 560,
      "items": [["m54", 500], ["v12", 200], ["g18", 30], ["o01", 40]]},
     {"code": "u148", "category": "dishes", "uk": "Відбивна свиняча", "en": "Pork schnitzel (breaded chop)", "portion": [130, "шт", "piece"], "yield": 520,
      "items": [["m43", 500], ["e02", 50], ["g18", 30], ["b06", 50], ["o01", 35]]},
@@ -329,13 +329,9 @@
      "items": [["g18", 250], ["d18", 200], ["c01", 200], ["e02", 200], ["f24", 150]]},
     {"code": "u153", "category": "sweets", "uk": "Хмиз (хворост)", "en": "Khmyz (fried pastry twists)", "portion": [50, "порція", "serving"], "yield": 520,
      "items": [["g18", 300], ["e02", 100], ["d10", 50], ["c01", 20], ["o01", 120], ["c16", 30]]},
-    {"code": "u154", "category": "grains", "uk": "Гарбузова каша з пшоном на молоці", "en": "Pumpkin and millet porridge with milk", "portion": [250, "тарілка", "bowl"], "yield": 1050,
-     "items": [["v19", 500], ["g09", 150], ["d02", 500], ["c01", 40], ["d18", 20]]},
-    {"code": "u155", "category": "fish", "uk": "Скумбрія запечена", "en": "Mackerel, baked", "portion": [150, "порція", "serving"], "yield": 780,
+    {"code": "u154", "category": "fish", "uk": "Скумбрія запечена", "en": "Mackerel, baked", "portion": [150, "порція", "serving"], "yield": 780,
      "items": [["s32", 1000]]},
-    {"code": "u156", "category": "fish", "uk": "Оселедець з цибулею та олією", "en": "Herring with onion and oil", "portion": [100, "порція", "serving"], "yield": 410,
-     "items": [["s34", 300], ["v12", 80], ["o01", 30]]},
-    {"code": "u157", "category": "grains", "uk": "Гречка з молоком", "en": "Buckwheat with milk", "portion": [300, "тарілка", "bowl"], "yield": 400,
-     "items": [["g01", 200], ["d02", 200]]}
+    {"code": "u155", "category": "fish", "uk": "Оселедець з цибулею та олією", "en": "Herring with onion and oil", "portion": [100, "порція", "serving"], "yield": 410,
+     "items": [["s34", 300], ["v12", 80], ["o01", 30]]}
   ]
 }
