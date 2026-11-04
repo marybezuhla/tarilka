@@ -42,7 +42,6 @@
     <string name="close">Закрити</string>
     <string name="back">Назад</string>
     <string name="clear">Очистити</string>
-    <string name="hide">Сховати</string>
     <string name="replace">Замінити</string>
     <string name="favorite">Обране</string>
 
@@ -270,7 +269,6 @@
     <string name="clear_all_text">Буде видалено щоденник (їжа, рідина, вага, талія, сон, цикл, кишківник, тренування, нотатки, «Чому я їм»), ваші продукти й рецепти, обрані, профіль, поправку грамів для фото, журнал кроків із датчика телефону та список «Не знайдено в базі». Кроки й сон у Health Connect не видаляються. Залишаться модель ШІ та налаштування (мова, тема, нагадування). Це не можна скасувати.</string>
     <string name="clear_hc">Також видалити записи, які Тарілка внесла в Health Connect</string>
     <string name="export_first">Спочатку зробити резервну копію</string>
-    <string name="copy">Копіювати</string>
     <string name="summaries_link">Підсумки за тиждень, місяць, рік</string>
     <string name="summaries_title">Підсумки</string>
     <string name="period_week">Тиждень</string>

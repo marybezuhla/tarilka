@@ -21,19 +21,28 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 
 /**
- * "Worth attention" (over the target, short sleep, a warning): amber by day, honey by night, the same in
- * every theme, so it never takes a theme's green or red. Made readable on each theme's cards by [readable].
+ * "Worth attention" (over the target, short sleep, a warning): olive amber by day, warm yellow by night, the
+ * same in every theme (the phone's colours too), so it never takes a theme's green or red and stays apart from
+ * the brown and red accents. Made readable on each theme's cards by [readableArgb].
  */
-private const val ATTENTION_LIGHT = 0xFF9A5F1CL
-private const val ATTENTION_DARK = 0xFFF0BD7AL
+private const val ATTENTION_LIGHT = 0xFF7A6A00L
+private const val ATTENTION_DARK = 0xFFFFD54FL
 
 /** Material colours from one of the themes; the phone's own (Material You) for the system ones. Same mapping as Komora. */
 fun colorScheme(theme: Theme, context: Context): ColorScheme {
-    val p = theme.palette
-        ?: return if (theme.dark) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
+    val p = theme.palette ?: return (if (theme.dark) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)).let {
+        // The wallpaper's own third colour can be green or pink: warnings keep the app's colour
+        val attention = Color(
+            readableArgb(
+                if (theme.dark) ATTENTION_DARK else ATTENTION_LIGHT, it.onSurface.argb(),
+                it.surfaceContainerLow.argb(), it.surface.argb(), it.background.argb(), it.surfaceVariant.argb(),
+            ),
+        )
+        it.copy(tertiary = attention, onTertiary = it.surface, tertiaryContainer = androidx.compose.ui.graphics.lerp(it.surface, attention, 0.2f), onTertiaryContainer = it.onSurface)
+    }
     fun c(v: Long) = Color(v)
     val base = if (theme.dark) darkColorScheme() else lightColorScheme()
-    val attention = readableArgb(if (theme.dark) ATTENTION_DARK else ATTENTION_LIGHT, p.onSurface, p.surface, p.background)
+    val attention = readableArgb(if (theme.dark) ATTENTION_DARK else ATTENTION_LIGHT, p.onSurface, p.surface, p.background, p.surfaceVariant)
     return base.copy(
         primary = c(p.primary),
         onPrimary = c(p.onPrimary),
@@ -85,7 +94,7 @@ private fun Color.argb(): Long = toArgb().toLong() and 0xFFFFFFFFL
 
 /** [color] readable as text on the cards and on the background of this colour scheme. */
 fun ColorScheme.readable(color: Color): Color =
-    Color(readableArgb(color.argb(), onSurface.argb(), surfaceContainerLow.argb(), surface.argb(), background.argb()))
+    Color(readableArgb(color.argb(), onSurface.argb(), surfaceContainerLow.argb(), surface.argb(), background.argb(), surfaceVariant.argb()))
 
 /** Fixed colors for the four nutrients so they read the same everywhere. */
 @Immutable
@@ -133,6 +142,11 @@ fun TarilkaTheme(day: Theme = Theme.VISK, night: Theme = Theme.HUTSULSHCHYNA, co
     val macros = remember(scheme, theme) {
         val m = if (theme.dark) DarkMacros else LightMacros
         MacroColors(scheme.readable(m.protein), scheme.readable(m.fat), scheme.readable(m.carbs), scheme.readable(m.fiber), scheme.readable(m.kcal))
+    }
+    // The window behind the app (seen at launch and while switching light/dark) in the theme's own colour
+    val view = androidx.compose.ui.platform.LocalView.current
+    androidx.compose.runtime.SideEffect {
+        (view.context as? android.app.Activity)?.window?.setBackgroundDrawable(android.graphics.drawable.ColorDrawable(scheme.background.toArgb()))
     }
     androidx.compose.runtime.CompositionLocalProvider(LocalMacroColors provides macros) {
         MaterialTheme(colorScheme = scheme, typography = Type, content = content)

@@ -233,7 +233,7 @@ private fun ModelSection(ai: AiViewModel) {
                     Text(stringResource(R.string.ai_importing), style = MaterialTheme.typography.bodySmall)
                 }
                 s is ModelStore.State.Ready -> {
-                    Text(stringResource(R.string.ai_ready, s.sizeMb), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.primary)
+                    Text(stringResource(R.string.ai_ready, s.sizeMb), style = MaterialTheme.typography.bodyMedium, color = levelTextColor(ua.tarilka.data.Habits.Level.GOOD))
                     if (confirmDelete) {
                         Row {
                             TextButton(onClick = { ai.deleteModel(); confirmDelete = false }) {
@@ -597,8 +597,9 @@ private fun DataSection(vm: MainViewModel) {
                     Text(stringResource(R.string.clear_all), color = MaterialTheme.colorScheme.error)
                 }
             }
+            // Success or failure, the words say it: plain text, never the theme's accent (red in some themes)
             message?.let {
-                Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary)
+                Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurface)
             }
         }
     }

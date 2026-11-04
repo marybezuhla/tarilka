@@ -4,7 +4,6 @@
     <string name="tip_empty">Nothing logged yet. Add a meal by search or as a typed list.</string>
     <string name="intro_1">Log food by search or as a typed list (“buckwheat 200 g, cutlet”). Tarilka counts calories, protein, fibre and fluids and shows habits as coloured badges, without judgement.</string>
     <string name="intro_3">Sleep, cycle, workouts, bowel, Why I eat and reminders can be turned on in Options whenever you want. Start with the profile: height, weight and goal, and Tarilka works out your targets. One question to finish: are you 18 or older? Under 18 Tarilka shows no calories.</string>
-    <string name="hide_kcal_hint">No calorie numbers anywhere: in the diary, history, tips and the report. Protein, fibre, fluids and habits stay. Helpful if counting calories makes eating harder. If food or weight worries you, please talk to a doctor or psychologist.</string>
     <string name="missing_hint">Foods you searched for that are not in the database (times in brackets). Kept only on this phone. You can add any of them yourself: Foods → New food. To get them into the database for everyone, tap Send the list: the list is passed to GitHub as the page opens and stays in the browser history; you can edit it there, and it is published from your account only when you confirm.</string>
     <string name="missing_empty">Empty for now. Searches in Add that are not in the database will appear here.</string>
 </resources>

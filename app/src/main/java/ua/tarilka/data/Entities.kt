@@ -42,13 +42,24 @@ data class Food(
          * "рибні котлети" finds "Котлета рибна", "куряча котлета" finds "Котлета куряча".
          */
         fun searchStems(query: String): List<String> =
-            query.split(' ', ',').filter { it.isNotBlank() }.map { w ->
+            normalize(query)
+                // Commas and dots inside numbers stay ("2,5%"), other punctuation separates words
+                .split(Regex("[\\s;:()«»\"!?]+|[,.](?!\\d)"))
+                .filter { it.isNotBlank() }
+                .map { w ->
                 when {
                     w.length >= 6 -> w.dropLast(2)
                     w.length == 5 -> w.dropLast(1)
                     else -> w
                 }
             }.distinct()
+
+        /** As the search key is written: lower case, one kind of apostrophe. */
+        fun normalize(s: String): String =
+            s.trim().lowercase(Locale.ROOT).replace('ʼ', '\'').replace('’', '\'').replace('`', '\'')
+
+        /** "%" and "_" are letters in a search, not SQL wildcards. */
+        fun likeEscape(s: String): String = s.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
     }
 }
 

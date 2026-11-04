@@ -265,7 +265,8 @@ fun GramsDialog(
 /** Minimal line chart: points are (x, y); draws a dot for each and a line through them. */
 @Composable
 fun LineChart(points: List<Pair<Double, Double>>, modifier: Modifier = Modifier, height: Dp = 180.dp) {
-    val line = MaterialTheme.colorScheme.primary
+    // Neutral: in a red theme the accent would make every weight change look alarming
+    val line = MaterialTheme.colorScheme.onSurfaceVariant
     val grid = MaterialTheme.colorScheme.outlineVariant
     val labelStyle = MaterialTheme.typography.labelSmall
     val labelColor = MaterialTheme.colorScheme.onSurfaceVariant

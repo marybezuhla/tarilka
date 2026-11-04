@@ -369,6 +369,15 @@ class LogicTest {
         assertTrue(finds("булочка мак", "Булочка з маком", "Poppy seed bun"))
         assertTrue(!finds("рибна котлета", "Котлета куряча", "Chicken cutlet"))
         assertEquals(listOf("сир"), ua.tarilka.data.Food.searchStems("сир"))
+        // Only punctuation: no words, no crash
+        assertTrue(ua.tarilka.data.Food.searchStems(", ,").isEmpty())
+        assertTrue(ua.tarilka.data.Food.searchStems("  ").isEmpty())
+        // Numbers keep their comma; brackets and apostrophes don't get in the way
+        assertTrue(finds("молоко 2,5%", "Молоко 2,5%", "Milk 2.5%"))
+        assertTrue(finds("(рибна)", "Котлета рибна", "Fish cake"))
+        assertTrue(finds("вареники з мʼясом", "Вареники з мʼясом", "Varenyky with meat"))
+        assertTrue(finds("вареники з м’ясом", "Вареники з мʼясом", "Varenyky with meat"))
+        assertEquals("5\\%", ua.tarilka.data.Food.likeEscape("5%"))
     }
 
     @Test

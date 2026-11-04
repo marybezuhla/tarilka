@@ -170,7 +170,7 @@ private fun ThemeRow(themes: List<Theme>, chosen: Theme, onChoose: (Theme) -> Un
 @Composable
 private fun Sample(theme: Theme, selected: Boolean) {
     val context = LocalContext.current
-    val s = remember(theme) { colorScheme(theme, context) }
+    val s = remember(theme) { appScheme(theme, context) }
     val frame = if (selected) {
         BorderStroke(3.dp, MaterialTheme.colorScheme.primary)
     } else {

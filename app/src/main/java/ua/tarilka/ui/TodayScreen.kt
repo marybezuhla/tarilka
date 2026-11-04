@@ -106,7 +106,6 @@ fun TodayScreen(
     val note by vm.note.collectAsState()
     var noteDialog by remember { mutableStateOf(false) }
     val macros = LocalMacroColors.current
-    val context = LocalContext.current
     var editing by remember { mutableStateOf<DiaryEntry?>(null) }
     var fluidDialog by remember { mutableStateOf(false) }
     val lifecycle = androidx.lifecycle.compose.LocalLifecycleOwner.current

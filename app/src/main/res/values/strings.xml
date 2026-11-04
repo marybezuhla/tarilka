@@ -42,7 +42,6 @@
     <string name="close">Close</string>
     <string name="back">Back</string>
     <string name="clear">Clear</string>
-    <string name="hide">Hide</string>
     <string name="replace">Replace</string>
     <string name="favorite">Favourite</string>
 
@@ -270,7 +269,6 @@
     <string name="clear_all_text">The diary (food, fluids, weight, waist, sleep, cycle, bowel, workouts, notes, Why I eat), your foods and recipes, favourites, profile, the photo portion correction, the phone-sensor step log and the Not found list will be deleted. Steps and sleep in Health Connect are not touched. The AI model and settings (language, theme, reminders) stay. This cannot be undone.</string>
     <string name="clear_hc">Also delete the records Tarilka wrote to Health Connect</string>
     <string name="export_first">Make a backup first</string>
-    <string name="copy">Copy</string>
     <string name="summaries_link">Summaries for the week, month, year</string>
     <string name="summaries_title">Summaries</string>
     <string name="period_week">Week</string>
