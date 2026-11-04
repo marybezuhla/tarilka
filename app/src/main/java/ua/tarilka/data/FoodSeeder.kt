@@ -5,7 +5,7 @@ import android.content.Context
 /** Loads the built-in food database from assets/foods.csv into Room. */
 object FoodSeeder {
     /** Bump when foods.csv changes so existing installs get the update. */
-    const val VERSION = 9
+    const val VERSION = 10
 
     suspend fun seedIfNeeded(context: Context, db: AppDatabase, prefs: Prefs) {
         // Also when the database is new but the setting survived (e.g. "Start fresh"): never an empty food list.

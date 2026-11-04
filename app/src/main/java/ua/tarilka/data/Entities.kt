@@ -39,7 +39,7 @@ data class Food(
 
         /**
          * The words of a search, each cut to a stem, so the order and endings of words don't matter:
-         * "рибна котлета" finds "Котлети рибні", "куряча котлета" finds "Котлета куряча".
+         * "рибні котлети" finds "Котлета рибна", "куряча котлета" finds "Котлета куряча".
          */
         fun searchStems(query: String): List<String> =
             query.split(' ', ',').filter { it.isNotBlank() }.map { w ->
