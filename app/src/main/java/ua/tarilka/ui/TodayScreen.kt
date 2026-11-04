@@ -23,8 +23,6 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.foundation.background
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material.icons.filled.Star
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -51,9 +49,7 @@ import androidx.compose.ui.unit.dp
 import ua.tarilka.R
 import ua.tarilka.ai.ModelStore
 import ua.tarilka.data.DiaryEntry
-import ua.tarilka.data.aiSafety
 import ua.tarilka.data.Tip
-import ua.tarilka.data.isUkrainian
 import ua.tarilka.ui.theme.LocalMacroColors
 import ua.tarilka.ui.theme.Numbers
 import java.time.LocalDate
@@ -79,9 +75,6 @@ fun TodayScreen(
     val lastBackup by vm.lastBackupAt.collectAsState()
     val protectedDiary by Protection.enabled.collectAsState()
     val model by ai.model.collectAsState()
-    val advice by ai.advice.collectAsState()
-    val adviceLoading by ai.adviceLoading.collectAsState()
-    val adviceFor by ai.adviceFor.collectAsState()
     val fluidMl by vm.fluidMl.collectAsState()
     val fluids by vm.fluids.collectAsState()
     val steps by vm.steps.collectAsState()
@@ -315,29 +308,6 @@ fun TodayScreen(
                         Row {
                             TextButton(onClick = { vm.applyActivityHint(level) }) { Text(stringResource(R.string.update)) }
                             TextButton(onClick = vm::dismissActivityHint) { Text(stringResource(R.string.not_now)) }
-                        }
-                    }
-                    if (model is ModelStore.State.Ready && entries.isNotEmpty()) {
-                        Spacer(Modifier.height(4.dp))
-                        when {
-                            adviceLoading && adviceFor == day -> Row(verticalAlignment = Alignment.CenterVertically) {
-                                CircularProgressIndicator(Modifier.size(18.dp), strokeWidth = 2.dp)
-                                Spacer(Modifier.width(8.dp))
-                                Text(stringResource(R.string.ai_thinking), style = MaterialTheme.typography.bodyMedium)
-                            }
-                            advice != null && adviceFor == day -> {
-                                HorizontalDivider()
-                                Text(advice!!, style = MaterialTheme.typography.bodyMedium)
-                                TextButton(onClick = ai::clearAdvice) { Text(stringResource(R.string.hide)) }
-                            }
-                            else -> FilledTonalButton(onClick = {
-                                val summary = adviceSummary(context, day, entries, totals, targets, tips, fluidMl, steps, note, mealTimesOn)
-                                ai.requestAdvice(summary, isUkrainian(), day, noKcal = !targets.showKcal)
-                            }) {
-                                Icon(Icons.Filled.Star, null, Modifier.size(18.dp))
-                                Spacer(Modifier.width(8.dp))
-                                Text(stringResource(R.string.ai_advice))
-                            }
                         }
                     }
                 }
@@ -747,49 +717,6 @@ private fun WeekBars(day: LocalDate, week: List<ua.tarilka.data.DayTotal>, targe
             }
         }
     }
-}
-
-/** Plain-text summary handed to the AI. The rule-based tips are included so it stays consistent. */
-private fun adviceSummary(
-    context: android.content.Context,
-    day: LocalDate,
-    entries: List<DiaryEntry>,
-    totals: ua.tarilka.data.Totals,
-    targets: ua.tarilka.data.Targets,
-    tips: List<Tip>,
-    fluidMl: Double,
-    steps: Long?,
-    note: String,
-    withTimes: Boolean = true,
-): String = buildString {
-    val time = java.time.format.DateTimeFormatter.ofPattern("HH:mm")
-    val isToday = day == LocalDate.now()
-    val dayWord = if (isToday) "today" else "on ${day} (a past day)"
-    if (isToday) appendLine("Current time: ${java.time.LocalTime.now().format(time)}.")
-    appendLine("Foods eaten $dayWord (" + (if (withTimes) "time, " else "") + "name, amount):")
-    entries.forEach {
-        val t = java.time.Instant.ofEpochMilli(it.createdAt).atZone(java.time.ZoneId.systemDefault()).toLocalTime().format(time)
-        appendLine("- " + (if (withTimes) "$t " else "") + "${it.nameEn} (${it.nameUk}), ${it.grams.f0()} g" + if (targets.showKcal) ", ${it.kcal.f0()} kcal" else "")
-    }
-    appendLine("Fluids $dayWord: ${fluidMl.f0()} ml (target ${targets.waterMl.f0()} ml).")
-    if (steps != null) appendLine("Steps $dayWord: $steps.")
-    if (note.isNotBlank()) appendLine("The person's note for that day: ${note.take(300)}")
-    appendLine(
-        if (targets.showKcal) {
-            "Totals: ${totals.kcal.f0()} kcal (target ${targets.kcal.f0()}), protein ${totals.protein.f0()} g " +
-                "(target ${targets.protein.f0()}), fat ${totals.fat.f0()} g (target ${targets.fat.f0()}), " +
-                "carbs ${totals.carbs.f0()} g (target ${targets.carbs.f0()}), fiber ${totals.fiber.f0()} g (target ${targets.fiber.f0()})."
-        } else {
-            "Totals: protein ${totals.protein.f0()} g (target ${targets.protein.f0()}), fiber ${totals.fiber.f0()} g " +
-                "(target ${targets.fiber.f0()})." + if (targets.teen) " The person is under 18: never mention calories or calorie targets." else " Never mention calories or calorie numbers."
-        },
-    )
-    appendLine("Important: " + targets.aiSafety())
-    if (tips.isNotEmpty()) {
-        appendLine("Notes from the app:")
-        tips.forEach { appendLine("- " + context.getString(it.res, *it.args.toTypedArray())) }
-    }
-    append(if (isToday) "Give short practical advice for the rest of the day or for tomorrow." else "Give short practical advice based on that day.")
 }
 
 private val SLEEP_QUALITY = listOf(R.string.sleep_poor, R.string.sleep_ok, R.string.sleep_good)

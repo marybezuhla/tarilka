@@ -8,7 +8,7 @@
 - 📄 **Звіт PDF** з графіками для лікаря чи дієтолога.
 - 💧 **Рідина, кроки, вага, талія.** Супи й напої враховуються в рідині; кроки з Health Connect або датчика.
 - 🌙 **За бажанням:** сон, «Чому я їм», тренування, кишківник, цикл, AUDIT-C (щодо алкоголю), нагадування.
-- 🤖 **Локальний ШІ (Gemma 4), за бажанням:** розпізнає їжу на фото й пише підсумки. Усе на телефоні.
+- 🤖 **Локальний ШІ (Gemma 4), за бажанням:** розпізнає їжу на фото. Усе на телефоні.
 
 **1.2.2–1.2.4:** підготовка до F-Droid (окрема збірка без ШІ, опис і знімки екрана), для вас без змін.
 
@@ -32,7 +32,7 @@
 - 📄 **PDF report** with charts for a doctor or dietitian.
 - 💧 **Fluids, steps, weight, waist.** Soups and drinks count as fluid; steps from Health Connect or the phone's sensor.
 - 🌙 **Optional:** sleep, Why I eat, workouts, bowel, cycle, AUDIT-C (about alcohol), reminders.
-- 🤖 **On-device AI (Gemma 4), optional:** recognises food on photos and writes summaries. Everything stays on the phone.
+- 🤖 **On-device AI (Gemma 4), optional:** recognises food on photos. Everything stays on the phone.
 
 **1.2.2–1.2.4:** groundwork for F-Droid (a separate build without the AI, description and screenshots); nothing changes for you.
 

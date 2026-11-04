@@ -242,14 +242,6 @@ fun PhotoScreen(
                 itemsIndexed(ui.items) { i, item ->
                     ReviewCard(i, item, ai, onReplace)
                 }
-                if (ai.canAskAi(ui)) {
-                    item {
-                        Column {
-                            OutlinedButton(onClick = ai::analyzeTextWithAi) { Text(stringResource(R.string.text_ask_ai)) }
-                            Text(stringResource(R.string.text_ask_ai_hint), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                        }
-                    }
-                }
                 item {
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         FilledTonalButton(onClick = onAddItem) {

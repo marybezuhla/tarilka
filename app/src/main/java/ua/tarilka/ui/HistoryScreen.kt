@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.SnackbarDuration
@@ -14,8 +13,6 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.mutableStateOf
@@ -55,7 +52,7 @@ import java.time.format.FormatStyle
 /** Every day with entries, newest first. Tap a day to open it; the bin deletes the whole day (with Undo). */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HistoryScreen(vm: MainViewModel, ai: AiViewModel, onBack: () -> Unit, onOpen: (LocalDate) -> Unit) {
+fun HistoryScreen(vm: MainViewModel, onBack: () -> Unit, onOpen: (LocalDate) -> Unit) {
     val days by vm.history.collectAsState()
     val targets by vm.targets.collectAsState()
     val fmt = DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM)
@@ -110,7 +107,7 @@ fun HistoryScreen(vm: MainViewModel, ai: AiViewModel, onBack: () -> Unit, onOpen
             return@Scaffold
         }
         LazyColumn(Modifier.padding(pad), contentPadding = PaddingValues(bottom = 24.dp)) {
-            item(key = "summary") { Summaries(vm, ai, days.size) }
+            item(key = "summary") { Summaries(vm, days.size) }
             items(days, key = { it.day.toEpochDay() }) { d ->
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
@@ -163,22 +160,18 @@ fun HistoryScreen(vm: MainViewModel, ai: AiViewModel, onBack: () -> Unit, onOpen
     }
 }
 
-/** One line per measure with a small chart, the main points, and an optional AI summary, for the last week, month or year. */
+/** One line per measure with a small chart and the main points, for the last week, month or year. */
 @Composable
-private fun Summaries(vm: MainViewModel, ai: AiViewModel, dayCount: Int) {
+private fun Summaries(vm: MainViewModel, dayCount: Int) {
     var period by rememberSaveable { mutableStateOf(MainViewModel.Period.WEEK) }
     val report by produceState<MainViewModel.PeriodReport?>(null, period, dayCount) { value = vm.report(period) }
-    val model by ai.model.collectAsState()
-    val text by ai.summary.collectAsState()
-    val loading by ai.summaryLoading.collectAsState()
-    val context = androidx.compose.ui.platform.LocalContext.current
     Section(Modifier.padding(16.dp), title = stringResource(R.string.summaries_title)) {
         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 MainViewModel.Period.entries.forEach { p ->
                     FilterChip(
                         selected = p == period,
-                        onClick = { if (p != period) { period = p; ai.clearSummary() } },
+                        onClick = { period = p },
                         label = {
                             Text(stringResource(when (p) {
                                 MainViewModel.Period.WEEK -> R.string.period_week
@@ -191,28 +184,6 @@ private fun Summaries(vm: MainViewModel, ai: AiViewModel, dayCount: Int) {
             }
             val r = report ?: return@Column
             ReportView(r)
-            if (r.metrics.isEmpty()) return@Column
-            if (model !is ua.tarilka.ai.ModelStore.State.Ready) return@Column
-            when {
-                loading -> Row(verticalAlignment = Alignment.CenterVertically) {
-                    CircularProgressIndicator(Modifier.size(18.dp), strokeWidth = 2.dp)
-                    Spacer(Modifier.width(8.dp))
-                    Text(stringResource(R.string.ai_thinking), style = MaterialTheme.typography.bodyMedium)
-                }
-                text != null -> {
-                    HorizontalDivider()
-                    Text(text!!, style = MaterialTheme.typography.bodyMedium)
-                    Row {
-                        TextButton(onClick = { Feedback.copyPrivate(context, text!!) }) { Text(stringResource(R.string.copy)) }
-                        TextButton(onClick = ai::clearSummary) { Text(stringResource(R.string.hide)) }
-                    }
-                }
-                else -> FilledTonalButton(onClick = { ai.requestSummary({ vm.periodSummary(period) }, ua.tarilka.data.isUkrainian(), noKcal = !vm.targets.value.showKcal) }) {
-                    Icon(Icons.Filled.Star, null, Modifier.size(18.dp))
-                    Spacer(Modifier.width(8.dp))
-                    Text(stringResource(R.string.ai_summary))
-                }
-            }
         }
     }
 }

@@ -114,25 +114,11 @@ class GemmaEngine(
         )
     }
 
-    /** A typed list like "two cutlets and some mashed potato" → foods in English with grams. No image: a few seconds. */
-    suspend fun parseText(text: String): List<DetectedFood> {
-        val prompt = TEXT_PROMPT + "\n" + text.take(500)
-        val raw = withEngine { e ->
-            runCatching { ask(e, null, prompt, constrained = true) }.getOrElse { ask(e, null, prompt, constrained = false) }
-        }
-        return parseFoods(raw)
-    }
-
     private fun ask(e: AiSession, image: File?, prompt: String, constrained: Boolean): String =
         e.ask(SYSTEM_PHOTO, prompt, image, topK = 20, topP = 0.9, temperature = 0.2, maxTokens = 512, jsonSchema = if (constrained) SCHEMA else null)
 
     /** Loads the model in the background so the first photo doesn't wait for it. */
     suspend fun warmUp() = runCatching { withEngine { } }
-
-    /** Short, friendly advice based on the day's numbers. */
-    suspend fun advice(summary: String, ukrainian: Boolean, maxTokens: Int = 400): String = withEngine { e ->
-        e.ask(if (ukrainian) SYSTEM_ADVICE_UK else SYSTEM_ADVICE_EN, summary, null, topK = 40, topP = 0.95, temperature = 0.6, maxTokens = maxTokens).trim()
-    }
 
     companion object {
         private const val IDLE_MS = 5 * 60 * 1000L
@@ -140,11 +126,6 @@ class GemmaEngine(
         private const val SYSTEM_PHOTO =
             "You are a careful nutrition assistant. You identify foods in meal photos and estimate portion sizes. " +
                 "You always answer with valid JSON only."
-
-        private const val TEXT_PROMPT = """The person wrote what they ate, maybe in Ukrainian. List each food in English with its weight in grams.
-Use the amount they gave; if none, estimate a usual portion (one cutlet about 80 g, one slice of bread about 35 g, one egg about 50 g, a bowl of soup about 300 g).
-Use short common names. Answer with ONLY JSON: {"items":[{"name":"boiled potatoes","grams":150,"confidence":"high"}]}
-What they ate:"""
 
         /** What the person says the food is on: gives the model a real size to compare with. */
         private val PLATES = listOf(
@@ -166,23 +147,6 @@ weighs about 35 g, one egg about 50 g, half an avocado about 70 g, a tablespoon 
 Use short common names, for example "boiled egg" or "rye bread".
 Answer with ONLY JSON: {"items":[{"name":"boiled egg","grams":50,"confidence":"high"}]}
 confidence is "high", "medium" or "low". If there is no food, answer {"items":[]}."""
-
-        // The numbers come in English, so the model gets the app's own words for them; the example has no numbers,
-        // because the small model tends to copy numbers it sees. Each point names foods, not nutrients.
-        private const val SYSTEM_ADVICE_UK =
-            "Ти доброзичливий помічник з харчування. Відповідай лише українською мовою, без жодного російського слова, коротко: 2–4 пункти, кожен одним простим реченням. " +
-                "Дані нижче англійською; перекладай так: fiber — клітковина, protein — білок, fat — жири, carbs — вуглеводи, fluids — рідина, steps — кроки, kcal — ккал, target — норма. " +
-                "Не пиши «волокно», «фібра», «харчові волокна», «рівень клітковини» чи «споживання клітковини». Клітковина — не продукт: не радь «з'їсти клітковину», а назви продукти, де її багато. " +
-                "Приклад тону: «Клітковини поки мало — додайте до вечері тарілку овочів або жменю квасолі.» " +
-                "Звертайся на «ви». Не повторюй усі цифри, лише одну-дві важливі. " +
-                "Враховуй, що і коли людина їла, скільки випила і скільки пройшла кроків. Давай практичні поради з конкретними продуктами. Не став діагнозів, не радь голодування чи екстремальних дієт, " +
-                "не засуджуй. Якщо цифри виглядають небезпечно (дуже мало їжі або дуже швидка втрата ваги), м'яко порадь звернутися до лікаря."
-
-        private const val SYSTEM_ADVICE_EN =
-            "You are a friendly nutrition helper. Answer in English, briefly: 2–4 bullet points, one plain sentence each. " +
-                "Fibre is not a food: never say \"eat fibre\", name foods rich in it instead (vegetables, beans, oats, berries). Mention only one or two numbers, not all of them. " +
-                "Take into account what and when the person ate, how much they drank and how many steps they walked. Give practical suggestions with concrete foods. Do not diagnose, do not suggest fasting or extreme diets, " +
-                "do not judge. If the numbers look unsafe (very low intake or very fast weight loss), gently suggest seeing a doctor."
 
         /** Accepts {"items":[...]}, a bare [...] or even a cut-off answer (objects are read one by one). */
         fun parseFoods(raw: String): List<DetectedFood> {

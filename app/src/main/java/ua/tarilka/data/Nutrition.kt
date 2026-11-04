@@ -138,16 +138,3 @@ object Nutrition {
     fun stepsKcal(steps: Long, weightKg: Double): Double = steps * 0.04 * weightKg / 70.0
 
 }
-
-/**
- * The safety rules for the AI prompts, for this person: who must not be told to eat less, and what is never said.
- * Kept in one place for the day advice and the period summary.
- */
-fun Targets.aiSafety(): String = when (limit) {
-    Limit.PREGNANT -> "The person is pregnant or breastfeeding: never suggest eating less or losing weight; weight gain in pregnancy is expected; the safest is no alcohol at all. "
-    Limit.TEEN -> "The person is under 18: never suggest eating less or losing weight and never mention calories or calorie targets; the safest is no alcohol at all; talk about regular meals, vegetables, drinks, sleep and movement. "
-    Limit.UNDERWEIGHT -> "BMI is under 18.5: never suggest eating less or losing weight; gently suggest a doctor if weight is falling. "
-    null -> ""
-} + (if (teen && limit != Limit.TEEN) "The person is under 18: never mention calories or calorie targets; the safest is no alcohol at all. " else "") +
-    (if (hideKcal && !teen) "Never mention calories or calorie numbers. " else "") +
-    "Never comment on body shape or size, never suggest skipping meals or burning off food with exercise."

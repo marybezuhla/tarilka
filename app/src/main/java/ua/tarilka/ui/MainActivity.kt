@@ -271,7 +271,6 @@ private fun AppRoot() {
 
         Overlay.History -> HistoryScreen(
             vm = vm,
-            ai = ai,
             onBack = ::pop,
             onOpen = { d -> vm.day.value = d; tab = 0; stack.clear() },
         )

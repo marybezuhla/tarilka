@@ -1,11 +1,9 @@
 package ua.tarilka.ui
 
-import kotlinx.coroutines.ensureActive
 import android.app.Application
 import android.net.Uri
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.async
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -69,11 +67,6 @@ class AiViewModel(app: Application) : AndroidViewModel(app) {
     private val _photo = MutableStateFlow(PhotoUi())
     val photo: StateFlow<PhotoUi> = _photo.asStateFlow()
 
-    private val _advice = MutableStateFlow<String?>(null)
-    val advice: StateFlow<String?> = _advice.asStateFlow()
-    private val _adviceLoading = MutableStateFlow(false)
-    val adviceLoading: StateFlow<Boolean> = _adviceLoading.asStateFlow()
-
     init {
         refreshModel()
     }
@@ -126,10 +119,6 @@ class AiViewModel(app: Application) : AndroidViewModel(app) {
     private fun newGeneration(): Long { analysis?.cancel(); return ++generation }
     private fun update(gen: Long, f: (PhotoUi) -> PhotoUi) { if (gen == generation) _photo.update(f) }
 
-    /** The model can't be stopped mid-answer: an AI call that timed out may still hold it for a while. */
-    private var aiCall: kotlinx.coroutines.Deferred<*>? = null
-    private fun aiBusy() = aiCall?.isCompleted == false
-
     fun resetPhoto() {
         newGeneration()
         _photo.value = PhotoUi()
@@ -140,11 +129,6 @@ class AiViewModel(app: Application) : AndroidViewModel(app) {
         val gen = newGeneration()
         analysis = viewModelScope.launch {
             if (_importProgress.value != null) {
-                update(gen) { it.copy(error = getApplication<Application>().getString(ua.tarilka.R.string.ai_busy)) }
-                PhotoUtil.clear(getApplication())
-                return@launch
-            }
-            if (aiBusy()) {
                 update(gen) { it.copy(error = getApplication<Application>().getString(ua.tarilka.R.string.ai_busy)) }
                 PhotoUtil.clear(getApplication())
                 return@launch
@@ -184,8 +168,8 @@ class AiViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     /**
-     * A typed list, read by rules at once (no model needed). Foods that were not found are shown as such;
-     * the AI reads the text only when the person asks for it ([analyzeTextWithAi]).
+     * A typed list, read by rules at once (no model needed). Foods that were not found are shown as such
+     * and can be replaced by hand.
      */
     fun analyzeText(text: String) {
         val gen = newGeneration()
@@ -207,53 +191,6 @@ class AiViewModel(app: Application) : AndroidViewModel(app) {
             } catch (t: Throwable) {
                 update(gen) { it.copy(error = userText(t, ua.tarilka.R.string.ai_error)) }
             } finally {
-                update(gen) { it.copy(working = false) }
-            }
-        }
-    }
-
-    /** The AI can help with a typed list when something was not found and the model is installed. */
-    fun canAskAi(ui: PhotoUi) = ui.fromText && ui.analyzed && !ui.working &&
-        _model.value is ModelStore.State.Ready && ui.items.any { it.food == null }
-
-    /**
-     * The AI reads the whole typed list. A visible timer; after [AI_TEXT_LIMIT_MS] the rules' result stays
-     * as it was (the model may keep working in the background, its answer is then ignored).
-     */
-    fun analyzeTextWithAi() {
-        val gen = newGeneration()
-        analysis = viewModelScope.launch {
-            val text = _photo.value.note
-            val before = _photo.value.items
-            if (aiBusy()) {
-                update(gen) { it.copy(error = getApplication<Application>().getString(ua.tarilka.R.string.ai_busy)) }
-                return@launch
-            }
-            update(gen) { it.copy(working = true, error = null, seconds = 0) }
-            val ticker = launch { while (isActive) { delay(1000); update(gen) { it.copy(seconds = it.seconds + 1) } } }
-            try {
-                val foods = tapp.db.foods().allOnce()
-                val job = viewModelScope.async { gemma.parseText(text) }
-                aiCall = job
-                val detected = kotlinx.coroutines.withTimeoutOrNull(AI_TEXT_LIMIT_MS) { job.await() }
-                if (detected == null) {
-                    job.cancel()
-                    update(gen) { it.copy(error = getApplication<Application>().getString(ua.tarilka.R.string.text_ai_timeout)) }
-                } else if (detected.isEmpty()) {
-                    update(gen) { it.copy(error = getApplication<Application>().getString(ua.tarilka.R.string.text_ai_nothing)) }
-                } else {
-                    val items = detected.map { d ->
-                        val match = FoodMatcher.best(d.nameEn, d.nameUk, foods)
-                        ReviewItem(d.copy(confidence = "manual"), match?.food, d.grams, include = match != null)
-                    }
-                    update(gen) { it.copy(items = items) }
-                }
-            } catch (t: kotlinx.coroutines.CancellationException) {
-                throw t
-            } catch (t: Throwable) {
-                update(gen) { it.copy(items = before, error = userText(t, ua.tarilka.R.string.ai_error)) }
-            } finally {
-                ticker.cancel()
                 update(gen) { it.copy(working = false) }
             }
         }
@@ -283,86 +220,5 @@ class AiViewModel(app: Application) : AndroidViewModel(app) {
         // Learn from the corrections: final grams against what the model itself said.
         chosen.filter { it.detected.confidence != "manual" && it.detected.grams > 0 }.forEach { tapp.prefs.addGramsRatio(it.grams / it.detected.grams) }
         return chosen.map { DiaryEntry.of(it.food!!, it.grams, day, meal, fromAi = true) }
-    }
-
-    // ---- advice ----
-
-    /** Week / month / year summary shown in History. */
-    private val _summary = MutableStateFlow<String?>(null)
-    val summary: StateFlow<String?> = _summary.asStateFlow()
-    private val _summaryLoading = MutableStateFlow(false)
-    val summaryLoading: StateFlow<Boolean> = _summaryLoading.asStateFlow()
-
-    /** The day the shown advice was written for: another day on screen does not show it. */
-    private val _adviceFor = MutableStateFlow<java.time.LocalDate?>(null)
-    val adviceFor: StateFlow<java.time.LocalDate?> = _adviceFor.asStateFlow()
-
-    private var adviceJob: kotlinx.coroutines.Job? = null
-
-    /** [noKcal]: under 18, an answer that talks about calories is not shown. An earlier request still running stops. */
-    fun requestAdvice(summary: String, ukrainian: Boolean, day: java.time.LocalDate, noKcal: Boolean) {
-        adviceJob?.cancel()
-        _advice.value = null
-        _adviceFor.value = day
-        adviceJob = viewModelScope.launch {
-            val me = coroutineContext[kotlinx.coroutines.Job]
-            try {
-                ask(summary, ukrainian, _advice, _adviceLoading, 400, noKcal)
-            } finally {
-                // A replaced request must not hide the spinner of the one now running.
-                if (adviceJob === me) _adviceLoading.value = false
-            }
-        }
-    }
-
-    /** The text for the model is built by the caller (it needs the diary), so it is passed as a function. */
-    private var summaryJob: kotlinx.coroutines.Job? = null
-
-    fun requestSummary(text: suspend () -> String, ukrainian: Boolean, noKcal: Boolean) {
-        summaryJob?.cancel()
-        summaryJob = viewModelScope.launch {
-            val me = coroutineContext[kotlinx.coroutines.Job]
-            _summaryLoading.value = true
-            try {
-                val prompt = runCatching { text() }.getOrElse {
-                    if (it is kotlinx.coroutines.CancellationException) throw it
-                    _summary.value = "⚠ " + userText(it, ua.tarilka.R.string.ai_summary_failed)
-                    return@launch
-                }
-                ask(prompt, ukrainian, _summary, _summaryLoading, 600, noKcal)
-            } finally {
-                if (summaryJob === me) _summaryLoading.value = false
-            }
-        }
-    }
-
-    /** Also stops a summary still being written, so it can't land under another period. */
-    fun clearSummary() {
-        summaryJob?.cancel()
-        _summary.value = null
-        _summaryLoading.value = false
-    }
-
-    private suspend fun ask(summary: String, ukrainian: Boolean, out: MutableStateFlow<String?>, loading: MutableStateFlow<Boolean>, maxTokens: Int, noKcal: Boolean) {
-        loading.value = true
-        val result = runCatching {
-            var text = gemma.advice(summary, ukrainian, maxTokens)
-            // The small model sometimes slips into Russian or another alphabet: ask once more, then show nothing.
-            // Under 18 the app never shows a calorie number; the prompt says so, and the answer is checked too.
-            fun ok(t: String) = ua.tarilka.data.Lang.isClean(t, ukrainian) && !(noKcal && ua.tarilka.data.Lang.mentionsCalories(t))
-            if (!ok(text)) text = gemma.advice(summary, ukrainian, maxTokens)
-            // Two unusable answers: say so, rather than silently showing the button again.
-            if (ok(text)) text else "⚠ " + getApplication<Application>().getString(ua.tarilka.R.string.ai_answer_unusable)
-        }.getOrElse { if (it is kotlinx.coroutines.CancellationException) throw it else "⚠ " + userText(it, ua.tarilka.R.string.ai_summary_failed) }
-        // The model may finish after the request was replaced: its answer belongs to another day or period.
-        kotlinx.coroutines.currentCoroutineContext().ensureActive()
-        out.value = result
-        loading.value = false
-    }
-
-    fun clearAdvice() { _advice.value = null }
-
-    companion object {
-        const val AI_TEXT_LIMIT_MS = 60_000L
     }
 }

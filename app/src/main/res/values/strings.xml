@@ -65,8 +65,6 @@
     <string name="tip_weight_down_good">Your weight is going down gradually (%1$.1f kg a week), at a safe pace.</string>
     <string name="tip_weight_gain_none">The goal is to gain, but weight is not increasing (%1$.1f kg a week). Add a snack or a bigger portion.</string>
 
-    <string name="ai_advice">Advice from on-device AI</string>
-    <string name="ai_thinking">The AI is thinking…</string>
 
     <string name="search_food">Search food</string>
     <string name="recent">Recent</string>
@@ -118,7 +116,7 @@
     <string name="targets_text">%1$s kcal · protein %2$s g · fat %3$s g · carbs %4$s g · fibre %5$s g. Calculated with the Mifflin–St Jeor formula; the target is never below your basal metabolism, even your own target.</string>
 
     <string name="ai_title">On-device AI</string>
-    <string name="ai_explain">Recognises food on photos and gives advice. Runs entirely on the phone. The model is about 2.6 GB and is only needed for photos and AI advice; everything else works without it.</string>
+    <string name="ai_explain">Recognises food on photos. Runs entirely on the phone. The model is about 2.6 GB and is only needed for photos; everything else works without it.</string>
     <string name="ai_ready">Model ready (%1$d MB)</string>
     <string name="ai_import">Choose a model file…</string>
     <string name="ai_importing">Copying the model…</string>
@@ -173,7 +171,7 @@
     <string name="dynamic_color">Colours from wallpaper</string>
     <string name="dynamic_color_hint">Material You: accent colours follow your wallpaper.</string>
     <string name="hide_kcal">Hide calories</string>
-    <string name="hide_kcal_hint">No calorie numbers anywhere: in the diary, history, tips, the AI and the report. Protein, fibre, fluids and habits stay. Helpful if counting calories makes eating harder. If food or weight worries you, please talk to a doctor or psychologist.</string>
+    <string name="hide_kcal_hint">No calorie numbers anywhere: in the diary, history, tips and the report. Protein, fibre, fluids and habits stay. Helpful if counting calories makes eating harder. If food or weight worries you, please talk to a doctor or psychologist.</string>
     <string name="data_title">Data</string>
     <string name="data_hint">Everything is stored only on this phone. Make a backup from time to time, or before switching phones: Android\'s phone-to-phone transfer does not copy Tarilka, only a backup file does.</string>
     <string name="backup_never">There is no backup yet. With protection on, entries cannot be recovered if the key is lost (for example, when the screen lock is removed). Make one in Options → Data.</string>
@@ -188,8 +186,6 @@
     <string name="import_damaged">The file is damaged or was edited. Nothing was restored.</string>
     <string name="export_failed">Could not save the file. Nothing was changed. Try again or choose another place.</string>
     <string name="ai_import_failed">Could not add the model file. Try again or download it once more.</string>
-    <string name="ai_summary_failed">The AI could not write a summary on this phone, perhaps there is not enough memory. Everything else works without it.</string>
-    <string name="ai_answer_unusable">The AI\'s answer did not meet Tarilka\'s rules (language or no calories), so it is not shown. Try again a little later.</string>
     <string name="ai_error">Could not recognise the food. Try again or add it by hand.</string>
     <string name="import_title">Restore from backup?</string>
     <string name="import_confirm">In the file: %1$d food entries, %2$d drinks, %3$d weigh-ins, %4$d own foods. Everything current will be replaced: diary, sleep, cycle, bowel, workouts, waist, notes, own foods and favourites, and the profile if the backup has one.</string>
@@ -268,7 +264,6 @@
     <string name="period_month">Month</string>
     <string name="period_year">Year</string>
     <string name="summaries_few">Not enough entries yet: at least 3 days are needed.</string>
-    <string name="ai_summary">AI summary</string>
     <string name="habit_veg">🥦 Vegetables and fruit: %1$s of 400 g</string>
     <string name="habit_veg_info">Average vegetables and fruit a day (potatoes and dried fruit not counted). The WHO recommends at least 400 g.</string>
     <string name="habit_sweets">🍬 Sweets: %1$s%% of calories</string>
@@ -499,7 +494,7 @@
     </string-array>
     <string name="meal_time">Time: %1$s ✎</string>
     <string name="meal_times_title">Track meal times</string>
-    <string name="meal_times_hint">When adding food you can set and correct the time of the meal. The late-eating badge and the AI\'s advice on meal rhythm use it. When off, time is neither shown nor used.</string>
+    <string name="meal_times_hint">When adding food you can set and correct the time of the meal. The late-eating badge uses it. When off, time is neither shown nor used.</string>
     <string name="weight_hint">To compare, weigh yourself at the same time each day, ideally in the morning before eating.</string>
     <string name="sleep_felt_poor">slept poorly</string>
     <string name="sleep_felt_ok">slept okay</string>
@@ -516,10 +511,6 @@
     <string name="text_list_title">Food list</string>
     <string name="text_list_read">Read the list</string>
     <string name="text_list_hint">Several at once works too: "sauerkraut 100 g, potatoes 40 g, cutlet". Or dictate with the keyboard microphone.</string>
-    <string name="text_ask_ai">Try with AI</string>
-    <string name="text_ask_ai_hint">The AI reads the whole list again. The first time can take up to a minute.</string>
-    <string name="text_ai_timeout">The AI did not answer within a minute. Kept what was read without it: use Replace for what was not found.</string>
-    <string name="text_ai_nothing">The AI found nothing. Kept what was read without it.</string>
     <string name="what_is_it">What is it?</string>
     <string name="bmi_title">Body mass index (BMI)</string>
     <string name="bmi_line">BMI %1$s · %2$s (WHO)</string>
@@ -545,7 +536,7 @@
         <item>obesity class III</item>
     </string-array>
     <string name="cycle_long_gap">There were more than 60 days between two of the recent starts. If you did not miss an entry, a gap that long is worth discussing with a doctor. If you did, mark the missed start on its past date.</string>
-    <string name="ai_busy">The AI is still finishing the previous request. Try again in a minute.</string>
+    <string name="ai_busy">The AI model is still being copied. Try again in a minute.</string>
     <string name="meal_time_fixed">Time: %1$s, as for the whole meal (change it in the meal\'s header).</string>
     <string name="clear_done_hc_failed">Data deleted in Tarilka, but Health Connect did not allow deleting everything: check Tarilka\'s permissions in Health Connect.</string>
     <string name="added_n">Added %1$d</string>
