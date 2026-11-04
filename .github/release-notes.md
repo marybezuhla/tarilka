@@ -11,15 +11,13 @@
 - 🎨 **Теми.** Світла чи темна, пʼять денних і пʼять нічних тем або кольори телефона; типово Віск і Гуцульщина.
 - 🤖 **Локальний ШІ (Gemma 4), за бажанням:** розпізнає їжу на фото. Усе на телефоні.
 
-**Нове в 1.3:** ШІ на телефоні тепер лише розпізнає їжу на фото; поради й підсумки, як і раніше, дає сам застосунок за правилами, миттєво. Теми, як у Коморі (типово Віск і Гуцульщина; хто вмикав «Кольори зі шпалер», отримує кольори телефона). 37 нових страв і випічки: булочки з маком, ватрушки, пиріжки з вишнею, вареники з мʼясом, куліш, бігос тощо. Пошук знаходить слова в будь-якому порядку й формі («рибні котлети» → «Котлета рибна»).
-
-**Нове в 1.2:** нова іконка; режим «Не показувати калорії»; окремо вагітність і годування груддю (+500 ккал за EFSA); нагадування про резервну копію, коли ввімкнено захист; ліцензія GPL-3.0; будь-яке видалення можна одразу «Повернути»; зрозумілі повідомлення про помилки; до 18 років калорії не йдуть і в Health Connect; у вагітність немає нагадувань про цикл; читабельніші кольори; захист від пошкоджених чи підроблених резервних копій; ліцензії й джерела в «Про застосунок».
-
 Потрібен Android 12 або новіший; для ШІ — телефон від 6 ГБ оперативної памʼяті.
 
 📲 Завантажте файл .apk нижче й відкрийте його на телефоні. 🔄 Для оновлень — Obtainium (є в F-Droid): «Додати застосунок» → `github.com/Marybezu/tarilka`.
 
 Відгук або помилка: Опції → Про застосунок → «Написати відгук», або Issues.
+
+Ліцензія GPL-3.0-or-later.
 
 ---
 
@@ -36,12 +34,10 @@
 - 🎨 **Themes.** Light or dark, five day and five night themes or the phone's colours; Beeswax and Hutsul by default.
 - 🤖 **On-device AI (Gemma 4), optional:** recognises food on photos. Everything stays on the phone.
 
-**New in 1.3:** the on-device AI now only recognises food on photos; tips and summaries come, as before, from the app's own rules, instantly. Themes as in Komora (Beeswax and Hutsul by default; whoever had Colours from wallpaper on gets the phone's colours). 37 new dishes and pastries: poppy seed buns, vatrushky, cherry pies, varenyky with meat, kulish, bigos and more. Search finds words in any order and form ("рибні котлети" → "Котлета рибна").
-
-**New in 1.2:** a new icon; a Hide calories mode; pregnancy and breastfeeding set separately (+500 kcal while breastfeeding, EFSA); a backup reminder while protection is on; GPL-3.0 licence; every delete can be undone right away; error messages in plain words; under 18 no calories go to Health Connect either; no cycle reminders in pregnancy; easier-to-read colours; protection against damaged or crafted backups; licences and sources in About.
-
 Requires Android 12 or newer; the AI needs a phone with 6 GB of RAM or more.
 
 📲 Download the .apk below and open it on your phone. 🔄 For updates, use Obtainium (on F-Droid): "Add App" → `github.com/Marybezu/tarilka`.
 
 Feedback or a bug: Options → About → Send feedback, or Issues.
+
+Licence: GPL-3.0-or-later.

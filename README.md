@@ -32,7 +32,7 @@
 - **Як створено:** код написано за допомогою ШІ (Claude, Anthropic) під керівництвом і з тестуванням автора.
 - **Застереження:** поради загальні й не замінюють лікаря; ШІ оцінює порції приблизно; записи в Health Connect бачать застосунки, яким ви дали там доступ.
 
-Kotlin · Jetpack Compose · Room · [LiteRT-LM](https://github.com/google-ai-edge/LiteRT-LM). Ліцензія GPL-3.0.
+Kotlin · Jetpack Compose · Room · [LiteRT-LM](https://github.com/google-ai-edge/LiteRT-LM). Ліцензія GNU GPL версії 3 або (на ваш вибір) будь-якої пізнішої (GPL-3.0-or-later).
 
 ---
 
@@ -70,4 +70,4 @@ A private, offline food tracker for Android. Ukrainian and English. Free, no ads
 - **How it was made:** written with AI assistance (Claude, Anthropic), directed and tested by the author.
 - **Disclaimer:** advice is general and does not replace a doctor; the AI estimates portions roughly; Health Connect records are visible to apps you allowed there.
 
-Kotlin · Jetpack Compose · Room · [LiteRT-LM](https://github.com/google-ai-edge/LiteRT-LM). GPL-3.0 licence.
+Kotlin · Jetpack Compose · Room · [LiteRT-LM](https://github.com/google-ai-edge/LiteRT-LM). Licence: GNU GPL version 3 or (at your option) any later version (GPL-3.0-or-later).
