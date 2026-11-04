@@ -14,6 +14,9 @@ EXPORTED_OK = {
     "ua.tarilka.ui.MainActivity",
     # The same Health Connect question on Android 14+; only the system may send it (START_VIEW_PERMISSION_USAGE)
     "ua.tarilka.ViewPermissionUsageActivity",
+    # Part of the Health Connect client library: the Health Connect app on the phone binds to it.
+    # Without it Health Connect (steps, sleep, writing meals) does not work; the library declares it exported.
+    "androidx.health.platform.client.impl.sdkservice.HealthDataSdkService",
 }
 # An exported component is fine anyway when only the system can reach it: a permission no ordinary app gets.
 SYSTEM_ONLY = {"android.permission.DUMP", "android.permission.START_VIEW_PERMISSION_USAGE", "android.permission.BIND_JOB_SERVICE"}
@@ -35,6 +38,18 @@ for line in out.splitlines():
         value = a.group(2)
         value = value.split(" (Raw:")[0].strip().strip('"')
         elements[-1]["attrs"][a.group(1)] = value
+
+def actions(i):
+    """The intent actions an element answers to, for the log."""
+    d = elements[i]["depth"]
+    found = []
+    for e in elements[i + 1:]:
+        if e["depth"] <= d:
+            break
+        if e["tag"] == "action":
+            found.append(e["attrs"].get("name", "?"))
+    return found
+
 
 def has_child(i, tag):
     """An element directly or further inside element i has this tag (e.g. an intent-filter)."""
@@ -70,9 +85,10 @@ for i, e in enumerate(elements):
     if not is_exported:
         continue
     if name in EXPORTED_OK or e["attrs"].get("permission") in SYSTEM_ONLY:
-        print(f"exported (allowed): {e['tag']} {name} {e['attrs'].get('permission', '')}")
+        print(f"exported (allowed): {e['tag']} {name} permission={e['attrs'].get('permission', '-')} actions={actions(i)}")
         continue
-    problems.append(f"{e['tag']} {name} is open to other apps (exported) and is not on the list")
+    problems.append(f"{e['tag']} {name} is open to other apps (exported) and is not on the list; "
+                    f"permission={e['attrs'].get('permission', '-')} actions={actions(i)}")
 
 for p in problems:
     print(f"::error::{p}")
