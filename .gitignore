@@ -10,3 +10,4 @@ captures/
 .kotlin/
 __pycache__/
 app/schemas/
+/review/

@@ -75,6 +75,13 @@ jobs:
           bash .github/check-permissions.sh app/build/outputs/apk/full/release/app-full-release-unsigned.apk
           bash .github/check-permissions.sh app/build/outputs/apk/fdroid/release/app-fdroid-release-unsigned.apk
 
+      - name: Check the manifest (no cloud backup, no plain HTTP, not debuggable, nothing open to other apps without a reason)
+        shell: bash
+        run: |
+          AAPT=$(ls "$ANDROID_HOME"/build-tools/*/aapt2 | sort -V | tail -1)
+          python3 .github/check-manifest.py "$AAPT" app/build/outputs/apk/full/release/app-full-release-unsigned.apk
+          python3 .github/check-manifest.py "$AAPT" app/build/outputs/apk/fdroid/release/app-fdroid-release-unsigned.apk
+
       - name: Check the F-Droid build has no AI runtime (no prebuilt AI libraries)
         shell: bash
         run: |

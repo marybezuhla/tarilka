@@ -1,1 +1,1 @@
-A private, offline food tracker: 748 foods and dishes, habits without judgement, safe targets, a PDF report, fluids, steps and weight. Themes: light or dark, five day and five night themes or the phone's colours. Search finds words in any order. No internet, no accounts.
+A private, offline food tracker: 748 foods and dishes, habits without judgement, safe targets, a PDF report, fluids, steps and weight. Themes: light or dark, five day and five night themes or the phone's colours. Search finds words in any order. No internet, no accounts. Requires Android 12 or newer.

@@ -20,14 +20,6 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 
-/**
- * "Worth attention" (over the target, short sleep, a warning): olive amber by day, warm yellow by night, the
- * same in every theme (the phone's colours too), so it never takes a theme's green or red and stays apart from
- * the brown and red accents. Made readable on each theme's cards by [readableArgb].
- */
-private const val ATTENTION_LIGHT = 0xFF7A6A00L
-private const val ATTENTION_DARK = 0xFFFFD54FL
-
 /** Material colours from one of the themes; the phone's own (Material You) for the system ones. Same mapping as Komora. */
 fun colorScheme(theme: Theme, context: Context): ColorScheme {
     val p = theme.palette ?: return (if (theme.dark) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)).let {
@@ -42,7 +34,7 @@ fun colorScheme(theme: Theme, context: Context): ColorScheme {
     }
     fun c(v: Long) = Color(v)
     val base = if (theme.dark) darkColorScheme() else lightColorScheme()
-    val attention = readableArgb(if (theme.dark) ATTENTION_DARK else ATTENTION_LIGHT, p.onSurface, p.surface, p.background, p.surfaceVariant)
+    val attention = p.attention(theme.dark)
     return base.copy(
         primary = c(p.primary),
         onPrimary = c(p.onPrimary),
@@ -76,19 +68,6 @@ fun colorScheme(theme: Theme, context: Context): ColorScheme {
     )
 }
 
-/**
- * [color], moved step by step towards [toward] (the text colour) until it reads on every one of [on]
- * (WCAG AA, at least 4.5:1). Colours that already read are kept as they are.
- */
-fun readableArgb(color: Long, toward: Long, vararg on: Long): Long {
-    var t = 0.0
-    var c = color
-    while (t < 1.0 && on.any { contrast(c, it) < 4.5 }) {
-        t += 0.05
-        c = mix(color, toward, t)
-    }
-    return c
-}
 
 private fun Color.argb(): Long = toArgb().toLong() and 0xFFFFFFFFL
 

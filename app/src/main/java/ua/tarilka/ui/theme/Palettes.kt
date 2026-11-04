@@ -127,3 +127,29 @@ fun mix(a: Long, b: Long, t: Double): Long {
     fun m(s: Int) = Math.round(ch(a, s) * (1 - t) + ch(b, s) * t)
     return (0xFFL shl 24) or (m(16) shl 16) or (m(8) shl 8) or m(0)
 }
+
+/**
+ * "Worth attention" (over the target, short sleep, a warning): olive amber by day, warm yellow by night, the
+ * same in every theme (the phone's colours too), so it never takes a theme's green or red and stays apart from
+ * the brown and red accents. Made readable on each theme's cards by [readableArgb]; `PaletteTest` checks every theme.
+ */
+const val ATTENTION_LIGHT = 0xFF7A6A00L
+const val ATTENTION_DARK = 0xFFFFD54FL
+
+/**
+ * [color], moved step by step towards [toward] (the text colour) until it reads on every one of [on]
+ * (WCAG AA, at least 4.5:1). Colours that already read are kept as they are.
+ */
+fun readableArgb(color: Long, toward: Long, vararg on: Long): Long {
+    var t = 0.0
+    var c = color
+    while (t < 1.0 && on.any { contrast(c, it) < 4.5 }) {
+        t += 0.05
+        c = mix(color, toward, t)
+    }
+    return c
+}
+
+/** The "worth attention" colour of a palette, as the app shows it. */
+fun Palette.attention(dark: Boolean): Long =
+    readableArgb(if (dark) ATTENTION_DARK else ATTENTION_LIGHT, onSurface, surface, background, surfaceVariant)

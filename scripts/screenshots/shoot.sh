@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 # Takes the store screenshots on a running emulator: installs the debug APK, loads the invented demo diary
-# (DemoActivity), and photographs eight screens in Ukrainian and in English into fastlane/.../phoneScreenshots
-# (as many as Komora shows): Today by day and by night (the default Beeswax and Hutsul themes), the meals,
-# adding food, history, its charts, weight, the themes.
+# (DemoActivity), and photographs the eight store screens in Ukrainian and in English into
+# fastlane/.../phoneScreenshots, in the order people see them: Today, adding food, foods, history and charts,
+# weight, Today at night (the default Beeswax and Hutsul themes), the themes, About.
+# Then, for review only (review/, never in the store): a narrow phone with the largest font, and a tablet.
 #   bash scripts/screenshots/shoot.sh path/to/app-fdroid-debug.apk
 set -euo pipefail
 APK="$1"; PKG=ua.tarilka; HERE="$(cd "$(dirname "$0")" && pwd)"; ROOT="$HERE/../.."
@@ -49,7 +50,7 @@ no_keyboard() { adb shell dumpsys input_method | grep -q 'mInputShown=true' && a
 start_app() { adb shell am force-stop $PKG; adb shell am start -W -n $PKG/.ui.MainActivity >/dev/null; sleep 6; }
 
 run() {
-  local LOCALE="$1"; LANG_DIR="$2"; local WEIGHT="$3" FOODS="$4" HISTORY="$5" OPTIONS="$6" DAY_THEME="$7" BREAKFAST="$8" ADD="$9"
+  local LOCALE="$1"; LANG_DIR="$2"; local WEIGHT="$3" FOODS="$4" HISTORY="$5" OPTIONS="$6" DAY_THEME="$7" BREAKFAST="$8" ADD="$9" ABOUT="${10}" TODAY="${11}"
   OUT="$ROOT/fastlane/metadata/android/$LANG_DIR/images/phoneScreenshots"
   rm -rf "$OUT"; mkdir -p "$OUT"
   adb shell am force-stop $PKG
@@ -64,24 +65,39 @@ run() {
   sleep 6
   # Opened again, so the chosen language is surely applied everywhere.
   adb shell cmd uimode night no >/dev/null; start_app
-  shot 01_today
+  shot 01_home
+  # Adding to breakfast (its "Add" is the first one on screen once breakfast is near the top)
+  to_top "$BREAKFAST"; tap "$ADD"; sleep 2; no_keyboard; shot 02_add
+  adb shell input keyevent KEYCODE_BACK; sleep 2; start_app
+  tap "$FOODS"; shot 03_foods
+  tap "$TODAY"; tap "$HISTORY"; sleep 3; adb shell input swipe 540 1900 540 1300 600; sleep 2; shot 04_history
+  adb shell input keyevent KEYCODE_BACK; sleep 2
+  tap "$WEIGHT"; shot 05_weight
   # The same day at night: the app follows the phone, in the Hutsul theme
   adb shell cmd uimode night yes >/dev/null; start_app
-  shot 02_today_night
+  shot 06_home_night
   adb shell cmd uimode night no >/dev/null; start_app
-  # The meals of today, then adding to breakfast (its "Add" is the first one left on screen)
-  to_top "$BREAKFAST"; shot 03_today_meals
-  tap "$ADD"; sleep 2; no_keyboard; shot 04_add_food
-  adb shell input keyevent KEYCODE_BACK; sleep 2; start_app
-  tap "$HISTORY"; sleep 3; shot 05_history
-  up; shot 06_history_charts
-  adb shell input keyevent KEYCODE_BACK; sleep 2
-  tap "$WEIGHT"; shot 07_weight
-  # The whole "Appearance" section, its title just below the status bar
-  tap "$OPTIONS"; to_top "$DAY_THEME" 600; shot 08_themes
+  # The whole "Appearance" section, its title just below the status bar; then About
+  tap "$OPTIONS"; to_top "$DAY_THEME" 600; shot 07_themes
+  to_top "$ABOUT" 380; shot 08_options
+}
+
+# For review: how the app holds up on a narrow phone with the largest font, and on a tablet.
+review() {
+  local TODAY="$1" OPTIONS="$2" HISTORY="$3"
+  OUT="$ROOT/review"; rm -rf "$OUT"; mkdir -p "$OUT"
+  adb shell settings put system font_scale 1.3; adb shell wm density 480   # about 360 dp wide
+  start_app; shot narrow_big_font_home; to_top "$HISTORY" 1200 || true; tap "$HISTORY" || true; sleep 3; shot narrow_big_font_history
+  adb shell input keyevent KEYCODE_BACK; sleep 2; tap "$OPTIONS"; to_top "$4" 600 || true; shot narrow_big_font_themes
+  adb shell cmd uimode night yes >/dev/null; start_app; shot narrow_big_font_home_night
+  adb shell cmd uimode night no >/dev/null
+  adb shell settings put system font_scale 1.0; adb shell wm size 1600x2560; adb shell wm density 320   # a 10-inch tablet
+  start_app; shot tablet_home; tap "$OPTIONS"; shot tablet_options
+  adb shell wm size reset; adb shell wm density reset
 }
 
 s() { grep -o "name=\"$2\">[^<]*" "$ROOT/app/src/main/res/$1/strings.xml" | cut -d'>' -f2; }
 
-run uk-UA uk Вага Продукти "$(s values-uk history_title)" "$(s values-uk tab_options)" "$(s values-uk day_theme)" "$(s values-uk meal_breakfast)" "$(s values-uk add)"
-run en-US en-US Weight Foods "$(s values history_title)" "$(s values tab_options)" "$(s values day_theme)" "$(s values meal_breakfast)" "$(s values add)"
+run uk-UA uk Вага Продукти "$(s values-uk history_title)" "$(s values-uk tab_options)" "$(s values-uk day_theme)" "$(s values-uk meal_breakfast)" "$(s values-uk add)" "$(s values-uk about)" "$(s values-uk tab_today)"
+run en-US en-US Weight Foods "$(s values history_title)" "$(s values tab_options)" "$(s values day_theme)" "$(s values meal_breakfast)" "$(s values add)" "$(s values about)" "$(s values tab_today)"
+LANG_DIR=review review "$(s values tab_today)" "$(s values tab_options)" "$(s values history_title)" "$(s values day_theme)"
