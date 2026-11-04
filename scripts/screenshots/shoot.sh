@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Takes the store screenshots on a running emulator: installs the debug APK, loads the invented demo diary
-# (DemoActivity), and photographs seven screens in Ukrainian and in English into fastlane/.../phoneScreenshots:
-# Today by day and by night (the default Beeswax and Hutsul themes), history, its charts, weight, foods, the themes.
+# (DemoActivity), and photographs ten screens in Ukrainian and in English into fastlane/.../phoneScreenshots.
+# The best eight come first (Komora shows the first eight): Today by day and by night (the default Beeswax and
+# Hutsul themes), the meals, adding food, history, its charts, weight, the themes; then foods and options.
 #   bash scripts/screenshots/shoot.sh path/to/app-fdroid-debug.apk
 set -euo pipefail
 APK="$1"; PKG=ua.tarilka; HERE="$(cd "$(dirname "$0")" && pwd)"; ROOT="$HERE/../.."
@@ -37,10 +38,12 @@ to_top() {
   done
   echo "::error::'$1' not found while scrolling"; return 1
 }
+# The keyboard, if a search box opened it, is not part of the picture.
+no_keyboard() { adb shell dumpsys input_method | grep -q 'mInputShown=true' && adb shell input keyevent KEYCODE_BACK; sleep 1; return 0; }
 start_app() { adb shell am force-stop $PKG; adb shell am start -W -n $PKG/.ui.MainActivity >/dev/null; sleep 6; }
 
 run() {
-  local LOCALE="$1"; LANG_DIR="$2"; local WEIGHT="$3" FOODS="$4" HISTORY="$5" OPTIONS="$6" DAY_THEME="$7"
+  local LOCALE="$1"; LANG_DIR="$2"; local WEIGHT="$3" FOODS="$4" HISTORY="$5" OPTIONS="$6" DAY_THEME="$7" BREAKFAST="$8" ADD="$9"
   OUT="$ROOT/fastlane/metadata/android/$LANG_DIR/images/phoneScreenshots"
   rm -rf "$OUT"; mkdir -p "$OUT"
   adb shell am force-stop $PKG
@@ -55,20 +58,25 @@ run() {
   sleep 6
   # Opened again, so the chosen language is surely applied everywhere.
   adb shell cmd uimode night no >/dev/null; start_app
-  shot 1_today
+  shot 01_today
   # The same day at night: the app follows the phone, in the Hutsul theme
   adb shell cmd uimode night yes >/dev/null; start_app
-  shot 2_today_night
+  shot 02_today_night
   adb shell cmd uimode night no >/dev/null; start_app
-  tap "$HISTORY"; sleep 3; shot 3_history
-  up; shot 4_history_charts
+  # The meals of today, then adding to breakfast (its "Add" is the first one left on screen)
+  to_top "$BREAKFAST"; shot 03_today_meals
+  tap "$ADD"; sleep 2; no_keyboard; shot 04_add_food
+  adb shell input keyevent KEYCODE_BACK; sleep 2; start_app
+  tap "$HISTORY"; sleep 3; shot 05_history
+  up; shot 06_history_charts
   adb shell input keyevent KEYCODE_BACK; sleep 2
-  tap "$WEIGHT"; shot 5_weight
-  tap "$FOODS"; shot 6_foods
-  tap "$OPTIONS"; to_top "$DAY_THEME"; shot 7_themes
+  tap "$WEIGHT"; shot 07_weight
+  tap "$OPTIONS"; shot 10_options
+  to_top "$DAY_THEME"; shot 08_themes
+  tap "$FOODS"; shot 09_foods
 }
 
 s() { grep -o "name=\"$2\">[^<]*" "$ROOT/app/src/main/res/$1/strings.xml" | cut -d'>' -f2; }
 
-run uk-UA uk Вага Продукти "$(s values-uk history_title)" "$(s values-uk tab_options)" "$(s values-uk day_theme)"
-run en-US en-US Weight Foods "$(s values history_title)" "$(s values tab_options)" "$(s values day_theme)"
+run uk-UA uk Вага Продукти "$(s values-uk history_title)" "$(s values-uk tab_options)" "$(s values-uk day_theme)" "$(s values-uk meal_breakfast)" "$(s values-uk add)"
+run en-US en-US Weight Foods "$(s values history_title)" "$(s values tab_options)" "$(s values day_theme)" "$(s values meal_breakfast)" "$(s values add)"
