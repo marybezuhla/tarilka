@@ -36,6 +36,19 @@ data class Food(
     companion object {
         fun buildSearchKey(uk: String, en: String) =
             "$uk $en".lowercase(Locale.ROOT).replace('ʼ', '\'').replace('’', '\'')
+
+        /**
+         * The words of a search, each cut to a stem, so the order and endings of words don't matter:
+         * "рибна котлета" finds "Котлети рибні", "куряча котлета" finds "Котлета куряча".
+         */
+        fun searchStems(query: String): List<String> =
+            query.split(' ', ',').filter { it.isNotBlank() }.map { w ->
+                when {
+                    w.length >= 6 -> w.dropLast(2)
+                    w.length == 5 -> w.dropLast(1)
+                    else -> w
+                }
+            }.distinct()
     }
 }
 

@@ -447,7 +447,17 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
 
     val searchResults: StateFlow<List<Food>> = query.debounce(120).flatMapLatest { q ->
         val clean = q.trim().lowercase().replace('ʼ', '\'').replace('’', '\'')
-        if (clean.isEmpty()) db.foods().all() else db.foods().search(clean)
+        val stems = Food.searchStems(clean)
+        when {
+            clean.isEmpty() -> db.foods().all()
+            // One short word: exactly as typed
+            stems.size == 1 && stems[0] == clean -> db.foods().search(clean)
+            else -> db.foods().search(stems.maxBy { it.length }).map { list ->
+                list.filter { f -> stems.all { it in f.searchKey } }
+                    // Favourites first as before, then names with the words exactly as typed
+                    .sortedWith(compareByDescending<Food> { it.favorite }.thenByDescending { clean in it.searchKey })
+            }
+        }
     }.stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
     val recent: StateFlow<List<Food>> = db.foods().recent()
