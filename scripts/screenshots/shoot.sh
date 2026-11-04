@@ -38,9 +38,10 @@ to_top() {  # label [target y]
       if [ "$Y" -gt $((TARGET + 40)) ]; then adb shell input swipe 540 "$Y" 540 "$TARGET" 900; fi
       sleep 2; return 0
     fi
-    # Half a screen at a time, so the label can't jump past the target
-    adb shell input swipe 540 1700 540 1100 600; sleep 2
+    up
   done
+  # What the screen showed, for the person reading the log
+  adb exec-out screencap -p > "$OUT/missing.png" || true
   echo "::error::'$1' not found while scrolling"; return 1
 }
 # The keyboard, if a search box opened it, is not part of the picture.
