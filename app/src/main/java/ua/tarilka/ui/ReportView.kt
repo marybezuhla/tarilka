@@ -36,6 +36,7 @@ import ua.tarilka.data.Habits.Level
 import ua.tarilka.data.Metric
 import ua.tarilka.data.Metric.Key
 import ua.tarilka.ui.theme.Numbers
+import ua.tarilka.ui.theme.readable
 
 /** Green / amber / orange, never red: the same colours as the badges. */
 fun levelColor(level: Level): Color = when (level) {
@@ -46,13 +47,14 @@ fun levelColor(level: Level): Color = when (level) {
 
 /** The same colours for text: darker on a light background so they stay readable (WCAG AA). */
 @Composable
-fun levelTextColor(level: Level): Color =
+fun levelTextColor(level: Level): Color = MaterialTheme.colorScheme.readable(
     if (MaterialTheme.colorScheme.surface.luminance() < 0.5f) levelColor(level)
     else when (level) {
         Level.GOOD -> Color(0xFF2E7D32)
         Level.OK -> Color(0xFF8A6100)
         Level.WATCH -> Color(0xFFC43E12)
-    }
+    },
+)
 
 /**
  * The week / month / year summary: "the main points" first, then one line per measure with

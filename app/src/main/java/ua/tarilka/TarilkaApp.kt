@@ -13,13 +13,13 @@ import ua.tarilka.data.Prefs
 import ua.tarilka.health.HealthSync
 import ua.tarilka.health.StepSensor
 
-/** Light / dark / system for the whole app, including system bars. */
-fun applyThemeMode(mode: Int) {
+/** Light / dark / as the phone for the whole app, including system bars. */
+fun applyThemeMode(mode: ua.tarilka.ui.theme.Mode) {
     androidx.appcompat.app.AppCompatDelegate.setDefaultNightMode(
         when (mode) {
-            1 -> androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_NO
-            2 -> androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_YES
-            else -> androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
+            ua.tarilka.ui.theme.Mode.LIGHT -> androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_NO
+            ua.tarilka.ui.theme.Mode.DARK -> androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_YES
+            ua.tarilka.ui.theme.Mode.AUTO -> androidx.appcompat.app.AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
         },
     )
 }
@@ -56,7 +56,7 @@ class TarilkaApp : Application() {
         prefs.reloadPersonal()
         // With app protection the database stays closed until fingerprint or the phone PIN.
         if (!prefs.appLock) openDb(null)
-        applyThemeMode(prefs.themeMode)
+        applyThemeMode(prefs.look.value.mode)
         models = ModelStore(this)
         gemma = GemmaEngine(this, models, scope)
         health = HealthSync(this)

@@ -521,7 +521,8 @@ private fun DayHeader(day: LocalDate, onPrev: () -> Unit, onNext: () -> Unit, on
 @Composable
 private fun TipRow(tip: Tip) {
     val color = when (tip.kind) {
-        Tip.Kind.GOOD -> MaterialTheme.colorScheme.primary
+        // Green as the badges, whatever the theme's accent (in Viburnum it is red)
+        Tip.Kind.GOOD -> levelTextColor(ua.tarilka.data.Habits.Level.GOOD)
         Tip.Kind.WARN -> MaterialTheme.colorScheme.tertiary
         Tip.Kind.INFO -> MaterialTheme.colorScheme.onSurfaceVariant
     }

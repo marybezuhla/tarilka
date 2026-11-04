@@ -1044,13 +1044,12 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
     fun recordMissing(q: String) = prefs.recordMissing(q)
     fun clearMissing() = prefs.clearMissing()
 
-    val themeMode: Int get() = prefs.themeMode
-    val dynamicColor: StateFlow<Boolean> = prefs.dynamicColor
-    fun setThemeMode(mode: Int) {
-        prefs.themeMode = mode
-        ua.tarilka.applyThemeMode(mode)
+    val look: StateFlow<ua.tarilka.ui.theme.Look> = prefs.look
+    fun setLook(look: ua.tarilka.ui.theme.Look) {
+        val modeChanged = look.mode != prefs.look.value.mode
+        prefs.setLook(look)
+        if (modeChanged) ua.tarilka.applyThemeMode(look.mode)
     }
-    fun setDynamicColor(on: Boolean) = prefs.setDynamicColor(on)
     val hideKcal: StateFlow<Boolean> = prefs.hideKcal
     fun setHideKcal(on: Boolean) = prefs.setHideKcal(on)
 

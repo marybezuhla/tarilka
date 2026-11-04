@@ -328,11 +328,6 @@ class Prefs(context: Context) {
         return r[r.size / 2].coerceIn(0.5, 1.5)
     }
 
-    /** 0 = follow system, 1 = light, 2 = dark */
-    var themeMode: Int
-        get() = sp.getInt("themeMode", 0)
-        set(v) = sp.edit().putInt("themeMode", v).apply()
-
     private val _hideKcal = MutableStateFlow(sp.getBoolean("hideKcal", false))
     /** No calorie numbers anywhere, chosen by the person. */
     val hideKcal: StateFlow<Boolean> = _hideKcal.asStateFlow()
@@ -341,12 +336,39 @@ class Prefs(context: Context) {
         _hideKcal.value = on
     }
 
-    private val _dynamicColor = MutableStateFlow(sp.getBoolean("dynamicColor", false))
-    /** Material You: colors from the wallpaper. */
-    val dynamicColor: StateFlow<Boolean> = _dynamicColor.asStateFlow()
-    fun setDynamicColor(on: Boolean) {
-        sp.edit().putBoolean("dynamicColor", on).apply()
-        _dynamicColor.value = on
+    private val _look = MutableStateFlow(readLook())
+    /**
+     * Light or dark, and the theme by day and by night (as in Komora). Only on this phone, not in the backup:
+     * an unreadable value means the default. Someone who had "Colours from wallpaper" on keeps the phone's colours.
+     */
+    val look: StateFlow<ua.tarilka.ui.theme.Look> = _look.asStateFlow()
+
+    private fun readLook(): ua.tarilka.ui.theme.Look {
+        val d = ua.tarilka.ui.theme.Look()
+        return try {
+            val mode = when (sp.getInt("themeMode", 0)) {
+                1 -> ua.tarilka.ui.theme.Mode.LIGHT
+                2 -> ua.tarilka.ui.theme.Mode.DARK
+                else -> ua.tarilka.ui.theme.Mode.AUTO
+            }
+            val wallpaper = sp.getBoolean("dynamicColor", false)
+            val day = ua.tarilka.ui.theme.Theme.of(sp.getString("dayTheme", null), if (wallpaper) ua.tarilka.ui.theme.Theme.SYSTEM else d.day)
+            val night = ua.tarilka.ui.theme.Theme.of(sp.getString("nightTheme", null), if (wallpaper) ua.tarilka.ui.theme.Theme.SYSTEM_DARK else d.night)
+            // A day theme is never used at night, and the other way round
+            if (day.dark || !night.dark) d.copy(mode = mode) else ua.tarilka.ui.theme.Look(mode, day, night)
+        } catch (_: Exception) {
+            d
+        }
+    }
+
+    fun setLook(look: ua.tarilka.ui.theme.Look) {
+        sp.edit()
+            .putInt("themeMode", when (look.mode) { ua.tarilka.ui.theme.Mode.AUTO -> 0; ua.tarilka.ui.theme.Mode.LIGHT -> 1; ua.tarilka.ui.theme.Mode.DARK -> 2 })
+            .putString("dayTheme", look.day.key).putString("nightTheme", look.night.key)
+            // The old switch has become the "Phone colours" themes
+            .remove("dynamicColor")
+            .apply()
+        _look.value = look
     }
 
     // ---- searches that found nothing (kept only on this phone) ----

@@ -528,16 +528,10 @@ private fun SwitchRow(title: String, hint: String, checked: Boolean, onChange: (
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun AppearanceSection(vm: MainViewModel) {
-    var mode by remember { mutableStateOf(vm.themeMode) }
-    val dynamic by vm.dynamicColor.collectAsState()
+    val look by vm.look.collectAsState()
     Section(title = stringResource(R.string.appearance)) {
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            listOf(R.string.theme_system, R.string.theme_light, R.string.theme_dark).forEachIndexed { i, res ->
-                FilterChip(mode == i, { mode = i; vm.setThemeMode(i) }, { Text(stringResource(res)) })
-            }
-        }
+        ua.tarilka.ui.theme.LookSettings(look, vm::setLook)
         Spacer(Modifier.height(6.dp))
-        SwitchRow(stringResource(R.string.dynamic_color), stringResource(R.string.dynamic_color_hint), dynamic, vm::setDynamicColor)
         // Under 18 calories are hidden anyway.
         if (vm.profile.collectAsState().value.age >= 18) {
             val hide by vm.hideKcal.collectAsState()

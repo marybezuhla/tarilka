@@ -1,83 +1,97 @@
 package ua.tarilka.ui.theme
 
+import android.content.Context
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Typography
 import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.dynamicDarkColorScheme
+import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 
-private val Light = lightColorScheme(
-    tertiary = Color(0xFF9A5F1C),
-    onTertiary = Color(0xFFFFFFFF),
-    tertiaryContainer = Color(0xFFF7E0C2),
-    onTertiaryContainer = Color(0xFF3A2200),
-    primary = Color(0xFF4B7A5C),
-    onPrimary = Color(0xFFFFFFFF),
-    primaryContainer = Color(0xFFD2E6D6),
-    onPrimaryContainer = Color(0xFF0F2D1A),
-    secondary = Color(0xFF5B6B60),
-    onSecondary = Color(0xFFFFFFFF),
-    secondaryContainer = Color(0xFFDDE7DE),
-    onSecondaryContainer = Color(0xFF18241C),
-    background = Color(0xFFFBF8F2),
-    onBackground = Color(0xFF1D1C19),
-    surface = Color(0xFFFBF8F2),
-    onSurface = Color(0xFF1D1C19),
-    surfaceVariant = Color(0xFFE9E4D9),
-    onSurfaceVariant = Color(0xFF4B4840),
-    surfaceContainerLowest = Color(0xFFFFFFFF),
-    surfaceContainerLow = Color(0xFFF7F3EB),
-    surfaceContainer = Color(0xFFF2EEE5),
-    surfaceContainerHigh = Color(0xFFECE8DE),
-    surfaceContainerHighest = Color(0xFFE6E2D8),
-    outline = Color(0xFF7C786E),
-    outlineVariant = Color(0xFFD2CDC1),
-    error = Color(0xFFB3261E),
-)
+/**
+ * "Worth attention" (over the target, short sleep, a warning): amber by day, honey by night, the same in
+ * every theme, so it never takes a theme's green or red. Made readable on each theme's cards by [readable].
+ */
+private const val ATTENTION_LIGHT = 0xFF9A5F1CL
+private const val ATTENTION_DARK = 0xFFF0BD7AL
 
-private val Dark = darkColorScheme(
-    tertiary = Color(0xFFF0BD7A),
-    onTertiary = Color(0xFF462A00),
-    tertiaryContainer = Color(0xFF5C3C12),
-    onTertiaryContainer = Color(0xFFF7E0C2),
-    primary = Color(0xFFA8CFB3),
-    onPrimary = Color(0xFF123821),
-    primaryContainer = Color(0xFF2F5240),
-    onPrimaryContainer = Color(0xFFD2E6D6),
-    secondary = Color(0xFFBACBBE),
-    onSecondary = Color(0xFF253329),
-    secondaryContainer = Color(0xFF3B4A40),
-    onSecondaryContainer = Color(0xFFDDE7DE),
-    background = Color(0xFF141815),
-    onBackground = Color(0xFFE3E3DE),
-    surface = Color(0xFF141815),
-    onSurface = Color(0xFFE3E3DE),
-    surfaceVariant = Color(0xFF3F4540),
-    onSurfaceVariant = Color(0xFFBFC6BF),
-    surfaceContainerLowest = Color(0xFF0F1310),
-    surfaceContainerLow = Color(0xFF1A1F1B),
-    surfaceContainer = Color(0xFF1E231F),
-    surfaceContainerHigh = Color(0xFF282E29),
-    surfaceContainerHighest = Color(0xFF333934),
-    outline = Color(0xFF89908A),
-    outlineVariant = Color(0xFF3F4540),
-    error = Color(0xFFF2B8B5),
-)
+/** Material colours from one of the themes; the phone's own (Material You) for the system ones. Same mapping as Komora. */
+fun colorScheme(theme: Theme, context: Context): ColorScheme {
+    val p = theme.palette
+        ?: return if (theme.dark) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
+    fun c(v: Long) = Color(v)
+    val base = if (theme.dark) darkColorScheme() else lightColorScheme()
+    val attention = readableArgb(if (theme.dark) ATTENTION_DARK else ATTENTION_LIGHT, p.onSurface, p.surface, p.background)
+    return base.copy(
+        primary = c(p.primary),
+        onPrimary = c(p.onPrimary),
+        primaryContainer = c(mix(p.surface, p.primary, 0.2)),
+        onPrimaryContainer = c(p.onSurface),
+        secondary = c(p.secondary),
+        onSecondary = c(p.onPrimary),
+        secondaryContainer = c(mix(p.surface, p.secondary, 0.25)),
+        onSecondaryContainer = c(p.onSurface),
+        tertiary = c(attention),
+        onTertiary = c(p.surface),
+        tertiaryContainer = c(mix(p.surface, attention, 0.2)),
+        onTertiaryContainer = c(p.onSurface),
+        background = c(p.background),
+        onBackground = c(p.onSurface),
+        // Cards are the lighter (or, at night, raised) surface; the top bar sits on the background
+        surface = c(p.surface),
+        onSurface = c(p.onSurface),
+        surfaceVariant = c(p.surfaceVariant),
+        onSurfaceVariant = c(p.onSurfaceVariant),
+        surfaceContainerLowest = c(p.surface),
+        surfaceContainerLow = c(p.surface),
+        surfaceContainer = c(p.surface),
+        surfaceContainerHigh = c(p.surface),
+        surfaceContainerHighest = c(p.surface),
+        surfaceBright = c(p.surface),
+        surfaceDim = c(p.background),
+        outline = c(p.onSurfaceVariant),
+        outlineVariant = c(mix(p.surfaceVariant, p.onSurfaceVariant, 0.3)),
+        error = c(p.error),
+    )
+}
+
+/**
+ * [color], moved step by step towards [toward] (the text colour) until it reads on every one of [on]
+ * (WCAG AA, at least 4.5:1). Colours that already read are kept as they are.
+ */
+fun readableArgb(color: Long, toward: Long, vararg on: Long): Long {
+    var t = 0.0
+    var c = color
+    while (t < 1.0 && on.any { contrast(c, it) < 4.5 }) {
+        t += 0.05
+        c = mix(color, toward, t)
+    }
+    return c
+}
+
+private fun Color.argb(): Long = toArgb().toLong() and 0xFFFFFFFFL
+
+/** [color] readable as text on the cards and on the background of this colour scheme. */
+fun ColorScheme.readable(color: Color): Color =
+    Color(readableArgb(color.argb(), onSurface.argb(), surfaceContainerLow.argb(), surface.argb(), background.argb()))
 
 /** Fixed colors for the four nutrients so they read the same everywhere. */
 @Immutable
 data class MacroColors(val protein: Color, val fat: Color, val carbs: Color, val fiber: Color, val kcal: Color)
 
 private val LightMacros = MacroColors(
-    // Dark enough to read as text on the light background (WCAG AA, at least 4.5:1).
     protein = Color(0xFFB8483D), fat = Color(0xFF8F6200), carbs = Color(0xFF3F6FA3),
     fiber = Color(0xFF4E7A30), kcal = Color(0xFF4B7A5C),
 )
@@ -104,19 +118,23 @@ private val Type = Typography().run {
 /** Numbers line up in columns. */
 val Numbers = TextStyle(fontFamily = FontFamily.Default, fontFeatureSettings = "tnum")
 
+/** The full colour scheme of [theme], as the app shows it (small print a little stronger than Android's grey). */
+fun appScheme(theme: Theme, context: Context): ColorScheme = colorScheme(theme, context).let {
+    // Descriptions and small print darker (or lighter at night) than Android's grey: easier to read, as in Komora
+    it.copy(onSurfaceVariant = androidx.compose.ui.graphics.lerp(it.onSurfaceVariant, it.onSurface, 0.45f))
+}
+
 @Composable
-fun TarilkaTheme(dynamicColor: Boolean = false, content: @Composable () -> Unit) {
-    // AppCompat night mode (Light / Dark / System) is already applied to the configuration.
-    val dark = isSystemInDarkTheme()
+fun TarilkaTheme(day: Theme = Theme.VISK, night: Theme = Theme.HUTSULSHCHYNA, content: @Composable () -> Unit) {
+    // AppCompat night mode (Auto / Light / Dark) is already applied to the configuration.
+    val theme = if (isSystemInDarkTheme()) night else day
     val context = androidx.compose.ui.platform.LocalContext.current
-    val scheme = when {
-        dynamicColor -> // minSdk is 31, so Material You is always available
-            if (dark) androidx.compose.material3.dynamicDarkColorScheme(context)
-            else androidx.compose.material3.dynamicLightColorScheme(context)
-        dark -> Dark
-        else -> Light
+    val scheme = remember(theme, context) { appScheme(theme, context) }
+    val macros = remember(scheme, theme) {
+        val m = if (theme.dark) DarkMacros else LightMacros
+        MacroColors(scheme.readable(m.protein), scheme.readable(m.fat), scheme.readable(m.carbs), scheme.readable(m.fiber), scheme.readable(m.kcal))
     }
-    androidx.compose.runtime.CompositionLocalProvider(LocalMacroColors provides if (dark) DarkMacros else LightMacros) {
+    androidx.compose.runtime.CompositionLocalProvider(LocalMacroColors provides macros) {
         MaterialTheme(colorScheme = scheme, typography = Type, content = content)
     }
 }

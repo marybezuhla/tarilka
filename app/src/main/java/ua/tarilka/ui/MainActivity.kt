@@ -49,7 +49,7 @@ class MainActivity : AppCompatActivity() {
         val prefs = app.prefs
         Protection.init(app)
         setContent {
-            val dynamic by prefs.dynamicColor.collectAsState()
+            val look by prefs.look.collectAsState()
             val db by app.dbState.collectAsState()
             val dbBroken by app.dbBroken.collectAsState()
             val protectedOn by Protection.enabled.collectAsState()
@@ -57,7 +57,7 @@ class MainActivity : AppCompatActivity() {
             val profile by prefs.profile.collectAsState()
             val hideKcal by prefs.hideKcal.collectAsState()
             LaunchedEffect(protectedOn, noShots) { Protection.applyRecents(this@MainActivity) }
-            TarilkaTheme(dynamicColor = dynamic) {
+            TarilkaTheme(day = look.day, night = look.night) {
                 // Opened by Health Connect to explain why Tarilka asks for access: only the explanation, no diary.
                 if (healthRationale) {
                     androidx.compose.material3.AlertDialog(
