@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # Takes the store screenshots on a running emulator: installs the debug APK, loads the invented demo diary
-# (DemoActivity), and photographs ten screens in Ukrainian and in English into fastlane/.../phoneScreenshots.
-# The best eight come first (Komora shows the first eight): Today by day and by night (the default Beeswax and
-# Hutsul themes), the meals, adding food, history, its charts, weight, the themes; then foods and options.
+# (DemoActivity), and photographs eight screens in Ukrainian and in English into fastlane/.../phoneScreenshots
+# (as many as Komora shows): Today by day and by night (the default Beeswax and Hutsul themes), the meals,
+# adding food, history, its charts, weight, the themes.
 #   bash scripts/screenshots/shoot.sh path/to/app-fdroid-debug.apk
 set -euo pipefail
 APK="$1"; PKG=ua.tarilka; HERE="$(cd "$(dirname "$0")" && pwd)"; ROOT="$HERE/../.."
@@ -71,9 +71,7 @@ run() {
   up; shot 06_history_charts
   adb shell input keyevent KEYCODE_BACK; sleep 2
   tap "$WEIGHT"; shot 07_weight
-  tap "$OPTIONS"; shot 10_options
-  to_top "$DAY_THEME"; shot 08_themes
-  tap "$FOODS"; shot 09_foods
+  tap "$OPTIONS"; to_top "$DAY_THEME"; shot 08_themes
 }
 
 s() { grep -o "name=\"$2\">[^<]*" "$ROOT/app/src/main/res/$1/strings.xml" | cut -d'>' -f2; }
