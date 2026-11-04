@@ -1168,7 +1168,11 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
         val (text, _) = pendingImport.value ?: return@launch
         pendingImport.value = null
         dataMessage.value = runCatching {
-            val s = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Default) { ua.tarilka.data.Backup.restore(db, prefs, text) }
+            val s = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Default) {
+                // Diary entries find their foods by code: the built-in foods must be there first (right after install they may not be yet)
+                ua.tarilka.data.FoodSeeder.seedIfNeeded(getApplication(), db, prefs)
+                ua.tarilka.data.Backup.restore(db, prefs, text)
+            }
             getApplication<Application>().getString(ua.tarilka.R.string.import_done, s.diary, s.weights)
         }.getOrElse { importError(it) }
     }
