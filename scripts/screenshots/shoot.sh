@@ -26,7 +26,8 @@ tap() {
   echo "::error::'$1' not found on screen"; adb exec-out screencap -p > "$TMP/missing.png"; return 1
 }
 shot() { sleep 2; adb exec-out screencap -p > "$OUT/$1.png"; echo "shot $LANG_DIR/$1"; }
-up() { adb shell input swipe 540 1900 540 900 600; sleep 2; }
+# A screen up; UP_DY smaller for the large-font review, where a full swipe can skip a whole section
+up() { adb shell input swipe 540 1900 540 $((1900 - ${UP_DY:-1000})) 800; sleep 2; }
 # Scrolls until the label is on screen, then brings it up near the top.
 to_top() {  # label [target y]
   local TARGET="${2:-380}"
@@ -87,10 +88,12 @@ review() {
   local TODAY="$1" OPTIONS="$2" HISTORY="$3"
   OUT="$ROOT/review"; rm -rf "$OUT"; mkdir -p "$OUT"
   adb shell settings put system font_scale 1.3; adb shell wm density 480   # about 360 dp wide
+  UP_DY=450
   start_app; shot narrow_big_font_home; to_top "$HISTORY" 1200 || true; tap "$HISTORY" || true; sleep 3; shot narrow_big_font_history
   adb shell input keyevent KEYCODE_BACK; sleep 2; tap "$OPTIONS"; to_top "$4" 600 || true; shot narrow_big_font_themes
   adb shell cmd uimode night yes >/dev/null; start_app; shot narrow_big_font_home_night
   adb shell cmd uimode night no >/dev/null
+  UP_DY=1000
   adb shell settings put system font_scale 1.0; adb shell wm size 1600x2560; adb shell wm density 320   # a 10-inch tablet
   start_app; shot tablet_home; tap "$OPTIONS"; shot tablet_options
   adb shell wm size reset; adb shell wm density reset

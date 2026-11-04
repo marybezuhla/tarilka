@@ -97,6 +97,8 @@ fun Section(
 /** Ring that fills as calories are eaten; turns amber when over the target. */
 @Composable
 fun CalorieRing(eaten: Double, target: Double?, warnOver: Boolean = true, size: Dp = 132.dp, ofText: String? = null) {
+    // A larger system font makes the ring a little larger too, so the numbers inside still fit
+    val size = size * androidx.compose.ui.platform.LocalDensity.current.fontScale.coerceIn(1f, 1.25f)
     val track = MaterialTheme.colorScheme.surfaceVariant
     val fill = LocalMacroColors.current.kcal
     val over = MaterialTheme.colorScheme.tertiary
@@ -112,17 +114,20 @@ fun CalorieRing(eaten: Double, target: Double?, warnOver: Boolean = true, size: 
                 Offset(inset, inset), arcSize, style = Stroke(stroke, cap = StrokeCap.Round),
             )
         }
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(eaten.f0(), style = MaterialTheme.typography.headlineMedium.merge(Numbers))
+        // Inside the ring's stroke: a line that does not fit wraps between words instead of running under it
+        Column(Modifier.padding(horizontal = 18.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+            Text(eaten.f0(), style = MaterialTheme.typography.headlineMedium.merge(Numbers), maxLines = 1)
             Text(
                 ofText ?: if (target != null) stringResource(R.string.of_kcal, target.f0()) else stringResource(R.string.unit_kcal),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
+                textAlign = TextAlign.Center,
             )
         }
     }
 }
 
+@OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
 @Composable
 fun NutrientBar(
     label: String,
@@ -133,8 +138,14 @@ fun NutrientBar(
     decimals: Boolean = false,
 ) {
     Column(Modifier.fillMaxWidth()) {
-        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.Bottom) {
-            Text(label, style = MaterialTheme.typography.labelLarge, modifier = Modifier.weight(1f))
+        // When the label and the numbers don't fit side by side (narrow screen, large font), the numbers go
+        // below; a word is never broken in the middle.
+        androidx.compose.foundation.layout.FlowRow(
+            Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalArrangement = Arrangement.spacedBy(2.dp),
+        ) {
+            Text(label, style = MaterialTheme.typography.labelLarge, modifier = Modifier.padding(end = 8.dp))
             Text(
                 if (decimals) "${value.f1()} / ${target.f1()} $unit" else "${value.f0()} / ${target.f0()} $unit",
                 style = MaterialTheme.typography.labelMedium.merge(Numbers),
