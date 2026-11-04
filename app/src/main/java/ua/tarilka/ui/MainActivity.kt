@@ -28,6 +28,10 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -320,15 +324,22 @@ private fun Tabs(vm: MainViewModel, ai: AiViewModel, tab: Int, onTab: (Int) -> U
             }
         },
     ) { pad ->
-        when (tab) {
-            0 -> TodayScreen(vm, ai, pad, onAdd = { push(Overlay.AddFood(it)) }, onPhoto = {
-                // A typed list left from before must not stand in for the camera.
-                if (ai.photo.value.fromText) ai.resetPhoto()
-                push(Overlay.Photo(it))
-            }, onHistory = { push(Overlay.History) })
-            1 -> WeightScreen(vm, pad)
-            2 -> FoodsScreen(vm, pad, onEdit = { push(Overlay.EditFood(it)) })
-            else -> SettingsScreen(vm, ai, pad)
+        androidx.compose.foundation.layout.Box(androidx.compose.ui.Modifier.fillMaxSize()) {
+            when (tab) {
+                0 -> TodayScreen(vm, ai, pad, onAdd = { push(Overlay.AddFood(it)) }, onPhoto = {
+                    // A typed list left from before must not stand in for the camera.
+                    if (ai.photo.value.fromText) ai.resetPhoto()
+                    push(Overlay.Photo(it))
+                }, onHistory = { push(Overlay.History) })
+                1 -> WeightScreen(vm, pad)
+                2 -> FoodsScreen(vm, pad, onEdit = { push(Overlay.EditFood(it)) })
+                else -> SettingsScreen(vm, ai, pad)
+            }
+            // Behind the clock and battery: a scrolled list does not run under them
+            androidx.compose.foundation.layout.Box(
+                androidx.compose.ui.Modifier.fillMaxWidth().height(pad.calculateTopPadding())
+                    .background(androidx.compose.material3.MaterialTheme.colorScheme.background),
+            )
         }
     }
 }
