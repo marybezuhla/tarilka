@@ -48,7 +48,7 @@ no_keyboard() { adb shell dumpsys input_method | grep -q 'mInputShown=true' && a
 start_app() { adb shell am force-stop $PKG; adb shell am start -W -n $PKG/.ui.MainActivity >/dev/null; sleep 6; }
 
 run() {
-  local LOCALE="$1"; LANG_DIR="$2"; local WEIGHT="$3" FOODS="$4" HISTORY="$5" OPTIONS="$6" DAY_THEME="$7" BREAKFAST="$8" ADD="$9" APPEARANCE="${10}"
+  local LOCALE="$1"; LANG_DIR="$2"; local WEIGHT="$3" FOODS="$4" HISTORY="$5" OPTIONS="$6" DAY_THEME="$7" BREAKFAST="$8" ADD="$9"
   OUT="$ROOT/fastlane/metadata/android/$LANG_DIR/images/phoneScreenshots"
   rm -rf "$OUT"; mkdir -p "$OUT"
   adb shell am force-stop $PKG
@@ -76,11 +76,11 @@ run() {
   up; shot 06_history_charts
   adb shell input keyevent KEYCODE_BACK; sleep 2
   tap "$WEIGHT"; shot 07_weight
-  # The whole "Appearance" section from its title, below the status bar
-  tap "$OPTIONS"; to_top "$APPEARANCE" 300; shot 08_themes
+  # The whole "Appearance" section, its title just below the status bar
+  tap "$OPTIONS"; to_top "$DAY_THEME" 600; shot 08_themes
 }
 
 s() { grep -o "name=\"$2\">[^<]*" "$ROOT/app/src/main/res/$1/strings.xml" | cut -d'>' -f2; }
 
-run uk-UA uk Вага Продукти "$(s values-uk history_title)" "$(s values-uk tab_options)" "$(s values-uk day_theme)" "$(s values-uk meal_breakfast)" "$(s values-uk add)" "$(s values-uk appearance)"
-run en-US en-US Weight Foods "$(s values history_title)" "$(s values tab_options)" "$(s values day_theme)" "$(s values meal_breakfast)" "$(s values add)" "$(s values appearance)"
+run uk-UA uk Вага Продукти "$(s values-uk history_title)" "$(s values-uk tab_options)" "$(s values-uk day_theme)" "$(s values-uk meal_breakfast)" "$(s values-uk add)"
+run en-US en-US Weight Foods "$(s values history_title)" "$(s values tab_options)" "$(s values day_theme)" "$(s values meal_breakfast)" "$(s values add)"
