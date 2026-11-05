@@ -9,7 +9,7 @@
 - Критичну вразливість (доступ до чужих даних, обхід захисту, підроблене оновлення) виправляю протягом 7 днів.
 - Решту — у найближчому випуску.
 
-**Що підтримується.** Лише остання версія з [Releases](https://github.com/Marybezu/tarilka/releases/latest). Виправлення виходять новою версією; старі не оновлюються.
+**Що підтримується.** Лише остання версія з [Releases](https://github.com/marybezuhla/tarilka/releases/latest). Виправлення виходять новою версією; старі не оновлюються.
 
 **Мінімальна версія Android — 12** (API 31): ключ щоденника в сховищі ключів, що відкривається відбитком або PIN-кодом, працює так з Android 11, а кольори телефона (Material You) — з Android 12; одна межа простіша для перевірки, ніж дві. Для ШІ на телефоні потрібно від 6 ГБ оперативної памʼяті.
 
@@ -26,7 +26,7 @@
 - A critical vulnerability (access to someone's data, bypassing protection, a forged update) is fixed within 7 days.
 - Others in the next release.
 
-**Supported versions.** Only the latest one in [Releases](https://github.com/Marybezu/tarilka/releases/latest). Fixes come as a new version; older ones are not updated.
+**Supported versions.** Only the latest one in [Releases](https://github.com/marybezuhla/tarilka/releases/latest). Fixes come as a new version; older ones are not updated.
 
 **Minimum Android version: 12** (API 31). The diary key in the key store, opened with a fingerprint or PIN, works this way from Android 11, and the phone's colours (Material You) need Android 12; one floor is simpler to test than two. The on-device AI needs 6 GB of RAM or more.
 

@@ -19,8 +19,8 @@
 
 ## Встановлення
 
-- 📲 **Напряму:** завантажте файл `.apk` звідси: [github.com/Marybezu/tarilka/releases/latest](https://github.com/Marybezu/tarilka/releases/latest).
-- 🔄 **З оновленнями:** скористайтеся безкоштовним застосунком Obtainium. Його можна встановити з F-Droid: [f-droid.org/packages/dev.imranr.obtainium.fdroid](https://f-droid.org/packages/dev.imranr.obtainium.fdroid) (F-Droid — це безкоштовний каталог застосунків для Android, щось на зразок Google Play. Усі застосунки там мають відкритий код, без реклами й стеження, а перед публікацією їх перевіряють і збирають самі укладачі каталогу). В Obtainium натисніть «Додати застосунок» і вставте посилання `github.com/Marybezu/tarilka`.
+- 📲 **Напряму:** завантажте файл `.apk` звідси: [github.com/marybezuhla/tarilka/releases/latest](https://github.com/marybezuhla/tarilka/releases/latest).
+- 🔄 **З оновленнями:** скористайтеся безкоштовним застосунком Obtainium. Його можна встановити з F-Droid: [f-droid.org/packages/dev.imranr.obtainium.fdroid](https://f-droid.org/packages/dev.imranr.obtainium.fdroid) (F-Droid — це безкоштовний каталог застосунків для Android, щось на зразок Google Play. Усі застосунки там мають відкритий код, без реклами й стеження, а перед публікацією їх перевіряють і збирають самі укладачі каталогу). В Obtainium натисніть «Додати застосунок» і вставте посилання `github.com/marybezuhla/tarilka`.
 - 🤖 **ШІ (необовʼязково):** Опції → «ШІ на телефоні» → «Завантажити модель» (≈2,6 ГБ) → «Обрати файл моделі». Файл перевіряється за контрольною сумою.
 
 ## Прозорість
@@ -57,8 +57,8 @@ A private, offline food tracker for Android. Ukrainian and English. Free, no ads
 
 ## Install
 
-- 📲 **Directly:** download the `.apk` file from [github.com/Marybezu/tarilka/releases/latest](https://github.com/Marybezu/tarilka/releases/latest).
-- 🔄 **With updates:** use the free app Obtainium, available on F-Droid: [f-droid.org/packages/dev.imranr.obtainium.fdroid](https://f-droid.org/packages/dev.imranr.obtainium.fdroid) (F-Droid is a free catalogue of Android apps, a bit like Google Play: every app there is open source, without ads or tracking, and is checked and built by the catalogue's maintainers before publishing). In Obtainium tap "Add App" and paste `github.com/Marybezu/tarilka`.
+- 📲 **Directly:** download the `.apk` file from [github.com/marybezuhla/tarilka/releases/latest](https://github.com/marybezuhla/tarilka/releases/latest).
+- 🔄 **With updates:** use the free app Obtainium, available on F-Droid: [f-droid.org/packages/dev.imranr.obtainium.fdroid](https://f-droid.org/packages/dev.imranr.obtainium.fdroid) (F-Droid is a free catalogue of Android apps, a bit like Google Play: every app there is open source, without ads or tracking, and is checked and built by the catalogue's maintainers before publishing). In Obtainium tap "Add App" and paste `github.com/marybezuhla/tarilka`.
 - 🤖 **AI (optional):** Options → On-device AI → Download model (≈2.6 GB) → Choose a model file. The file is checked by its checksum.
 
 ## Transparency

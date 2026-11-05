@@ -9,7 +9,7 @@ import android.net.Uri
  * The person sees and edits everything before sending; nothing from the diary is added.
  */
 object Feedback {
-    private const val NEW_ISSUE = "https://github.com/Marybezu/tarilka/issues/new"
+    private const val NEW_ISSUE = "https://github.com/marybezuhla/tarilka/issues/new"
 
     /** Copies text marked as sensitive, so the keyboard's clipboard preview does not show it. */
     fun copyPrivate(context: Context, text: String) {
