@@ -3,7 +3,7 @@
 # (DemoActivity), and photographs the eight store screens in Ukrainian and in English into
 # fastlane/.../phoneScreenshots, in the order people see them: Today, adding food, foods, history and charts,
 # weight, Today at night (the default Beeswax and Hutsul themes), the themes, About.
-# Then, for review only (review/, never in the store): a narrow phone with the largest font, and a tablet.
+# Then, for review only (review/, never in the store): a narrow phone with a large (1.3) and the largest (2.0) font, and a tablet.
 #   bash scripts/screenshots/shoot.sh path/to/app-fdroid-debug.apk
 set -euo pipefail
 APK="$1"; PKG=ua.tarilka; HERE="$(cd "$(dirname "$0")" && pwd)"; ROOT="$HERE/../.."
@@ -47,7 +47,12 @@ to_top() {  # label [target y]
   echo "::error::'$1' not found while scrolling"; return 1
 }
 # The keyboard, if a search box opened it, is not part of the picture.
-no_keyboard() { adb shell dumpsys input_method | grep -q 'mInputShown=true' && adb shell input keyevent KEYCODE_BACK; sleep 1; return 0; }
+no_keyboard() {
+  # Read first, then look: grep -q on a pipe can end it early, and pipefail would turn that into a failure
+  local IM; IM="$(adb shell dumpsys input_method || true)"
+  case "$IM" in *mInputShown=true*) adb shell input keyevent KEYCODE_BACK ;; esac
+  sleep 1; return 0
+}
 start_app() { adb shell am force-stop $PKG; adb shell am start -W -n $PKG/.ui.MainActivity >/dev/null; sleep 6; }
 
 run() {
@@ -85,17 +90,19 @@ run() {
 
 # For review: how the app holds up on a narrow phone with the largest font, and on a tablet.
 review() {
-  local TODAY="$1" OPTIONS="$2" HISTORY="$3"
+  local OPTIONS="$2" HISTORY="$3"
   OUT="$ROOT/review"; rm -rf "$OUT"; mkdir -p "$OUT"
   adb shell settings put system font_scale 1.3; adb shell wm density 480   # about 360 dp wide
   UP_DY=450
   start_app; shot narrow_big_font_home; to_top "$HISTORY" 1200 || true; tap "$HISTORY" || true; sleep 3; shot narrow_big_font_history
-  adb shell input keyevent KEYCODE_BACK; sleep 2; tap "$OPTIONS"; to_top "$4" 600 || true; shot narrow_big_font_themes
+  adb shell input keyevent KEYCODE_BACK; sleep 2; tap "$OPTIONS" || true; to_top "$4" 600 || true; shot narrow_big_font_themes
   adb shell cmd uimode night yes >/dev/null; start_app; shot narrow_big_font_home_night
   adb shell cmd uimode night no >/dev/null
+  # The largest font Android 14 offers
+  adb shell settings put system font_scale 2.0; start_app; shot narrow_font_2x_home
   UP_DY=1000
   adb shell settings put system font_scale 1.0; adb shell wm size 1600x2560; adb shell wm density 320   # a 10-inch tablet
-  start_app; shot tablet_home; tap "$OPTIONS"; shot tablet_options
+  start_app; shot tablet_home; tap "$OPTIONS" || true; shot tablet_options
   adb shell wm size reset; adb shell wm density reset
 }
 

@@ -124,8 +124,10 @@ fun TarilkaTheme(day: Theme = Theme.VISK, night: Theme = Theme.HUTSULSHCHYNA, co
     }
     // The window behind the app (seen at launch and while switching light/dark) in the theme's own colour
     val view = androidx.compose.ui.platform.LocalView.current
-    androidx.compose.runtime.SideEffect {
-        (view.context as? android.app.Activity)?.window?.setBackgroundDrawable(android.graphics.drawable.ColorDrawable(scheme.background.toArgb()))
+    androidx.compose.runtime.LaunchedEffect(scheme.background) {
+        var c = view.context
+        while (c is android.content.ContextWrapper && c !is android.app.Activity) c = c.baseContext
+        (c as? android.app.Activity)?.window?.setBackgroundDrawable(android.graphics.drawable.ColorDrawable(scheme.background.toArgb()))
     }
     androidx.compose.runtime.CompositionLocalProvider(LocalMacroColors provides macros) {
         MaterialTheme(colorScheme = scheme, typography = Type, content = content)

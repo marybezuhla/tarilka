@@ -98,13 +98,13 @@ fun Section(
 @Composable
 fun CalorieRing(eaten: Double, target: Double?, warnOver: Boolean = true, size: Dp = 132.dp, ofText: String? = null) {
     // A larger system font makes the ring a little larger too, so the numbers inside still fit
-    val size = size * androidx.compose.ui.platform.LocalDensity.current.fontScale.coerceIn(1f, 1.25f)
+    val ringSize = size * androidx.compose.ui.platform.LocalDensity.current.fontScale.coerceIn(1f, 1.6f)
     val track = MaterialTheme.colorScheme.surfaceVariant
     val fill = LocalMacroColors.current.kcal
     val over = MaterialTheme.colorScheme.tertiary
     val frac = if (target != null && target > 0) (eaten / target).toFloat() else 0f
-    Box(contentAlignment = Alignment.Center, modifier = Modifier.size(size)) {
-        Canvas(Modifier.size(size)) {
+    Box(contentAlignment = Alignment.Center, modifier = Modifier.size(ringSize)) {
+        Canvas(Modifier.size(ringSize)) {
             val stroke = 12.dp.toPx()
             val inset = stroke / 2
             val arcSize = Size(this.size.width - stroke, this.size.height - stroke)
@@ -116,7 +116,7 @@ fun CalorieRing(eaten: Double, target: Double?, warnOver: Boolean = true, size: 
         }
         // Inside the ring's stroke: a line that does not fit wraps between words instead of running under it
         Column(Modifier.padding(horizontal = 18.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(eaten.f0(), style = MaterialTheme.typography.headlineMedium.merge(Numbers), maxLines = 1)
+            Text(eaten.f0(), style = MaterialTheme.typography.headlineMedium.merge(Numbers), maxLines = 1, softWrap = false)
             Text(
                 ofText ?: if (target != null) stringResource(R.string.of_kcal, target.f0()) else stringResource(R.string.unit_kcal),
                 style = MaterialTheme.typography.bodySmall,
@@ -144,6 +144,7 @@ fun NutrientBar(
             Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalArrangement = Arrangement.spacedBy(2.dp),
+            itemVerticalAlignment = Alignment.Bottom,
         ) {
             Text(label, style = MaterialTheme.typography.labelLarge, modifier = Modifier.padding(end = 8.dp))
             Text(

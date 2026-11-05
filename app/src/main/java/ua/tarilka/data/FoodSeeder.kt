@@ -6,7 +6,7 @@ import kotlinx.coroutines.sync.withLock
 /** Loads the built-in food database from assets/foods.csv into Room. */
 object FoodSeeder {
     /** Bump when foods.csv changes so existing installs get the update. */
-    const val VERSION = 10
+    const val VERSION = 11
 
     /** One seeding at a time: the app's own at start and one before a restore must not both insert the foods. */
     private val lock = kotlinx.coroutines.sync.Mutex()

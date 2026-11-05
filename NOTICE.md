@@ -12,7 +12,10 @@ Tarilka is free software under the **GNU GPL version 3 or (at your option) any l
 | Jetpack Compose: UI, Material 3, Material Icons | The Android Open Source Project (Google) | Apache 2.0 |
 | Health Connect client (`androidx.health.connect`) | The Android Open Source Project (Google) | Apache 2.0 |
 | SQLCipher for Android | © Zetetic LLC | BSD-3-Clause |
-| LiteRT-LM (лише у версії з GitHub · GitHub version only) | Google LLC | Apache 2.0 |
+| SQLite (усередині SQLCipher · inside SQLCipher) | D. Richard Hipp та ін. · and others | Public Domain |
+| OpenSSL libcrypto (усередині SQLCipher · inside SQLCipher) | The OpenSSL Project | Apache 2.0 |
+| Protocol Buffers Lite (для Health Connect · for Health Connect) | Google LLC | BSD-3-Clause |
+| LiteRT-LM та його залежності (лише у версії з GitHub · and its dependencies, GitHub version only) | Google LLC | Apache 2.0 |
 
 Для тестів (не входять у застосунок) · For tests only (not in the app): JUnit 4 (EPL 1.0), org.json (Public Domain).
 

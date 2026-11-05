@@ -81,6 +81,9 @@ for i, e in enumerate(elements):
         continue
     name = e["attrs"].get("name", "?")
     exported = e["attrs"].get("exported")
+    if exported not in (None, "true", "false", "1", "0", "0xffffffff", "0x0"):
+        problems.append(f"{e['tag']} {name}: exported value '{exported}' not understood")
+        continue
     is_exported = exported in ("true", "1", "0xffffffff") or (exported is None and has_child(i, "intent-filter"))
     if not is_exported:
         continue
