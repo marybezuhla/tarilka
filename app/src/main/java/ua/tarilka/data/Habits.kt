@@ -124,32 +124,6 @@ data class Habits(
             "dr31" to 3.7, "dr33" to 3.5, "dr34" to 9.0)
 
         /**
-         * Self-help techniques from cognitive behavioural approaches to overeating (NICE NG69 guided self-help).
-         * The AI picks from this list instead of inventing advice.
-         */
-        val TECHNIQUES = listOf(
-            "Regular eating: 3 meals and 1–2 planned snacks, no gaps longer than about 4 hours; this is the strongest help against evening and night overeating.",
-            "Avoid strict restriction: very tight dieting often leads to a restrict-then-overeat cycle.",
-            "When the urge to eat is not hunger, wait 10–15 minutes and do something else (a short walk, a call, a glass of water); the urge usually passes.",
-            "Name the state before eating: hungry, tired, bored, sad, angry or stressed? Often it is not hunger.",
-            "Eat sitting at a table, from a plate, without a screen.",
-            "Sweets: plan a portion instead of a total ban, keep them out of sight, swap sugary drinks for water.",
-            "Evening: plan an evening snack and include protein at dinner.",
-            "Alcohol: alcohol-free days, a glass of water between drinks.",
-            "After a slip: one evening does not cancel the week; guilt itself often triggers the next episode.",
-        )
-
-        /** WHO brief intervention for alcohol: what people can do on their own. */
-        val ALCOHOL_TECHNIQUES = listOf(
-            "Decide in advance how much and on which days; write it down.",
-            "At least 2–3 alcohol-free days every week.",
-            "Drink slowly, alternate each drink with a glass of water, never on an empty stomach.",
-            "Smaller glasses; alcohol-free beer or wine, or sparkling water with lemon.",
-            "Notice what pushes you to drink (stress, company, evenings) and plan something else for that moment.",
-            "Tell someone close about your goal; it makes it easier to keep.",
-        )
-
-        /**
          * Built-in foods are judged by their reviewed food group (assets/food_groups.csv, the same list as the advice):
          * juices count as sugar (WHO free sugars), potatoes are not vegetables, sushi is not fast food.
          * Own foods have no group and are judged by their category.

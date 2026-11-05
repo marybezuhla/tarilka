@@ -446,8 +446,18 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
         else d.atTime(12, 0).atZone(java.time.ZoneId.systemDefault()).toInstant().toEpochMilli()
 
     val searchResults: StateFlow<List<Food>> = query.debounce(120).flatMapLatest { q ->
-        val clean = q.trim().lowercase().replace('ʼ', '\'').replace('’', '\'')
-        if (clean.isEmpty()) db.foods().all() else db.foods().search(clean)
+        val clean = Food.normalize(q)
+        val stems = Food.searchStems(clean)
+        when {
+            clean.isEmpty() || stems.isEmpty() -> db.foods().all()
+            // The longest stem narrows it in the database; every other word is then checked here
+            else -> db.foods().search(Food.likeEscape(stems.maxBy { it.length })).map { list ->
+                list.filter { f -> stems.all { it in f.searchKey } }
+                    // Favourites first as before, then names with the words exactly as typed
+                    .sortedWith(compareByDescending<Food> { it.favorite }.thenByDescending { clean in it.searchKey })
+                    .take(80)
+            }
+        }
     }.stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
 
     val recent: StateFlow<List<Food>> = db.foods().recent()
@@ -1158,7 +1168,11 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
         val (text, _) = pendingImport.value ?: return@launch
         pendingImport.value = null
         dataMessage.value = runCatching {
-            val s = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Default) { ua.tarilka.data.Backup.restore(db, prefs, text) }
+            val s = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Default) {
+                // Diary entries find their foods by code: the built-in foods must be there first (right after install they may not be yet)
+                ua.tarilka.data.FoodSeeder.seedIfNeeded(getApplication(), db, prefs)
+                ua.tarilka.data.Backup.restore(db, prefs, text)
+            }
             getApplication<Application>().getString(ua.tarilka.R.string.import_done, s.diary, s.weights)
         }.getOrElse { importError(it) }
     }

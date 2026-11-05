@@ -1,10 +1,11 @@
 <p>Tarilka is a private food tracker in Ukrainian and English. The app has no internet permission: all data stays on the phone.</p>
 <ul>
 <li><b>Privacy.</b> No accounts, ads or tracking. Optionally the diary is encrypted and opens with fingerprint or the phone PIN. Backups by hand; with a password they are AES-256 encrypted.</li>
-<li><b>711 foods offline.</b> USDA data, Ukrainian product labels and ~140 dishes calculated from recipes: borscht, varenyky, sochnyk and more. Every food shows its source.</li>
+<li><b>748 foods offline.</b> USDA data, Ukrainian product labels and ~175 dishes calculated from recipes: borscht, varenyky, sochnyk and more. Every food shows its source.</li>
 <li><b>Quick logging.</b> Search, a typed list ("buckwheat 200 g, cutlet"), "Same as yesterday", your own foods and recipes.</li>
 <li><b>Safe targets.</b> Never below basal metabolism. No weight loss offered under 18, with a BMI under 18.5, in pregnancy or while breastfeeding; no calories shown at all under 18. Calories can also be hidden by choice.</li>
 <li><b>Habits without judgement.</b> Weekly, monthly and yearly summaries with charts, tips with sources (WHO, EFSA, WCRF, NHS).</li>
+<li><b>Themes.</b> Light or dark, five day and five night themes or the phone's colours.</li>
 <li><b>PDF report</b> for a doctor or dietitian.</li>
 <li><b>Fluids, steps, weight, waist;</b> optionally sleep, Why I eat, workouts, bowel, cycle, reminders.</li>
 </ul>

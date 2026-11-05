@@ -358,6 +358,29 @@ class LogicTest {
     }
 
     @Test
+    fun searchFindsWordsInAnyOrderAndForm() {
+        fun finds(q: String, uk: String, en: String): Boolean {
+            val key = ua.tarilka.data.Food.buildSearchKey(uk, en)
+            return ua.tarilka.data.Food.searchStems(q).all { it in key }
+        }
+        assertTrue(finds("рибна котлета", "Котлета рибна", "Fish cake"))
+        assertTrue(finds("котлети рибні", "Котлета рибна", "Fish cake"))
+        assertTrue(finds("куряча котлета", "Котлета куряча", "Chicken cutlet"))
+        assertTrue(finds("булочка мак", "Булочка з маком", "Poppy seed bun"))
+        assertTrue(!finds("рибна котлета", "Котлета куряча", "Chicken cutlet"))
+        assertEquals(listOf("сир"), ua.tarilka.data.Food.searchStems("сир"))
+        // Only punctuation: no words, no crash
+        assertTrue(ua.tarilka.data.Food.searchStems(", ,").isEmpty())
+        assertTrue(ua.tarilka.data.Food.searchStems("  ").isEmpty())
+        // Numbers keep their comma; brackets and apostrophes don't get in the way
+        assertTrue(finds("молоко 2,5%", "Молоко 2,5%", "Milk 2.5%"))
+        assertTrue(finds("(рибна)", "Котлета рибна", "Fish cake"))
+        assertTrue(finds("вареники з мʼясом", "Вареники з мʼясом", "Varenyky with meat"))
+        assertTrue(finds("вареники з м’ясом", "Вареники з мʼясом", "Varenyky with meat"))
+        assertEquals("5\\%", ua.tarilka.data.Food.likeEscape("5%"))
+    }
+
+    @Test
     fun fibreTargetStaysInRange() {
         val small = Nutrition.targets(Profile(Sex.FEMALE, 30, 160, 55.0, 0, Goal.MAINTAIN), null)
         assertEquals(25.0, small.fiber, 0.01)

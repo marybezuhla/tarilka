@@ -70,5 +70,8 @@ jobs:
           cd fastlane/metadata/android
           for f in */images/phoneScreenshots/*.png; do pngquant --force --quality 75-95 --output "$f" "$f" || true; done
           ls -l */images/phoneScreenshots/ || true
-          tar czf /tmp/shots.tgz */images/phoneScreenshots
+          mkdir -p ../../../review
+          for f in ../../../review/*.png; do [ -f "$f" ] && pngquant --force --quality 75-95 --output "$f" "$f" || true; done
+          # The review pictures (narrow phone with large font, tablet) travel along, but never into fastlane/
+          tar czf /tmp/shots.tgz */images/phoneScreenshots -C ../../.. review
           echo "SHOTS-BEGIN"; base64 -w 100 /tmp/shots.tgz; echo "SHOTS-END"

@@ -114,7 +114,7 @@ class GemmaEngine(
         )
     }
 
-    private fun ask(e: AiSession, image: File?, prompt: String, constrained: Boolean): String =
+    private fun ask(e: AiSession, image: File, prompt: String, constrained: Boolean): String =
         e.ask(SYSTEM_PHOTO, prompt, image, topK = 20, topP = 0.9, temperature = 0.2, maxTokens = 512, jsonSchema = if (constrained) SCHEMA else null)
 
     /** Loads the model in the background so the first photo doesn't wait for it. */

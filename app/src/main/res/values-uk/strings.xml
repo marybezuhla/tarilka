@@ -42,7 +42,6 @@
     <string name="close">Закрити</string>
     <string name="back">Назад</string>
     <string name="clear">Очистити</string>
-    <string name="hide">Сховати</string>
     <string name="replace">Замінити</string>
     <string name="favorite">Обране</string>
 
@@ -146,7 +145,7 @@
     <string name="lang_system">Як у системі</string>
     <string name="about">Про застосунок</string>
     <string name="about_text">Тарілка — безкоштовний офлайн-трекер харчування й ваги з відкритим кодом. Дані залишаються на вашому телефоні. Харчова цінність: USDA FoodData Central (суспільне надбання), типові етикетки українських продуктів і розрахунки за рецептами; джерело вказано для кожного продукту. Застосунок не замінює лікаря; при захворюваннях, вагітності чи розладах харчової поведінки порадьтеся з фахівцем.</string>
-    <string name="about_licences">Ліцензія: GNU GPL-3.0, вільна програма без жодних гарантій. Сирцевий код: github.com/Marybezu/tarilka. Використано SQLCipher (© Zetetic LLC, ліцензія BSD), AndroidX, Kotlin і LiteRT-LM (Apache 2.0). Модель Gemma (за бажанням) належить Google і має умови, вказані на сторінці моделі. Дані про продукти: U.S. Department of Agriculture, Agricultural Research Service, FoodData Central.</string>
+    <string name="about_licences">Ліцензія: GNU GPL версії 3 або (на ваш вибір) будь-якої пізнішої версії, вільна програма без жодних гарантій. Сирцевий код: github.com/Marybezu/tarilka. Використано: Kotlin і kotlinx.coroutines (JetBrains, Apache 2.0); AndroidX, Jetpack Compose, Room, Biometric і Health Connect (Google, Apache 2.0); SQLCipher (© Zetetic LLC, BSD); LiteRT-LM (Google, Apache 2.0). Повний перелік — у NOTICE.md. Модель Gemma (за бажанням) належить Google і має умови, вказані на сторінці моделі. Дані про продукти: U.S. Department of Agriculture, Agricultural Research Service, FoodData Central.</string>
     <string name="water">Рідина</string>
     <string name="water_title">Напої</string>
     <string name="water_hint">Вода, чай, кава та інші напої. Сік, кефір та інші напої, записані як їжа, враховуються автоматично.</string>
@@ -270,7 +269,6 @@
     <string name="clear_all_text">Буде видалено щоденник (їжа, рідина, вага, талія, сон, цикл, кишківник, тренування, нотатки, «Чому я їм»), ваші продукти й рецепти, обрані, профіль, поправку грамів для фото, журнал кроків із датчика телефону та список «Не знайдено в базі». Кроки й сон у Health Connect не видаляються. Залишаться модель ШІ та налаштування (мова, тема, нагадування). Це не можна скасувати.</string>
     <string name="clear_hc">Також видалити записи, які Тарілка внесла в Health Connect</string>
     <string name="export_first">Спочатку зробити резервну копію</string>
-    <string name="copy">Копіювати</string>
     <string name="summaries_link">Підсумки за тиждень, місяць, рік</string>
     <string name="summaries_title">Підсумки</string>
     <string name="period_week">Тиждень</string>

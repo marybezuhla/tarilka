@@ -1,13 +1,19 @@
 package ua.tarilka.data
 
 import android.content.Context
+import kotlinx.coroutines.sync.withLock
 
 /** Loads the built-in food database from assets/foods.csv into Room. */
 object FoodSeeder {
     /** Bump when foods.csv changes so existing installs get the update. */
-    const val VERSION = 9
+    const val VERSION = 11
 
-    suspend fun seedIfNeeded(context: Context, db: AppDatabase, prefs: Prefs) {
+    /** One seeding at a time: the app's own at start and one before a restore must not both insert the foods. */
+    private val lock = kotlinx.coroutines.sync.Mutex()
+
+    suspend fun seedIfNeeded(context: Context, db: AppDatabase, prefs: Prefs) = lock.withLock { seed(context, db, prefs) }
+
+    private suspend fun seed(context: Context, db: AppDatabase, prefs: Prefs) {
         // Also when the database is new but the setting survived (e.g. "Start fresh"): never an empty food list.
         if (prefs.seedVersion >= VERSION && db.foods().codes().isNotEmpty()) return
         val parsed = parse(context.assets.open("foods.csv").bufferedReader(Charsets.UTF_8).readLines())

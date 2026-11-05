@@ -23,7 +23,11 @@ class DemoActivity : Activity() {
             today.minusDays(d.toLong()).atTime(LocalTime.of(h.toInt(), mi.toInt())).atZone(zone).toInstant().toEpochMilli().toString()
         }
         json = Regex("@D(\\d+)@").replace(json) { m -> today.minusDays(m.groupValues[1].toLong()).toString() }
-        kotlinx.coroutines.runBlocking { ua.tarilka.data.Backup.restore(app.db, app.prefs, json) }
+        kotlinx.coroutines.runBlocking {
+            // The demo diary finds its foods by code: on a fresh install the built-in foods may not be in yet
+            ua.tarilka.data.FoodSeeder.seedIfNeeded(app, app.db, app.prefs)
+            ua.tarilka.data.Backup.restore(app.db, app.prefs, json)
+        }
         // The language for the screenshots, the same way the app's own language setting does it.
         intent.getStringExtra("lang")?.let {
             androidx.appcompat.app.AppCompatDelegate.setApplicationLocales(androidx.core.os.LocaleListCompat.forLanguageTags(it))

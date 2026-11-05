@@ -106,7 +106,6 @@ fun TodayScreen(
     val note by vm.note.collectAsState()
     var noteDialog by remember { mutableStateOf(false) }
     val macros = LocalMacroColors.current
-    val context = LocalContext.current
     var editing by remember { mutableStateOf<DiaryEntry?>(null) }
     var fluidDialog by remember { mutableStateOf(false) }
     val lifecycle = androidx.lifecycle.compose.LocalLifecycleOwner.current
@@ -152,18 +151,37 @@ fun TodayScreen(
 
         item {
             Section {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    // Under 18 the ring shows protein instead of calories.
+                // Under 18 the ring shows protein instead of calories.
+                val ring: @Composable () -> Unit = {
                     if (LocalShowKcal.current) CalorieRing(totals.kcal, targets.kcal, warnOver = targets.limit == null)
                     else CalorieRing(totals.protein, targets.protein, warnOver = false, ofText = stringResource(R.string.ring_protein, targets.protein.f0()))
-                    Spacer(Modifier.width(16.dp))
-                    Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                }
+                val bars: @Composable (Modifier) -> Unit = { m ->
+                    Column(m, verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         NutrientBar(stringResource(R.string.protein), totals.protein, targets.protein, macros.protein)
                         if (targets.showKcal) {
                             NutrientBar(stringResource(R.string.fat), totals.fat, targets.fat, macros.fat)
                             NutrientBar(stringResource(R.string.carbs), totals.carbs, targets.carbs, macros.carbs)
                         }
                         NutrientBar(stringResource(R.string.fiber), totals.fiber, targets.fiber, macros.fiber)
+                    }
+                }
+                // Side by side while the bars get room for a word; with a very large font on a narrow phone
+                // the bars go under the ring, so no word is ever broken.
+                androidx.compose.foundation.layout.BoxWithConstraints(Modifier.fillMaxWidth()) {
+                    val ringWidth = 132.dp * androidx.compose.ui.platform.LocalDensity.current.fontScale.coerceIn(1f, 1.6f)
+                    if (maxWidth - ringWidth - 16.dp >= 120.dp * androidx.compose.ui.platform.LocalDensity.current.fontScale) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            ring()
+                            Spacer(Modifier.width(16.dp))
+                            bars(Modifier.weight(1f))
+                        }
+                    } else {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            ring()
+                            Spacer(Modifier.height(12.dp))
+                            bars(Modifier.fillMaxWidth())
+                        }
                     }
                 }
                 Spacer(Modifier.height(12.dp))

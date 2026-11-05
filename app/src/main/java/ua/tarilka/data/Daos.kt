@@ -11,10 +11,11 @@ import kotlinx.coroutines.flow.map
 
 @Dao
 interface FoodDao {
+    /** [q] is already escaped for LIKE (see [Food.likeEscape]); every match, the caller filters and cuts. */
     @Query(
-        """SELECT * FROM foods WHERE searchKey LIKE '%' || :q || '%'
+        """SELECT * FROM foods WHERE searchKey LIKE '%' || :q || '%' ESCAPE '\'
            ORDER BY favorite DESC, (code IS NULL) DESC,
-                    (searchKey LIKE :q || '%') DESC, length(nameUk) LIMIT 80"""
+                    (searchKey LIKE :q || '%' ESCAPE '\') DESC, length(nameUk)"""
     )
     fun search(q: String): Flow<List<Food>>
 
