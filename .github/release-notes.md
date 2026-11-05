@@ -13,7 +13,7 @@
 
 Потрібен Android 12 або новіший; для ШІ — телефон від 6 ГБ оперативної памʼяті.
 
-📲 Завантажте файл .apk нижче й відкрийте його на телефоні. 🔄 Для оновлень — Obtainium (є в F-Droid): «Додати застосунок» → `github.com/Marybezu/tarilka`.
+📲 Завантажте файл .apk нижче й відкрийте його на телефоні. 🔄 Для оновлень — Obtainium (є в F-Droid): «Додати застосунок» → `github.com/marybezuhla/tarilka`.
 
 Відгук або помилка: Опції → Про застосунок → «Написати відгук», або Issues.
 
@@ -36,7 +36,7 @@
 
 Requires Android 12 or newer; the AI needs a phone with 6 GB of RAM or more.
 
-📲 Download the .apk below and open it on your phone. 🔄 For updates, use Obtainium (on F-Droid): "Add App" → `github.com/Marybezu/tarilka`.
+📲 Download the .apk below and open it on your phone. 🔄 For updates, use Obtainium (on F-Droid): "Add App" → `github.com/marybezuhla/tarilka`.
 
 Feedback or a bug: Options → About → Send feedback, or Issues.
 
