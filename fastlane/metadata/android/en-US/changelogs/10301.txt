@@ -1,0 +1,1 @@
+Themes sit exactly three in a row across the whole width; choosing a night theme brings its day pair, and the other way round. The icon in the shared colours of the apps. Requires Android 12 or newer.
