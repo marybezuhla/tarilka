@@ -1,15 +1,8 @@
-**Тарілка 1.3.0** — приватний офлайн-трекер харчування для Android: без інтернету, акаунтів і реклами. Українська та англійська.
+**Тарілка 1.3.1** — приватний офлайн-трекер харчування для Android.
 
-- 🔒 **Приватність.** Дозволу на інтернет немає, дані лише на телефоні, хмарну копію вимкнено. За бажанням щоденник і профіль шифруються й відкриваються відбитком або PIN-кодом телефону; експорт і видалення ще раз просять підтвердження; можна заборонити знімки екрана. Резервна копія вручну, якщо з паролем, то шифрування AES-256.
-- 🔬 **748 продуктів офлайн.** Дані USDA, етикетки українських продуктів і ~175 страв за рецептами: борщ, вареники, сочник, фастфуд, суші, торти тощо. Біля кожного продукту видно джерело.
-- 🍽️ **Швидкий запис.** Пошук, список текстом («гречка 200 г, котлета»), фото тарілки, «Як учора», свої продукти й рецепти.
-- 🛡️ **Безпечні цілі.** Норма ніколи не нижча за базовий обмін. Схуднення не пропонується до 18 років, при ІМТ < 18,5, у вагітність і при годуванні груддю; до 18 років калорій не видно зовсім. Калорії можна сховати зовсім («Не показувати калорії»).
-- 🌱 **Звички без осуду.** Тенденції, підсумки за тиждень, місяць і рік із графіками, поради «менше · замінити · додати» з вашими продуктами й джерелом (ВООЗ, EFSA, WCRF, NHS).
-- 📄 **Звіт PDF** з графіками для лікаря чи дієтолога.
-- 💧 **Рідина, кроки, вага, талія.** Супи й напої враховуються в рідині; кроки з Health Connect або датчика.
-- 🌙 **За бажанням:** сон, «Чому я їм», тренування, кишківник, цикл, AUDIT-C (щодо алкоголю), нагадування.
-- 🎨 **Теми.** Світла чи темна, пʼять денних і пʼять нічних тем або кольори телефона; типово Віск і Смерека.
-- 🤖 **Локальний ШІ (Gemma 4), за бажанням:** розпізнає їжу на фото. Усе на телефоні.
+- 🎨 **Теми рівно по три в ряд** на всю ширину екрана, без зсуву вбік.
+- 🌗 **День і ніч у парі:** обрана нічна тема підбирає денну (Зоряна ніч — Небо), і навпаки; кожну можна змінити окремо.
+- 🍽️ **Іконка** в спільних кольорах застосунків автора.
 
 Потрібен Android 12 або новіший; для ШІ — телефон від 6 ГБ оперативної памʼяті.
 
@@ -21,18 +14,11 @@
 
 ---
 
-**Tarilka 1.3.0** — a private, offline food tracker for Android: no internet, no accounts, no ads. Ukrainian and English.
+**Tarilka 1.3.1** — a private offline food tracker for Android.
 
-- 🔒 **Privacy.** No internet permission, data stays on the phone, cloud backup is off. Optionally the diary and profile are encrypted and open with fingerprint or the phone PIN; export and deleting ask again; screenshots can be blocked. Backups by hand; with a password they are AES-256 encrypted.
-- 🔬 **748 foods offline.** USDA data, Ukrainian product labels and ~175 dishes calculated from recipes: borscht, varenyky, sochnyk, fast food, sushi, cakes and more. Every food shows its source.
-- 🍽️ **Quick logging.** Search, a typed list ("buckwheat 200 g, cutlet"), a plate photo, "Same as yesterday", your own foods and recipes.
-- 🛡️ **Safe targets.** Never below basal metabolism. No weight loss offered under 18, with a BMI under 18.5, in pregnancy or while breastfeeding; no calories shown at all under 18. Calories can be hidden altogether (Hide calories).
-- 🌱 **Habits without judgement.** Trends, weekly, monthly and yearly summaries with charts, "less · swap · add" suggestions with your own foods and the source (WHO, EFSA, WCRF, NHS).
-- 📄 **PDF report** with charts for a doctor or dietitian.
-- 💧 **Fluids, steps, weight, waist.** Soups and drinks count as fluid; steps from Health Connect or the phone's sensor.
-- 🌙 **Optional:** sleep, Why I eat, workouts, bowel, cycle, AUDIT-C (about alcohol), reminders.
-- 🎨 **Themes.** Light or dark, five day and five night themes or the phone's colours; Beeswax and Spruce by default.
-- 🤖 **On-device AI (Gemma 4), optional:** recognises food on photos. Everything stays on the phone.
+- 🎨 **Themes exactly three in a row** across the whole screen, no longer pushed to one side.
+- 🌗 **Day and night in pairs:** choosing a night theme brings its day pair (Starry night with Sky), and the other way round; either can still be changed.
+- 🍽️ **The icon** in the shared colours of the author's apps.
 
 Requires Android 12 or newer; the AI needs a phone with 6 GB of RAM or more.
 
