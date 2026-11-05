@@ -2,7 +2,7 @@
 # Takes the store screenshots on a running emulator: installs the debug APK, loads the invented demo diary
 # (DemoActivity), and photographs the eight store screens in Ukrainian and in English into
 # fastlane/.../phoneScreenshots, in the order people see them: Today, adding food, foods, history and charts,
-# weight, Today at night (the default Beeswax and Hutsul themes), the themes, About.
+# weight, Today at night (the default Beeswax and Spruce themes), the themes, About.
 # Then, for review only (review/, never in the store): a narrow phone with a large (1.3) and the largest (2.0) font, and a tablet.
 #   bash scripts/screenshots/shoot.sh path/to/app-fdroid-debug.apk
 set -euo pipefail
@@ -79,7 +79,7 @@ run() {
   tap "$TODAY"; tap "$HISTORY"; sleep 3; adb shell input swipe 540 1900 540 1300 600; sleep 2; shot 04_history
   adb shell input keyevent KEYCODE_BACK; sleep 2
   tap "$WEIGHT"; shot 05_weight
-  # The same day at night: the app follows the phone, in the Hutsul theme
+  # The same day at night: the app follows the phone, in the Spruce theme
   adb shell cmd uimode night yes >/dev/null; start_app
   shot 06_home_night
   adb shell cmd uimode night no >/dev/null; start_app

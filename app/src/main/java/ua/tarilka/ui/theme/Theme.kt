@@ -113,7 +113,7 @@ fun appScheme(theme: Theme, context: Context): ColorScheme = colorScheme(theme, 
 }
 
 @Composable
-fun TarilkaTheme(day: Theme = Theme.VISK, night: Theme = Theme.HUTSULSHCHYNA, content: @Composable () -> Unit) {
+fun TarilkaTheme(day: Theme = Theme.VISK, night: Theme = Theme.SMEREKA, content: @Composable () -> Unit) {
     // AppCompat night mode (Auto / Light / Dark) is already applied to the configuration.
     val theme = if (isSystemInDarkTheme()) night else day
     val context = androidx.compose.ui.platform.LocalContext.current
