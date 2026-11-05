@@ -107,6 +107,15 @@ fun SettingsScreen(vm: MainViewModel, ai: AiViewModel, padding: PaddingValues) {
                 Text(stringResource(R.string.feedback_hint), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
+        // The author's letter and how to support Ukraine, as in the author's other apps
+        item { AuthorLetter() }
+        item {
+            val context = androidx.compose.ui.platform.LocalContext.current
+            SupportUkraine(open = { url ->
+                // In the browser; a phone without one simply opens nothing
+                runCatching { context.startActivity(android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(url))) }
+            })
+        }
     }
 }
 
