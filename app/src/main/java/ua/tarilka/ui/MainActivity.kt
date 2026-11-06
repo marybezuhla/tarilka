@@ -80,26 +80,28 @@ class MainActivity : AppCompatActivity() {
             val hideKcal by prefs.hideKcal.collectAsState()
             LaunchedEffect(protectedOn, noShots) { Protection.applyRecents(this@MainActivity) }
             TarilkaTheme(day = look.day, night = look.night) {
-                // Opened by Health Connect to explain why Tarilka asks for access: only the explanation, no diary.
-                if (healthRationale) {
-                    androidx.compose.material3.AlertDialog(
-                        onDismissRequest = { finish() },
-                        title = { androidx.compose.material3.Text(stringResource(R.string.hc_privacy_title)) },
-                        text = { androidx.compose.material3.Text(stringResource(R.string.hc_privacy)) },
-                        confirmButton = { androidx.compose.material3.TextButton(onClick = { finish() }) { androidx.compose.material3.Text(stringResource(R.string.close)) } },
-                    )
-                    return@TarilkaTheme
-                }
-                androidx.compose.runtime.CompositionLocalProvider(LocalShowKcal provides (profile.age >= 18 && !hideKcal), LocalTeen provides (profile.age < 18)) {
-                if (dbBroken) {
-                    DbBrokenScreen()
-                } else if (db == null) {
-                    // Locked (or being converted): the screens' view models go, they held the closed database.
-                    LaunchedEffect(Unit) { viewModelStore.clear() }
-                    LockScreen(onUnlock = { Protection.unlock(this) }, onStartFresh = { Protection.startFresh(this) })
-                } else {
-                    AppRoot()
-                }
+                NoKeyboardLearning {
+                    // Opened by Health Connect to explain why Tarilka asks for access: only the explanation, no diary.
+                    if (healthRationale) {
+                        androidx.compose.material3.AlertDialog(
+                            onDismissRequest = { finish() },
+                            title = { androidx.compose.material3.Text(stringResource(R.string.hc_privacy_title)) },
+                            text = { androidx.compose.material3.Text(stringResource(R.string.hc_privacy)) },
+                            confirmButton = { androidx.compose.material3.TextButton(onClick = { finish() }) { androidx.compose.material3.Text(stringResource(R.string.close)) } },
+                        )
+                        return@NoKeyboardLearning
+                    }
+                    androidx.compose.runtime.CompositionLocalProvider(LocalShowKcal provides (profile.age >= 18 && !hideKcal), LocalTeen provides (profile.age < 18)) {
+                    if (dbBroken) {
+                        DbBrokenScreen()
+                    } else if (db == null) {
+                        // Locked (or being converted): the screens' view models go, they held the closed database.
+                        LaunchedEffect(Unit) { viewModelStore.clear() }
+                        LockScreen(onUnlock = { Protection.unlock(this) }, onStartFresh = { Protection.startFresh(this) })
+                    } else {
+                        AppRoot()
+                    }
+                    }
                 }
             }
         }
@@ -413,7 +415,7 @@ private fun DbBrokenScreen() {
         androidx.activity.result.contract.ActivityResultContracts.CreateDocument("application/zip"),
     ) { uri ->
         if (uri != null) saved = runCatching {
-            context.contentResolver.openOutputStream(uri)!!.use { out ->
+            context.contentResolver.openOutputStream(uri, "wt")!!.use { out ->
                 java.util.zip.ZipOutputStream(out).use { zip ->
                     val main = context.getDatabasePath(ua.tarilka.data.AppDatabase.NAME)
                     // The -wal file holds the latest changes; both are needed to read the diary.

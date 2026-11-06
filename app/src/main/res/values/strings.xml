@@ -214,7 +214,7 @@
     <string name="password_repeat">Repeat password</string>
     <string name="password_hint">The file is encrypted with the password (AES-256) and can be restored only with it. A forgotten password cannot be recovered. Several random words are the strongest and easiest to remember.</string>
     <string name="password_enter">This backup is encrypted. Enter its password.</string>
-    <string name="password_wrong">Wrong password.</string>
+    <string name="password_wrong">Wrong password, or the file is damaged.</string>
     <string name="unlock">Open</string>
     <string name="export_plain">Save without password</string>
     <string name="export_encrypted">Save encrypted</string>

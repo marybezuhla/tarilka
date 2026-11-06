@@ -76,6 +76,15 @@ object Protection {
         else activity.window.clearFlags(android.view.WindowManager.LayoutParams.FLAG_SECURE)
     }
 
+    /**
+     * The system date picker is a window of its own and does not inherit the app's FLAG_SECURE:
+     * with "No screenshots" on it gets the flag too, so a cycle date is not captured either.
+     */
+    fun secure(dialog: android.app.Dialog) {
+        val app = dialog.context.applicationContext as TarilkaApp
+        if (app.prefs.noScreenshots.value) dialog.window?.addFlags(android.view.WindowManager.LayoutParams.FLAG_SECURE)
+    }
+
     private fun prompt(activity: FragmentActivity, cipher: Cipher, title: Int, onOk: (Cipher) -> Unit) {
         val prompt = BiometricPrompt(
             activity, ContextCompat.getMainExecutor(activity),

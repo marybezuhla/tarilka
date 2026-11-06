@@ -214,7 +214,7 @@
     <string name="password_repeat">Повторіть пароль</string>
     <string name="password_hint">Файл шифрується паролем (AES-256), і відновити його можна лише з ним. Забутий пароль відновити неможливо. Найнадійніше й легко запамʼятати — кілька випадкових слів.</string>
     <string name="password_enter">Ця копія зашифрована. Введіть її пароль.</string>
-    <string name="password_wrong">Неправильний пароль.</string>
+    <string name="password_wrong">Неправильний пароль або файл пошкоджено.</string>
     <string name="unlock">Відкрити</string>
     <string name="export_plain">Зберегти без пароля</string>
     <string name="export_encrypted">Зберегти зашифрованою</string>

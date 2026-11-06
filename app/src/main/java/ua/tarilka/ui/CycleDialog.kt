@@ -54,7 +54,7 @@ fun CycleDialog(vm: MainViewModel, onDismiss: () -> Unit) {
         android.app.DatePickerDialog(
             context, { _, y, m, d -> onPicked(LocalDate.of(y, m + 1, d)) },
             selected.year, selected.monthValue - 1, selected.dayOfMonth,
-        ).apply { datePicker.maxDate = System.currentTimeMillis() }.show()
+        ).apply { datePicker.maxDate = System.currentTimeMillis(); Protection.secure(this) }.show()
     }
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -148,7 +148,7 @@ fun CycleSetupDialog(vm: MainViewModel, onDismiss: () -> Unit) {
                 androidx.compose.material3.OutlinedButton(onClick = {
                     val d = start ?: LocalDate.now()
                     android.app.DatePickerDialog(context, { _, y, m, dd -> start = LocalDate.of(y, m + 1, dd) }, d.year, d.monthValue - 1, d.dayOfMonth)
-                        .apply { datePicker.maxDate = System.currentTimeMillis() }.show()
+                        .apply { datePicker.maxDate = System.currentTimeMillis(); Protection.secure(this) }.show()
                 }) { Text(start?.let { shortDate(it.toEpochDay()) } ?: stringResource(R.string.choose_date)) }
                 Text(stringResource(R.string.cycle_setup_period), style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold)
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {

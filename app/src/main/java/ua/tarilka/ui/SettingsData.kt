@@ -258,7 +258,7 @@ private fun PdfDialog(vm: MainViewModel, onDismiss: () -> Unit, onCreate: (PdfRe
     }
     fun pick(initial: java.time.LocalDate, onPicked: (java.time.LocalDate) -> Unit) {
         android.app.DatePickerDialog(context, { _, y, m, d -> onPicked(java.time.LocalDate.of(y, m + 1, d)) }, initial.year, initial.monthValue - 1, initial.dayOfMonth)
-            .apply { datePicker.maxDate = System.currentTimeMillis() }.show()
+            .apply { datePicker.maxDate = System.currentTimeMillis(); Protection.secure(this) }.show()
     }
     val names = mapOf(
         ReportPart.SUMMARY to R.string.pdf_part_summary, ReportPart.FOOD to R.string.pdf_part_food,

@@ -942,7 +942,7 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
             runCatching {
                 val data = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Default) { reportData(from, to) }
                 kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
-                    app.contentResolver.openOutputStream(uri)?.use { out ->
+                    app.contentResolver.openOutputStream(uri, "wt")?.use { out ->
                         PdfReport.write(context, out, data, parts, withProfile, prefs.mealTimes.value)
                     } ?: error("no output")
                 }
