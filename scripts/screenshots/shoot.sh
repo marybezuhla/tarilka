@@ -34,7 +34,9 @@ to_top() {  # label [target y]
   local TARGET="${2:-380}"
   # The options are long: with a large font a short swipe needs many steps to reach the end
   for i in $(seq 1 ${MAX_UP:-15}); do
-    adb shell uiautomator dump /sdcard/ui.xml >/dev/null 2>&1 || true
+    # A failed dump must not leave the previous screen's file behind: that looks like scrolling that never moves
+    adb shell rm -f /sdcard/ui.xml >/dev/null 2>&1 || true; rm -f "$TMP/ui.xml"
+    DUMP_OUT="$(adb shell uiautomator dump /sdcard/ui.xml 2>&1 || true)"
     adb pull /sdcard/ui.xml "$TMP/ui.xml" >/dev/null 2>&1 || true
     if XY=$(python3 "$HERE/find.py" "$TMP/ui.xml" "$1"); then
       Y=${XY#* }
@@ -47,6 +49,9 @@ to_top() {  # label [target y]
   # What the screen showed, for the person reading the log: the picture and the texts it had
   adb exec-out screencap -p > "$OUT/missing.png" || true
   grep -o 'text="[^"]\{1,40\}' "$TMP/ui.xml" | head -40 || true
+  echo "last dump said: $DUMP_OUT"
+  echo "app process: $(adb shell pidof $PKG || echo none)"
+  adb logcat -d -t 80 '*:W' | grep -v -E 'uiautomator|chatty' | tail -40 || true
   echo "::error::'$1' not found while scrolling"; return 1
 }
 # The keyboard, if a search box opened it, is not part of the picture.
