@@ -28,16 +28,18 @@ import androidx.compose.ui.unit.sp
 /** From this window width the tabs move to a rail at the side (tablets, unfolded phones, landscape). */
 val RAIL_FROM: Dp = 600.dp
 
-/** A column narrower than this, times the font size (up to 1.5), is too narrow for the diary's cards. */
-private val PANE_MIN: Dp = 300.dp
-
 /** One column never grows wider than this: long lines are hard to read. */
 private val COLUMN_MAX: Dp = 640.dp
 
-/** Two columns side by side when both get room for their cards; with a very large font, one. */
+/**
+ * Whether two columns of cards fit side by side in [widthDp]: each needs 300 dp, more with a larger font,
+ * plus 16 dp between them. The font counts only up to 1.5, so a large tablet keeps two columns even with
+ * the largest font; the cards themselves already wrap their text.
+ */
+fun twoPanesFit(widthDp: Float, fontScale: Float): Boolean = widthDp >= 300f * fontScale.coerceIn(1f, 1.5f) * 2 + 16f
+
 @Composable
-fun twoPanes(width: Dp): Boolean =
-    width >= PANE_MIN * LocalDensity.current.fontScale.coerceIn(1f, 1.5f) * 2 + 16.dp
+fun twoPanes(width: Dp): Boolean = twoPanesFit(width.value, LocalDensity.current.fontScale)
 
 /**
  * A screen of cards. On a phone one list, in this order: [header], [main], [side], [tail].

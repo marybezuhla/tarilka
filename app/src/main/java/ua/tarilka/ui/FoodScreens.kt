@@ -12,6 +12,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -250,26 +254,26 @@ fun FoodsScreen(vm: MainViewModel, padding: PaddingValues, onEdit: (Food?) -> Un
             }
         }
         // On a tablet the foods stand in two columns
-        androidx.compose.foundation.layout.BoxWithConstraints(Modifier.fillMaxSize()) {
-        androidx.compose.foundation.lazy.grid.LazyVerticalGrid(
-            columns = androidx.compose.foundation.lazy.grid.GridCells.Fixed(if (twoPanes(maxWidth)) 2 else 1),
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(bottom = padding.calculateBottomPadding() + 88.dp),
-        ) {
-            items(shown.size, key = { shown[it].id }) { i ->
-                val f = shown[i]
-                FoodRow(f, { details = f }, onFavorite = { vm.toggleFavorite(f) })
-            }
-            if (shown.isEmpty() && filter != 0) {
-                item(span = { androidx.compose.foundation.lazy.grid.GridItemSpan(maxLineSpan) }) {
-                    Text(
-                        stringResource(if (filter == 1) R.string.filter_mine_empty else R.string.filter_favorites_empty),
-                        modifier = Modifier.padding(24.dp),
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
+        BoxWithConstraints(Modifier.fillMaxSize()) {
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(if (twoPanes(maxWidth)) 2 else 1),
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(bottom = padding.calculateBottomPadding() + 88.dp),
+            ) {
+                items(shown.size, key = { shown[it].id }) { i ->
+                    val f = shown[i]
+                    FoodRow(f, { details = f }, onFavorite = { vm.toggleFavorite(f) })
+                }
+                if (shown.isEmpty() && filter != 0) {
+                    item(span = { GridItemSpan(maxLineSpan) }) {
+                        Text(
+                            stringResource(if (filter == 1) R.string.filter_mine_empty else R.string.filter_favorites_empty),
+                            modifier = Modifier.padding(24.dp),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
                 }
             }
-        }
         }
     }
 

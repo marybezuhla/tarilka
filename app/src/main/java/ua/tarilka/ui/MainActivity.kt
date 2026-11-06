@@ -34,6 +34,17 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.displayCutout
+import androidx.compose.foundation.layout.union
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ScaffoldDefaults
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.ui.Modifier
 import androidx.compose.foundation.layout.only
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -310,69 +321,74 @@ private fun Tabs(vm: MainViewModel, ai: AiViewModel, tab: Int, onTab: (Int) -> U
             vm.undoShown(seq)
         }
     }
-    // The four tabs, at the bottom on a phone and at the side on a wide screen
-    val tabs = listOf(R.string.tab_today, R.string.tab_weight, R.string.tab_foods, R.string.tab_options)
-    androidx.compose.foundation.layout.BoxWithConstraints {
-    val wide = maxWidth >= RAIL_FROM
-    androidx.compose.foundation.layout.Row(androidx.compose.ui.Modifier.fillMaxSize()) {
-    if (wide) {
-        NavigationRail(
-            androidx.compose.ui.Modifier.fillMaxHeight(),
-            windowInsets = WindowInsets.systemBars
-                .only(androidx.compose.foundation.layout.WindowInsetsSides.Vertical + androidx.compose.foundation.layout.WindowInsetsSides.Start),
-        ) {
-            androidx.compose.foundation.layout.Spacer(androidx.compose.ui.Modifier.weight(1f))
-            tabs.forEachIndexed { i, name ->
-                NavigationRailItem(tab == i, { onTab(i) }, { TabIcon(i) }, label = { TabLabel(stringResource(name)) })
-            }
-            androidx.compose.foundation.layout.Spacer(androidx.compose.ui.Modifier.weight(1f))
-        }
-    }
-    Scaffold(
-        modifier = androidx.compose.ui.Modifier.weight(1f),
-        // The rail already keeps clear of the left edge's system bar
-        contentWindowInsets = if (wide) WindowInsets.systemBars
-            .only(androidx.compose.foundation.layout.WindowInsetsSides.Vertical + androidx.compose.foundation.layout.WindowInsetsSides.End)
-            else androidx.compose.material3.ScaffoldDefaults.contentWindowInsets,
-        snackbarHost = { androidx.compose.material3.SnackbarHost(snackbar) },
-        floatingActionButton = {
-            if (tab == 2) {
-                ExtendedFloatingActionButton(
-                    onClick = { push(Overlay.EditFood(null)) },
-                    icon = { Icon(Icons.Filled.Add, null) },
-                    text = { Text(stringResource(R.string.new_food)) },
-                )
-            }
-        },
-        bottomBar = {
-            if (!wide) {
-                NavigationBar {
-                    tabs.forEachIndexed { i, name ->
-                        NavigationBarItem(tab == i, { onTab(i) }, { TabIcon(i) }, label = { TabLabel(stringResource(name)) })
+    BoxWithConstraints {
+        // At the bottom on a phone, at the side on a wide screen
+        val wide = maxWidth >= RAIL_FROM
+        Row(Modifier.fillMaxSize()) {
+            if (wide) TabRail(tab, onTab)
+            Scaffold(
+                modifier = Modifier.weight(1f),
+                // Beside the rail the left edge is already kept clear
+                contentWindowInsets = if (wide) WindowInsets.systemBars.only(WindowInsetsSides.Vertical + WindowInsetsSides.End)
+                else ScaffoldDefaults.contentWindowInsets,
+                snackbarHost = { SnackbarHost(snackbar) },
+                floatingActionButton = {
+                    if (tab == 2) {
+                        ExtendedFloatingActionButton(
+                            onClick = { push(Overlay.EditFood(null)) },
+                            icon = { Icon(Icons.Filled.Add, null) },
+                            text = { Text(stringResource(R.string.new_food)) },
+                        )
                     }
+                },
+                bottomBar = { if (!wide) TabBar(tab, onTab) },
+            ) { pad ->
+                Box(Modifier.fillMaxSize()) {
+                    when (tab) {
+                        0 -> TodayScreen(vm, ai, pad, onAdd = { push(Overlay.AddFood(it)) }, onPhoto = {
+                            // A typed list left from before must not stand in for the camera.
+                            if (ai.photo.value.fromText) ai.resetPhoto()
+                            push(Overlay.Photo(it))
+                        }, onHistory = { push(Overlay.History) })
+                        1 -> WeightScreen(vm, pad)
+                        2 -> FoodsScreen(vm, pad, onEdit = { push(Overlay.EditFood(it)) })
+                        else -> SettingsScreen(vm, ai, pad)
+                    }
+                    // Behind the clock and battery: a scrolled list does not run under them
+                    Box(
+                        Modifier.fillMaxWidth().height(pad.calculateTopPadding())
+                            .background(MaterialTheme.colorScheme.background),
+                    )
                 }
             }
-        },
-    ) { pad ->
-        androidx.compose.foundation.layout.Box(androidx.compose.ui.Modifier.fillMaxSize()) {
-            when (tab) {
-                0 -> TodayScreen(vm, ai, pad, onAdd = { push(Overlay.AddFood(it)) }, onPhoto = {
-                    // A typed list left from before must not stand in for the camera.
-                    if (ai.photo.value.fromText) ai.resetPhoto()
-                    push(Overlay.Photo(it))
-                }, onHistory = { push(Overlay.History) })
-                1 -> WeightScreen(vm, pad)
-                2 -> FoodsScreen(vm, pad, onEdit = { push(Overlay.EditFood(it)) })
-                else -> SettingsScreen(vm, ai, pad)
-            }
-            // Behind the clock and battery: a scrolled list does not run under them
-            androidx.compose.foundation.layout.Box(
-                androidx.compose.ui.Modifier.fillMaxWidth().height(pad.calculateTopPadding())
-                    .background(androidx.compose.material3.MaterialTheme.colorScheme.background),
-            )
         }
     }
+}
+
+private val TAB_NAMES = listOf(R.string.tab_today, R.string.tab_weight, R.string.tab_foods, R.string.tab_options)
+
+@Composable
+private fun TabBar(tab: Int, onTab: (Int) -> Unit) {
+    NavigationBar {
+        TAB_NAMES.forEachIndexed { i, name ->
+            NavigationBarItem(tab == i, { onTab(i) }, { TabIcon(i) }, label = { TabLabel(stringResource(name)) })
+        }
     }
+}
+
+/** The tabs at the side, in the middle of the height, clear of the status, navigation and camera bars. */
+@Composable
+private fun TabRail(tab: Int, onTab: (Int) -> Unit) {
+    NavigationRail(
+        Modifier.fillMaxHeight(),
+        windowInsets = WindowInsets.systemBars.union(WindowInsets.displayCutout)
+            .only(WindowInsetsSides.Vertical + WindowInsetsSides.Start),
+    ) {
+        Spacer(Modifier.weight(1f))
+        TAB_NAMES.forEachIndexed { i, name ->
+            NavigationRailItem(tab == i, { onTab(i) }, { TabIcon(i) }, label = { TabLabel(stringResource(name)) })
+        }
+        Spacer(Modifier.weight(1f))
     }
 }
 

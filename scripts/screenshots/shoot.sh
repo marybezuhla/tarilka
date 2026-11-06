@@ -3,7 +3,8 @@
 # (DemoActivity), and photographs the eight store screens in Ukrainian and in English into
 # fastlane/.../phoneScreenshots, in the order people see them: Today, adding food, foods, history and charts,
 # weight, Today at night (the default Beeswax and Spruce themes), the themes, About.
-# Then, for review only (review/, never in the store): a narrow phone with a large (1.3) and the largest (2.0) font, and a tablet.
+# Then, for review only (review/, never in the store): a narrow phone with a large (1.3) and the largest (2.0) font,
+# an unfolded phone, and a tablet by day, at night and held sideways.
 #   bash scripts/screenshots/shoot.sh path/to/app-fdroid-debug.apk
 set -euo pipefail
 APK="$1"; PKG=ua.tarilka; HERE="$(cd "$(dirname "$0")" && pwd)"; ROOT="$HERE/../.."
@@ -43,8 +44,9 @@ to_top() {  # label [target y]
     fi
     up
   done
-  # What the screen showed, for the person reading the log
+  # What the screen showed, for the person reading the log: the picture and the texts it had
   adb exec-out screencap -p > "$OUT/missing.png" || true
+  grep -o 'text="[^"]\{1,40\}' "$TMP/ui.xml" | head -40 || true
   echo "::error::'$1' not found while scrolling"; return 1
 }
 # The keyboard, if a search box opened it, is not part of the picture.
@@ -91,7 +93,7 @@ run() {
 
 # For review: how the app holds up on a narrow phone with a large font, an unfolded phone and a tablet.
 review() {
-  local TODAY="$1" OPTIONS="$2" HISTORY="$3" DAY_THEME="$4" WEIGHT="$5" FOODS="$6"
+  local OPTIONS="$1" HISTORY="$2" DAY_THEME="$3" WEIGHT="$4" FOODS="$5"
   OUT="$ROOT/review"; rm -rf "$OUT"; mkdir -p "$OUT"
   adb shell settings put system font_scale 1.3; adb shell wm density 480   # about 360 dp wide
   UP_DY=450; MAX_UP=40
@@ -124,4 +126,4 @@ s() { grep -o "name=\"$2\">[^<]*" "$ROOT/app/src/main/res/$1/strings.xml" | cut 
 
 run uk-UA uk Вага Продукти "$(s values-uk history_title)" "$(s values-uk tab_options)" "$(s values-uk day_theme)" "$(s values-uk meal_breakfast)" "$(s values-uk add)" "$(s values-uk about)" "$(s values-uk tab_today)"
 run en-US en-US Weight Foods "$(s values history_title)" "$(s values tab_options)" "$(s values day_theme)" "$(s values meal_breakfast)" "$(s values add)" "$(s values about)" "$(s values tab_today)"
-LANG_DIR=review review "$(s values tab_today)" "$(s values tab_options)" "$(s values history_title)" "$(s values day_theme)" Weight Foods
+LANG_DIR=review review "$(s values tab_options)" "$(s values history_title)" "$(s values day_theme)" "$(s values tab_weight)" "$(s values tab_foods)"
