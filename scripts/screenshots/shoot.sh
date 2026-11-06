@@ -103,7 +103,9 @@ review() {
   adb shell settings put system font_scale 1.3; adb shell wm density 480   # about 360 dp wide
   UP_DY=450; MAX_UP=40
   start_app; shot narrow_big_font_home; to_top "$HISTORY" 1200 || true; tap "$HISTORY" || true; sleep 3; shot narrow_big_font_history
-  adb shell input keyevent KEYCODE_BACK; sleep 2; tap "$OPTIONS" || true; to_top "$DAY_THEME" 600 || true; shot narrow_big_font_themes
+  # The options are long; short swipes stall around the protection card in the emulator, a longer one does not.
+  # It cannot skip the title: the visible part of the screen is taller than the swipe.
+  adb shell input keyevent KEYCODE_BACK; sleep 2; tap "$OPTIONS" || true; UP_DY=900 to_top "$DAY_THEME" 600 || true; shot narrow_big_font_themes
   adb shell cmd uimode night yes >/dev/null; start_app; shot narrow_big_font_home_night
   adb shell cmd uimode night no >/dev/null
   # The largest font Android 14 offers: the tab names must still fit
