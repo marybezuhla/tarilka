@@ -83,7 +83,9 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
     val latestWeight: StateFlow<Double?> =
         weights.map { it.lastOrNull()?.kg }.stateIn(viewModelScope, SharingStarted.Eagerly, null)
 
-    val targets: StateFlow<Targets> = combine(profile, latestWeight, prefs.hideKcal) { p, w, hide -> Nutrition.targets(p, w).copy(hideKcal = hide) }
+    val targets: StateFlow<Targets> = combine(profile, latestWeight, prefs.hideKcal, prefs.hideWeight) { p, w, hide, noWeight ->
+        Nutrition.targets(p, w).copy(hideKcal = hide, hideWeight = noWeight)
+    }
         .stateIn(viewModelScope, SharingStarted.Eagerly, Nutrition.targets(Profile(), null))
 
     val entries: StateFlow<List<DiaryEntry>> = day.flatMapLatest { db.diary().forDay(it.toEpochDay()) }
@@ -1064,6 +1066,8 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
     }
     val hideKcal: StateFlow<Boolean> = prefs.hideKcal
     fun setHideKcal(on: Boolean) = prefs.setHideKcal(on)
+    val hideWeight: StateFlow<Boolean> = prefs.hideWeight
+    fun setHideWeight(on: Boolean) = prefs.setHideWeight(on)
 
     // ---- export / import ----
 

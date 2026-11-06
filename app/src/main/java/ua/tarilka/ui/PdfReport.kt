@@ -58,7 +58,9 @@ object PdfReport {
         }
     }
 
-    private fun draw(c: Context, pdf: Pdf, data: MainViewModel.ReportData, parts: Set<ReportPart>, withProfile: Boolean, withTimes: Boolean) {
+    private fun draw(c: Context, pdf: Pdf, data: MainViewModel.ReportData, chosen: Set<ReportPart>, withProfile: Boolean, withTimes: Boolean) {
+        // Weight the person hid never reaches the report either
+        val parts = if (data.targets.hideWeight) chosen - ReportPart.WEIGHT else chosen
         val dateFmt = DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM)
         val time = DateTimeFormatter.ofPattern("HH:mm")
         val zone = java.time.ZoneId.systemDefault()

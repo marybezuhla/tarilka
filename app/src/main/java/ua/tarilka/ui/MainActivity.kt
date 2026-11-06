@@ -77,6 +77,7 @@ class MainActivity : AppCompatActivity() {
             val noShots by prefs.noScreenshots.collectAsState()
             val profile by prefs.profile.collectAsState()
             val hideKcal by prefs.hideKcal.collectAsState()
+            val hideWeight by prefs.hideWeight.collectAsState()
             LaunchedEffect(protectedOn, noShots) { Protection.applyRecents(this@MainActivity) }
             TarilkaTheme(day = look.day, night = look.night) {
                 NoKeyboardLearning {
@@ -90,7 +91,7 @@ class MainActivity : AppCompatActivity() {
                         )
                         return@NoKeyboardLearning
                     }
-                    androidx.compose.runtime.CompositionLocalProvider(LocalShowKcal provides (profile.age >= 18 && !hideKcal), LocalTeen provides (profile.age < 18)) {
+                    androidx.compose.runtime.CompositionLocalProvider(LocalShowKcal provides (profile.age >= 18 && !hideKcal), LocalTeen provides (profile.age < 18), LocalShowWeight provides !hideWeight) {
                     if (dbBroken) {
                         DbBrokenScreen()
                     } else if (db == null) {
@@ -352,7 +353,8 @@ private fun Tabs(vm: MainViewModel, ai: AiViewModel, tab: Int, onTab: (Int) -> U
                             if (ai.photo.value.fromText) ai.resetPhoto()
                             push(Overlay.Photo(it))
                         }, onHistory = { push(Overlay.History) })
-                        1 -> WeightScreen(vm, pad)
+                        // Weight hidden while its tab was open: back to Today
+                        1 -> if (LocalShowWeight.current) WeightScreen(vm, pad) else LaunchedEffect(Unit) { onTab(0) }
                         2 -> FoodsScreen(vm, pad, onEdit = { push(Overlay.EditFood(it)) })
                         else -> SettingsScreen(vm, ai, pad)
                     }
@@ -369,11 +371,15 @@ private fun Tabs(vm: MainViewModel, ai: AiViewModel, tab: Int, onTab: (Int) -> U
 
 private val TAB_NAMES = listOf(R.string.tab_today, R.string.tab_weight, R.string.tab_foods, R.string.tab_options)
 
+/** The tabs to show: without Weight when the person chose to hide it. Each keeps its number. */
+@Composable
+private fun shownTabs(): List<Int> = if (LocalShowWeight.current) TAB_NAMES.indices.toList() else TAB_NAMES.indices.filter { it != 1 }
+
 @Composable
 private fun TabBar(tab: Int, onTab: (Int) -> Unit) {
     NavigationBar {
-        TAB_NAMES.forEachIndexed { i, name ->
-            NavigationBarItem(tab == i, { onTab(i) }, { TabIcon(i) }, label = { TabLabel(stringResource(name)) })
+        shownTabs().forEach { i ->
+            NavigationBarItem(tab == i, { onTab(i) }, { TabIcon(i) }, label = { TabLabel(stringResource(TAB_NAMES[i])) })
         }
     }
 }
@@ -387,8 +393,8 @@ private fun TabRail(tab: Int, onTab: (Int) -> Unit) {
             .only(WindowInsetsSides.Vertical + WindowInsetsSides.Start),
     ) {
         Spacer(Modifier.weight(1f))
-        TAB_NAMES.forEachIndexed { i, name ->
-            NavigationRailItem(tab == i, { onTab(i) }, { TabIcon(i) }, label = { TabLabel(stringResource(name)) })
+        shownTabs().forEach { i ->
+            NavigationRailItem(tab == i, { onTab(i) }, { TabIcon(i) }, label = { TabLabel(stringResource(TAB_NAMES[i])) })
         }
         Spacer(Modifier.weight(1f))
     }

@@ -79,7 +79,7 @@ fun SettingsScreen(vm: MainViewModel, ai: AiViewModel, padding: PaddingValues) {
                     Spacer(Modifier.height(6.dp))
                     Text(stringResource(R.string.water_target, (targets.waterMl / 1000).f1()), style = MaterialTheme.typography.bodyMedium)
                     Text(stringResource(R.string.water_own_note), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    if (profile.isSet) BmiLine(targets.bmi, profile.age, profile.sex == ua.tarilka.data.Sex.FEMALE && profile.pregnant)
+                    if (profile.isSet && LocalShowWeight.current) BmiLine(targets.bmi, profile.age, profile.sex == ua.tarilka.data.Sex.FEMALE && profile.pregnant)
                 }
             }
             card("activity") { ActivitySection(vm) }
@@ -557,6 +557,8 @@ private fun AppearanceSection(vm: MainViewModel) {
             val hide by vm.hideKcal.collectAsState()
             SwitchRow(stringResource(R.string.hide_kcal), stringResource(R.string.hide_kcal_hint), hide, vm::setHideKcal)
         }
+        val noWeight by vm.hideWeight.collectAsState()
+        SwitchRow(stringResource(R.string.hide_weight), stringResource(R.string.hide_weight_hint), noWeight, vm::setHideWeight)
     }
 }
 

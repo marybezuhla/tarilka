@@ -24,6 +24,8 @@ data class Targets(
     val teen: Boolean = false,
     /** The person chose to see no calorie numbers (e.g. in recovery from an eating disorder). */
     val hideKcal: Boolean = false,
+    /** The person chose to see no weight: no weight tab, line, trend, tip or chart. */
+    val hideWeight: Boolean = false,
 ) {
     /**
      * Under 18 no calorie number is shown (AAP 2016/2023: no calorie counting for teenagers; adult formulas

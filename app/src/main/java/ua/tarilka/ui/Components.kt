@@ -52,6 +52,9 @@ import kotlin.math.roundToInt
 /** Whether calorie numbers are shown at all: not under 18, nor when the person hid them (see Targets.showKcal). Set once at the root. */
 val LocalShowKcal = androidx.compose.runtime.compositionLocalOf { true }
 
+/** Whether weight is shown at all: the person may hide it (see Targets.hideWeight). Set once at the root. */
+val LocalShowWeight = androidx.compose.runtime.compositionLocalOf { true }
+
 /** Under 18: no alcohol is advised at all (independent of whether calories are hidden by choice). */
 val LocalTeen = androidx.compose.runtime.compositionLocalOf { false }
 

@@ -162,7 +162,7 @@ object Report {
                 cause = Metric.Cause.LOOSE.takeIf { h.bowelLoose > 0 }, causeCount = h.bowelLoose,
             )
         }
-        if (cur.weightTrend != null) {
+        if (cur.weightTrend != null && !targets.hideWeight) {
             val t = cur.weightTrend
             val w = cur.weight ?: 0.0
             val level = when {

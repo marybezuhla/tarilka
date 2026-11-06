@@ -60,7 +60,7 @@
     <string name="tip_fat_high">Fat is high today (%1$d g). Most often it comes from mayonnaise, sausages, pastries and fried food.</string>
     <string name="tip_balance_good">You got enough protein and fibre today.</string>
     <string name="tip_weight_fast">Weight is dropping fast (%1$.1f kg a week). More than 1%% of body weight a week is a lot; consider eating a bit more or talking to a doctor.</string>
-    <string name="tip_weight_up">Your weight is trending up (%1$.1f kg a week), although the goal is to lose weight. Check portions and snacks.</string>
+    <string name="tip_weight_up">Your weight is going up a little (%1$.1f kg a week). It moves from day to day with water and salt, so look at the trend over several weeks rather than single days.</string>
     <string name="tip_weight_down_good">Your weight is going down gradually (%1$.1f kg a week), at a safe pace.</string>
     <string name="tip_weight_gain_none">The goal is to gain, but weight is not increasing (%1$.1f kg a week). Add a snack or a bigger portion.</string>
 
@@ -186,6 +186,8 @@
     <string name="theme_zoriana_nich">Starry night</string>
     <string name="hide_kcal">Hide calories</string>
     <string name="hide_kcal_hint">No calorie numbers anywhere: in the diary, history, tips and the report. Protein, fibre, fluids and habits stay. Helpful if counting calories makes eating harder. If food or weight worries you, please talk to a doctor or psychologist.</string>
+    <string name="hide_weight">Hide weight</string>
+    <string name="hide_weight_hint">No Weight tab, no weight number or trend on Today, no weight tips, no weight in history or the report. The weight in your profile can stay: it is only used to work out the targets. Helpful if weighing makes you anxious. Nothing is deleted: switch it off to see your records again.</string>
     <string name="data_title">Data</string>
     <string name="data_hint">Everything is stored only on this phone. Make a backup from time to time, or before switching phones: Android\'s phone-to-phone transfer does not copy Tarilka, only a backup file does.</string>
     <string name="backup_never">There is no backup yet. With protection on, entries cannot be recovered if the key is lost (for example, when the screen lock is removed). Make one in Options → Data.</string>
@@ -742,6 +744,7 @@
     <string name="bmi_pregnant">BMI %1$s. In pregnancy we do not rate BMI: the body is changing, and that is normal.</string>
     <string name="audit_pregnant">In pregnancy, while breastfeeding and under 18, the safest choice is no alcohol at all. If stopping is hard, tell your doctor: it is common, and help is available.</string>
     <string name="week_under">If everything is logged, this week you ate clearly less on average than your body uses even at rest. Long-term undereating takes energy, muscle and sleep, and often leads to overeating. If this comes from worries about weight or food, talk to a doctor or a psychologist: help works.</string>
+    <string name="week_under_active">If everything is logged, this week you ate clearly less on average than your activity needs. When the body is short of energy for long while training, strength, bones, hormones and the cycle suffer (known as RED-S). Eat enough on training days; if this comes from worries about weight or food, talk to a doctor or a psychologist.</string>
     <string name="targets_text_teen">Protein %1$s g · fibre %2$s g a day. Under 18 we do not show a calorie target: needs differ a lot while the body is growing. Go by hunger and fullness, regular meals and a variety of foods.</string>
     <string name="targets_text_hidden">Protein %1$s g · fibre %2$s g a day. Calories are hidden: go by hunger and fullness, regular meals and a variety of foods.</string>
     <string name="reminders_cycle_title">Cycle reminders</string>

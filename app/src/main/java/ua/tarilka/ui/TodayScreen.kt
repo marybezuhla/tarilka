@@ -217,7 +217,8 @@ fun TodayScreen(
                         )
                     }
                     Spacer(Modifier.height(8.dp))
-                    Row(verticalAlignment = Alignment.CenterVertically) {
+                    // The person may have hidden weight: then no number, trend or button here
+                    if (LocalShowWeight.current) Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(
                             "⚖️ " + (weight?.let { "${it.f1()} ${stringResource(R.string.kg)}" } ?: "—") +
                                 (weightOnDay?.minutes?.let { " · %02d:%02d".format(it / 60, it % 60) } ?: "") +
@@ -239,7 +240,7 @@ fun TodayScreen(
                         // Water weight goes up before and in the first days of a period: say so next to the weight.
                         val cd = c.cycleDay(t)
                         val nearPeriod = c.inPeriod && (cd ?: 99) <= 3 || c.nextStart?.let { it - t in 0..7 } == true
-                        if (nearPeriod) {
+                        if (nearPeriod && LocalShowWeight.current) {
                             Text(stringResource(R.string.cycle_weight_note), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
                         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.clickable { if (periodsKnown) cycleDialog = true else cycleSetup = true }) {
@@ -389,9 +390,13 @@ fun TodayScreen(
                         if (targets.showKcal) WeekBars(day, week, targets.kcal, warnOver = targets.limit == null)
                         // Several full days well below what the body needs at rest: a calm word and a pointer to help.
                         val past = withData.filter { it.day < java.time.LocalDate.now().toEpochDay() }
-                        if (past.size >= 4 && past.sumOf { it.kcal } / past.size < targets.bmr) {
+                        val pastAvg = if (past.isEmpty()) 0.0 else past.sumOf { it.kcal } / past.size
+                        // Below rest needs, or, for someone who trains a lot, well below what the activity needs
+                        val underRest = past.size >= 4 && pastAvg < targets.bmr
+                        val underActive = past.size >= 4 && profile.activity >= 3 && pastAvg < targets.tdee * 0.7
+                        if (underRest || underActive) {
                             Spacer(Modifier.height(8.dp))
-                            Text(stringResource(R.string.week_under), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.tertiary)
+                            Text(stringResource(if (underRest) R.string.week_under else R.string.week_under_active), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.tertiary)
                         }
                         habits?.let {
                             Spacer(Modifier.height(10.dp))

@@ -336,6 +336,14 @@ class Prefs(context: Context) {
         _hideKcal.value = on
     }
 
+    private val _hideWeight = MutableStateFlow(sp.getBoolean("hideWeight", false))
+    /** No weight anywhere (the tab, Today, tips, reports), chosen by the person. Profile weight stays for the targets. */
+    val hideWeight: StateFlow<Boolean> = _hideWeight.asStateFlow()
+    fun setHideWeight(on: Boolean) {
+        sp.edit().putBoolean("hideWeight", on).apply()
+        _hideWeight.value = on
+    }
+
     private val _look = MutableStateFlow(readLook())
     /**
      * Light or dark, and the theme by day and by night (as in Komora). Only on this phone, not in the backup:
