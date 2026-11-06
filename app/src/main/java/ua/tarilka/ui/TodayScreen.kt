@@ -36,7 +36,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
@@ -84,28 +87,28 @@ fun TodayScreen(
     val habits by vm.weekHabits.collectAsState()
     val sleep by vm.sleep.collectAsState()
     val sleepOn by vm.sleepEnabled.collectAsState()
-    var sleepDialog by remember { mutableStateOf(false) }
+    var sleepDialog by rememberSaveable { mutableStateOf(false) }
     val bowelOn by vm.bowelEnabled.collectAsState()
     val bowel by vm.bowel.collectAsState()
-    var bowelDialog by remember { mutableStateOf(false) }
+    var bowelDialog by rememberSaveable { mutableStateOf(false) }
     val workoutsOn by vm.workoutsEnabled.collectAsState()
     val workouts by vm.workouts.collectAsState()
-    var workoutDialog by remember { mutableStateOf(false) }
+    var workoutDialog by rememberSaveable { mutableStateOf(false) }
     val activityHint by vm.activityHint.collectAsState()
     val mealTimesOn by vm.mealTimes.collectAsState()
     val cycle by vm.cycle.collectAsState()
     val yesterday by vm.yesterday.collectAsState()
-    var cycleDialog by remember { mutableStateOf(false) }
-    var cycleSetup by remember { mutableStateOf(false) }
+    var cycleDialog by rememberSaveable { mutableStateOf(false) }
+    var cycleSetup by rememberSaveable { mutableStateOf(false) }
     val periodsKnown = vm.periods.collectAsState().value.isNotEmpty()
-    var stepsDialog by remember { mutableStateOf(false) }
+    var stepsDialog by rememberSaveable { mutableStateOf(false) }
     val stepsGoal by vm.stepsGoal.collectAsState()
-    var weightDialog by remember { mutableStateOf(false) }
+    var weightDialog by rememberSaveable { mutableStateOf(false) }
     val note by vm.note.collectAsState()
-    var noteDialog by remember { mutableStateOf(false) }
+    var noteDialog by rememberSaveable { mutableStateOf(false) }
     val macros = LocalMacroColors.current
     var editing by remember { mutableStateOf<DiaryEntry?>(null) }
-    var fluidDialog by remember { mutableStateOf(false) }
+    var fluidDialog by rememberSaveable { mutableStateOf(false) }
     val lifecycle = androidx.lifecycle.compose.LocalLifecycleOwner.current
     androidx.compose.runtime.DisposableEffect(lifecycle) {
         val obs = androidx.lifecycle.LifecycleEventObserver { _, e ->
@@ -194,7 +197,8 @@ fun TodayScreen(
                         Spacer(Modifier.width(8.dp))
                         if (fluids.isNotEmpty()) {
                             androidx.compose.material3.FilledTonalIconButton(onClick = vm::removeLastFluid) {
-                                Text("−", style = MaterialTheme.typography.titleLarge)
+                                val label = stringResource(R.string.fluid_remove_last)
+                                Text("−", style = MaterialTheme.typography.titleLarge, modifier = Modifier.semantics { contentDescription = label })
                             }
                         }
                         FilledTonalButton(onClick = { vm.addFluid(250.0) }) { Text(stringResource(R.string.plus_ml, 250)) }
@@ -223,7 +227,14 @@ fun TodayScreen(
                         )
                         TextButton(onClick = { weightDialog = true }) { Text(stringResource(R.string.weight_record)) }
                     }
-                    cycle?.let { c ->
+                    // In pregnancy and while breastfeeding the forecast says nothing: no dates, no "late", no reminders
+                    if (cycle != null && profile.pregnantOrBreastfeeding) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text("🌸 " + stringResource(R.string.cycle_paused), style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
+                            if (periodsKnown) TextButton(onClick = { cycleDialog = true }) { Text(stringResource(R.string.record)) }
+                        }
+                    }
+                    cycle?.takeUnless { profile.pregnantOrBreastfeeding }?.let { c ->
                         val t = day.toEpochDay()
                         // Water weight goes up before and in the first days of a period: say so next to the weight.
                         val cd = c.cycleDay(t)

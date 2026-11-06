@@ -117,6 +117,14 @@ class ModelStore(private val context: Context) {
         private const val MODEL_DIR = "models"
         private const val MB = 1024L * 1024L
         private const val MIN_SIZE = 100L * MB
+
+        /**
+         * The model needs a phone sold with 6 GB of memory. Android reports a little less than that
+         * (the system keeps some), so 5.3 GB is the line; below it the model would load and then be stopped.
+         */
+        const val MIN_RAM_BYTES = 5_300L * MB
+
+        fun enoughMemory(totalBytes: Long) = totalBytes >= MIN_RAM_BYTES
     }
 }
 

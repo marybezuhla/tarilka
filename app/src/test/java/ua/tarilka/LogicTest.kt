@@ -402,4 +402,13 @@ class LogicTest {
         val hidden = Nutrition.targets(adult, null).copy(hideKcal = true)
         assertTrue(!hidden.showKcal && !hidden.teen)
     }
+
+    @Test
+    fun aiNeedsASixGigabytePhone() {
+        val gb = 1024L * 1024 * 1024
+        // A 4 GB phone reports about 3.6 GB, a 6 GB one about 5.5 GB
+        assertTrue(!ua.tarilka.ai.ModelStore.enoughMemory(36 * gb / 10))
+        assertTrue(ua.tarilka.ai.ModelStore.enoughMemory(55 * gb / 10))
+        assertTrue(ua.tarilka.ai.ModelStore.enoughMemory(8 * gb))
+    }
 }

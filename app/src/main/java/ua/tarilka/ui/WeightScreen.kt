@@ -28,6 +28,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import ua.tarilka.R
@@ -49,7 +51,7 @@ fun WeightScreen(vm: MainViewModel, padding: PaddingValues) {
     // On a tablet: the records on the left, the history on the right
     CardColumns(
         padding,
-        header = { Text(stringResource(R.string.tab_weight), style = MaterialTheme.typography.titleLarge, modifier = Modifier.padding(vertical = 8.dp)) },
+        header = { Text(stringResource(R.string.tab_weight), style = MaterialTheme.typography.titleLarge, modifier = Modifier.padding(vertical = 8.dp).semantics { heading() }) },
         main = {
             card("today") {
                 Section(title = stringResource(R.string.weight_today)) {
@@ -155,8 +157,8 @@ private fun WaistSection(vm: MainViewModel) {
             Spacer(Modifier.height(6.dp))
             val female = profile.sex == ua.tarilka.data.Sex.FEMALE
             val (raised, high) = if (female) 80.0 to 88.0 else 94.0 to 102.0
-            // In pregnancy and under 18 the adult thresholds say nothing: only the number, no colour.
-            val rated = profile.isSet && !profile.pregnant && profile.age >= 18
+            // In pregnancy, while breastfeeding and under 18 the adult thresholds say nothing: only the number, no colour.
+            val rated = profile.isSet && !profile.pregnantOrBreastfeeding && profile.age >= 18
             val level = when {
                 !rated -> null
                 last.cm <= raised -> ua.tarilka.data.Habits.Level.GOOD

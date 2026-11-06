@@ -6,6 +6,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -31,6 +32,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.os.LocaleListCompat
@@ -51,7 +54,7 @@ fun SettingsScreen(vm: MainViewModel, ai: AiViewModel, padding: PaddingValues) {
     // On a tablet: about you on the left, the app and its data on the right
     CardColumns(
         padding,
-        header = { Text(stringResource(R.string.tab_options), style = MaterialTheme.typography.titleLarge, modifier = Modifier.padding(vertical = 8.dp)) },
+        header = { Text(stringResource(R.string.tab_options), style = MaterialTheme.typography.titleLarge, modifier = Modifier.padding(vertical = 8.dp).semantics { heading() }) },
         main = {
             card("profile") { ProfileSection(profile, hideKcal = vm.hideKcal.collectAsState().value, onSave = vm::saveProfile) }
             card("targets") {
@@ -117,15 +120,15 @@ fun SettingsScreen(vm: MainViewModel, ai: AiViewModel, padding: PaddingValues) {
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun ProfileSection(profile: Profile, hideKcal: Boolean = false, onSave: (Profile) -> Unit) {
-    var sex by remember(profile) { mutableStateOf(profile.sex) }
-    var age by remember(profile) { mutableStateOf(profile.age.toString()) }
-    var height by remember(profile) { mutableStateOf(profile.heightCm.toString()) }
-    var weight by remember(profile) { mutableStateOf(profile.weightKg.f1()) }
-    var activity by remember(profile) { mutableStateOf(profile.activity) }
-    var goal by remember(profile) { mutableStateOf(profile.goal) }
-    var custom by remember(profile) { mutableStateOf(profile.customKcal?.toString() ?: "") }
-    var pregnant by remember(profile) { mutableStateOf(profile.pregnant) }
-    var breastfeeding by remember(profile) { mutableStateOf(profile.breastfeeding) }
+    var sex by rememberSaveable(profile) { mutableStateOf(profile.sex) }
+    var age by rememberSaveable(profile) { mutableStateOf(profile.age.toString()) }
+    var height by rememberSaveable(profile) { mutableStateOf(profile.heightCm.toString()) }
+    var weight by rememberSaveable(profile) { mutableStateOf(profile.weightKg.f1()) }
+    var activity by rememberSaveable(profile) { mutableStateOf(profile.activity) }
+    var goal by rememberSaveable(profile) { mutableStateOf(profile.goal) }
+    var custom by rememberSaveable(profile) { mutableStateOf(profile.customKcal?.toString() ?: "") }
+    var pregnant by rememberSaveable(profile) { mutableStateOf(profile.pregnant) }
+    var breastfeeding by rememberSaveable(profile) { mutableStateOf(profile.breastfeeding) }
 
     val ageN = age.toNumber()?.toInt()
     val heightN = height.toNumber()?.toInt()
@@ -214,6 +217,13 @@ private fun ProfileSection(profile: Profile, hideKcal: Boolean = false, onSave: 
     }
 }
 
+/** The phone's memory in bytes, as Android reports it. */
+private fun totalMemory(context: android.content.Context): Long {
+    val info = android.app.ActivityManager.MemoryInfo()
+    (context.getSystemService(android.content.Context.ACTIVITY_SERVICE) as android.app.ActivityManager).getMemoryInfo(info)
+    return info.totalMem
+}
+
 @Composable
 private fun ModelSection(ai: AiViewModel) {
     val state by ai.model.collectAsState()
@@ -248,6 +258,10 @@ private fun ModelSection(ai: AiViewModel) {
                     } else {
                         OutlinedButton(onClick = { confirmDelete = true }) { Text(stringResource(R.string.ai_delete)) }
                     }
+                }
+                // A phone with too little memory: say so instead of offering a 2.6 GB download that cannot work
+                !ModelStore.enoughMemory(totalMemory(context)) -> {
+                    Text(stringResource(R.string.ai_low_memory), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
                 else -> {
                     if (s is ModelStore.State.Failed) {
@@ -517,15 +531,16 @@ private fun SelfSection(vm: MainViewModel) {
 private fun SwitchRow(title: String, hint: String, checked: Boolean, onChange: (Boolean) -> Unit) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
+        // One switch for TalkBack: the whole row, read with its title and state
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { onChange(!checked) },
+            .toggleable(value = checked, role = androidx.compose.ui.semantics.Role.Switch, onValueChange = onChange),
     ) {
         Column(Modifier.weight(1f)) {
             Text(title, style = MaterialTheme.typography.bodyLarge)
             Text(hint, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
-        androidx.compose.material3.Switch(checked = checked, onCheckedChange = onChange)
+        androidx.compose.material3.Switch(checked = checked, onCheckedChange = null)
     }
 }
 

@@ -24,6 +24,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.layout.FlowRow
@@ -91,7 +94,9 @@ internal fun DataSection(vm: MainViewModel) {
             }
             // Success or failure, the words say it: plain text, never the theme's accent (red in some themes)
             message?.let {
-                Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurface)
+                // Read out by TalkBack as soon as it appears
+                Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurface,
+                    modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite })
             }
         }
     }
@@ -108,7 +113,8 @@ internal fun DataSection(vm: MainViewModel) {
             onDismissRequest = { clearing = null },
             title = { Text(stringResource(if (everything) R.string.clear_all else R.string.clear_diary)) },
             text = {
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                // Scrolls with a large font, so the buttons at the end stay reachable
+                Column(Modifier.verticalScroll(androidx.compose.foundation.rememberScrollState()), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text(stringResource(if (everything) R.string.clear_all_text else R.string.clear_diary_text), style = MaterialTheme.typography.bodyMedium)
                     // Offered even if sync is off now: records written earlier may still be there.
                     if (vm.healthAvailable) {
@@ -136,7 +142,8 @@ internal fun DataSection(vm: MainViewModel) {
             onDismissRequest = { askPassword = false },
             title = { Text(stringResource(R.string.export_backup)) },
             text = {
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                // Scrolls with a large font, so the buttons at the end stay reachable
+                Column(Modifier.verticalScroll(androidx.compose.foundation.rememberScrollState()), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text(stringResource(R.string.password_hint), style = MaterialTheme.typography.bodySmall)
                     // Cycle data is especially personal: say so where the choice is made.
                     if (vm.cycleEnabled.collectAsState().value) {
@@ -179,7 +186,8 @@ internal fun DataSection(vm: MainViewModel) {
             onDismissRequest = { vm.encryptedImport.value = null; vm.wrongPassword.value = false },
             title = { Text(stringResource(R.string.import_title)) },
             text = {
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                // Scrolls with a large font, so the buttons at the end stay reachable
+                Column(Modifier.verticalScroll(androidx.compose.foundation.rememberScrollState()), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text(stringResource(R.string.password_enter), style = MaterialTheme.typography.bodySmall)
                     PasswordField(stringResource(R.string.password), pw) { pw = it }
                     if (wrong) Text(stringResource(R.string.password_wrong), color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
@@ -197,7 +205,8 @@ internal fun DataSection(vm: MainViewModel) {
             onDismissRequest = { vm.pendingImport.value = null },
             title = { Text(stringResource(R.string.import_title)) },
             text = {
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                // Scrolls with a large font, so the buttons at the end stay reachable
+                Column(Modifier.verticalScroll(androidx.compose.foundation.rememberScrollState()), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Text(stringResource(R.string.import_confirm, s.diary, s.fluids, s.weights, s.foods))
                     TextButton(onClick = { Protection.confirm(activity) { askPassword = true } }) { Text(stringResource(R.string.import_save_first)) }
                 }
