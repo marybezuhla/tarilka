@@ -14,6 +14,8 @@ import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationRail
+import androidx.compose.material3.NavigationRailItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -29,7 +31,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -304,7 +310,30 @@ private fun Tabs(vm: MainViewModel, ai: AiViewModel, tab: Int, onTab: (Int) -> U
             vm.undoShown(seq)
         }
     }
+    // The four tabs, at the bottom on a phone and at the side on a wide screen
+    val tabs = listOf(R.string.tab_today, R.string.tab_weight, R.string.tab_foods, R.string.tab_options)
+    androidx.compose.foundation.layout.BoxWithConstraints {
+    val wide = maxWidth >= RAIL_FROM
+    androidx.compose.foundation.layout.Row(androidx.compose.ui.Modifier.fillMaxSize()) {
+    if (wide) {
+        NavigationRail(
+            androidx.compose.ui.Modifier.fillMaxHeight(),
+            windowInsets = WindowInsets.systemBars
+                .only(androidx.compose.foundation.layout.WindowInsetsSides.Vertical + androidx.compose.foundation.layout.WindowInsetsSides.Start),
+        ) {
+            androidx.compose.foundation.layout.Spacer(androidx.compose.ui.Modifier.weight(1f))
+            tabs.forEachIndexed { i, name ->
+                NavigationRailItem(tab == i, { onTab(i) }, { TabIcon(i) }, label = { TabLabel(stringResource(name)) })
+            }
+            androidx.compose.foundation.layout.Spacer(androidx.compose.ui.Modifier.weight(1f))
+        }
+    }
     Scaffold(
+        modifier = androidx.compose.ui.Modifier.weight(1f),
+        // The rail already keeps clear of the left edge's system bar
+        contentWindowInsets = if (wide) WindowInsets.systemBars
+            .only(androidx.compose.foundation.layout.WindowInsetsSides.Vertical + androidx.compose.foundation.layout.WindowInsetsSides.End)
+            else androidx.compose.material3.ScaffoldDefaults.contentWindowInsets,
         snackbarHost = { androidx.compose.material3.SnackbarHost(snackbar) },
         floatingActionButton = {
             if (tab == 2) {
@@ -316,11 +345,12 @@ private fun Tabs(vm: MainViewModel, ai: AiViewModel, tab: Int, onTab: (Int) -> U
             }
         },
         bottomBar = {
-            NavigationBar {
-                NavigationBarItem(tab == 0, { onTab(0) }, { Icon(Icons.Filled.Home, null) }, label = { Text(stringResource(R.string.tab_today)) })
-                NavigationBarItem(tab == 1, { onTab(1) }, { Icon(painterResource(R.drawable.ic_scale), null) }, label = { Text(stringResource(R.string.tab_weight)) })
-                NavigationBarItem(tab == 2, { onTab(2) }, { Icon(Icons.AutoMirrored.Filled.List, null) }, label = { Text(stringResource(R.string.tab_foods)) })
-                NavigationBarItem(tab == 3, { onTab(3) }, { Icon(Icons.Filled.Settings, null) }, label = { Text(stringResource(R.string.tab_options), maxLines = 1) })
+            if (!wide) {
+                NavigationBar {
+                    tabs.forEachIndexed { i, name ->
+                        NavigationBarItem(tab == i, { onTab(i) }, { TabIcon(i) }, label = { TabLabel(stringResource(name)) })
+                    }
+                }
             }
         },
     ) { pad ->
@@ -342,6 +372,16 @@ private fun Tabs(vm: MainViewModel, ai: AiViewModel, tab: Int, onTab: (Int) -> U
             )
         }
     }
+    }
+    }
+}
+
+@Composable
+private fun TabIcon(i: Int) = when (i) {
+    0 -> Icon(Icons.Filled.Home, null)
+    1 -> Icon(painterResource(R.drawable.ic_scale), null)
+    2 -> Icon(Icons.AutoMirrored.Filled.List, null)
+    else -> Icon(Icons.Filled.Settings, null)
 }
 
 /**

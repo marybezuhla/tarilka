@@ -31,7 +31,8 @@ up() { adb shell input swipe 540 1900 540 $((1900 - ${UP_DY:-1000})) 800; sleep 
 # Scrolls until the label is on screen, then brings it up near the top.
 to_top() {  # label [target y]
   local TARGET="${2:-380}"
-  for i in $(seq 1 15); do
+  # The options are long: with a large font a short swipe needs many steps to reach the end
+  for i in $(seq 1 ${MAX_UP:-15}); do
     adb shell uiautomator dump /sdcard/ui.xml >/dev/null 2>&1 || true
     adb pull /sdcard/ui.xml "$TMP/ui.xml" >/dev/null 2>&1 || true
     if XY=$(python3 "$HERE/find.py" "$TMP/ui.xml" "$1"); then
@@ -88,21 +89,34 @@ run() {
   to_top "$ABOUT" 380; shot 08_options
 }
 
-# For review: how the app holds up on a narrow phone with the largest font, and on a tablet.
+# For review: how the app holds up on a narrow phone with a large font, an unfolded phone and a tablet.
 review() {
-  local OPTIONS="$2" HISTORY="$3"
+  local TODAY="$1" OPTIONS="$2" HISTORY="$3" DAY_THEME="$4" WEIGHT="$5" FOODS="$6"
   OUT="$ROOT/review"; rm -rf "$OUT"; mkdir -p "$OUT"
   adb shell settings put system font_scale 1.3; adb shell wm density 480   # about 360 dp wide
-  UP_DY=450
+  UP_DY=450; MAX_UP=40
   start_app; shot narrow_big_font_home; to_top "$HISTORY" 1200 || true; tap "$HISTORY" || true; sleep 3; shot narrow_big_font_history
-  adb shell input keyevent KEYCODE_BACK; sleep 2; tap "$OPTIONS" || true; to_top "$4" 600 || true; shot narrow_big_font_themes
+  adb shell input keyevent KEYCODE_BACK; sleep 2; tap "$OPTIONS" || true; to_top "$DAY_THEME" 600 || true; shot narrow_big_font_themes
   adb shell cmd uimode night yes >/dev/null; start_app; shot narrow_big_font_home_night
   adb shell cmd uimode night no >/dev/null
-  # The largest font Android 14 offers
+  # The largest font Android 14 offers: the tab names must still fit
   adb shell settings put system font_scale 2.0; start_app; shot narrow_font_2x_home
-  UP_DY=1000
-  adb shell settings put system font_scale 1.0; adb shell wm size 1600x2560; adb shell wm density 320   # a 10-inch tablet
-  start_app; shot tablet_home; tap "$OPTIONS" || true; shot tablet_options
+  tap "$OPTIONS" || true; shot narrow_font_2x_options
+  UP_DY=1000; MAX_UP=15
+  # An unfolded phone (about 670 dp): the rail at the side, one column
+  adb shell settings put system font_scale 1.0; adb shell wm size 1768x2208; adb shell wm density 420
+  start_app; shot unfolded_home; tap "$OPTIONS" || true; shot unfolded_options
+  # A 10-inch tablet: the rail and two columns, by day and at night
+  adb shell wm size 1600x2560; adb shell wm density 320
+  start_app; shot tablet_home
+  tap "$WEIGHT" || true; shot tablet_weight
+  tap "$FOODS" || true; no_keyboard; shot tablet_foods
+  tap "$OPTIONS" || true; shot tablet_options
+  adb shell cmd uimode night yes >/dev/null; start_app; shot tablet_home_night
+  tap "$OPTIONS" || true; shot tablet_options_night
+  adb shell cmd uimode night no >/dev/null
+  # A tablet held sideways
+  adb shell wm size 2560x1600; start_app; shot tablet_landscape_home
   adb shell wm size reset; adb shell wm density reset
 }
 
@@ -110,4 +124,4 @@ s() { grep -o "name=\"$2\">[^<]*" "$ROOT/app/src/main/res/$1/strings.xml" | cut 
 
 run uk-UA uk Вага Продукти "$(s values-uk history_title)" "$(s values-uk tab_options)" "$(s values-uk day_theme)" "$(s values-uk meal_breakfast)" "$(s values-uk add)" "$(s values-uk about)" "$(s values-uk tab_today)"
 run en-US en-US Weight Foods "$(s values history_title)" "$(s values tab_options)" "$(s values day_theme)" "$(s values meal_breakfast)" "$(s values add)" "$(s values about)" "$(s values tab_today)"
-LANG_DIR=review review "$(s values tab_today)" "$(s values tab_options)" "$(s values history_title)" "$(s values day_theme)"
+LANG_DIR=review review "$(s values tab_today)" "$(s values tab_options)" "$(s values history_title)" "$(s values day_theme)" Weight Foods

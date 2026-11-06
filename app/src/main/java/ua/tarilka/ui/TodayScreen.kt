@@ -6,13 +6,11 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
@@ -117,284 +115,283 @@ fun TodayScreen(
         onDispose { lifecycle.lifecycle.removeObserver(obs) }
     }
 
-    LazyColumn(
-        modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(
-            start = 16.dp, end = 16.dp,
-            top = padding.calculateTopPadding() + 8.dp,
-            bottom = padding.calculateBottomPadding() + 24.dp,
-        ),
-        verticalArrangement = Arrangement.spacedBy(12.dp),
-    ) {
-        item { DayHeader(day, onPrev = { vm.shiftDay(-1) }, onNext = { vm.shiftDay(1) }, onToday = vm::today, onHistory = onHistory) }
-
-        if (!profile.isSet) {
-            item {
-                Section {
-                    Text(stringResource(R.string.profile_hint), style = MaterialTheme.typography.bodyMedium)
+    // On a tablet: the day's summary on the left, the meals on the right (see CardColumns)
+    CardColumns(
+        padding,
+        header = { DayHeader(day, onPrev = { vm.shiftDay(-1) }, onNext = { vm.shiftDay(1) }, onToday = vm::today, onHistory = onHistory) },
+        main = {
+            if (!profile.isSet) {
+                item {
+                    Section {
+                        Text(stringResource(R.string.profile_hint), style = MaterialTheme.typography.bodyMedium)
+                    }
                 }
             }
-        }
 
-        // With protection on, a lost screen lock means a lost key: a backup is the only way back.
-        if (protectedDiary && System.currentTimeMillis() - lastBackup > 30L * 24 * 3600 * 1000) {
-            item {
-                Section {
-                    Text(
-                        if (lastBackup == 0L) stringResource(R.string.backup_never)
-                        else stringResource(R.string.backup_old, java.time.Instant.ofEpochMilli(lastBackup).atZone(java.time.ZoneId.systemDefault()).toLocalDate().format(java.time.format.DateTimeFormatter.ofLocalizedDate(java.time.format.FormatStyle.MEDIUM))),
-                        style = MaterialTheme.typography.bodyMedium,
-                    )
-                }
-            }
-        }
-
-        item {
-            Section {
-                // Under 18 the ring shows protein instead of calories.
-                val ring: @Composable () -> Unit = {
-                    if (LocalShowKcal.current) CalorieRing(totals.kcal, targets.kcal, warnOver = targets.limit == null)
-                    else CalorieRing(totals.protein, targets.protein, warnOver = false, ofText = stringResource(R.string.ring_protein, targets.protein.f0()))
-                }
-                val bars: @Composable (Modifier) -> Unit = { m ->
-                    Column(m, verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        NutrientBar(stringResource(R.string.protein), totals.protein, targets.protein, macros.protein)
-                        if (targets.showKcal) {
-                            NutrientBar(stringResource(R.string.fat), totals.fat, targets.fat, macros.fat)
-                            NutrientBar(stringResource(R.string.carbs), totals.carbs, targets.carbs, macros.carbs)
-                        }
-                        NutrientBar(stringResource(R.string.fiber), totals.fiber, targets.fiber, macros.fiber)
-                    }
-                }
-                // Side by side while the bars get room for a word; with a very large font on a narrow phone
-                // the bars go under the ring, so no word is ever broken.
-                androidx.compose.foundation.layout.BoxWithConstraints(Modifier.fillMaxWidth()) {
-                    val ringWidth = 132.dp * androidx.compose.ui.platform.LocalDensity.current.fontScale.coerceIn(1f, 1.6f)
-                    if (maxWidth - ringWidth - 16.dp >= 120.dp * androidx.compose.ui.platform.LocalDensity.current.fontScale) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            ring()
-                            Spacer(Modifier.width(16.dp))
-                            bars(Modifier.weight(1f))
-                        }
-                    } else {
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            ring()
-                            Spacer(Modifier.height(12.dp))
-                            bars(Modifier.fillMaxWidth())
-                        }
-                    }
-                }
-                Spacer(Modifier.height(12.dp))
-                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
-                Spacer(Modifier.height(10.dp))
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Column(
-                        Modifier
-                            .weight(1f)
-                            .clickable { fluidDialog = true },
-                    ) {
-                        NutrientBar(
-                            "💧 " + stringResource(R.string.water),
-                            fluidMl / 1000, targets.waterMl / 1000, macros.carbs,
-                            unit = stringResource(R.string.unit_l), decimals = true,
-                        )
-                    }
-                    Spacer(Modifier.width(8.dp))
-                    if (fluids.isNotEmpty()) {
-                        androidx.compose.material3.FilledTonalIconButton(onClick = vm::removeLastFluid) {
-                            Text("−", style = MaterialTheme.typography.titleLarge)
-                        }
-                    }
-                    FilledTonalButton(onClick = { vm.addFluid(250.0) }) { Text(stringResource(R.string.plus_ml, 250)) }
-                }
-                if (stepsEnabled && steps != null) {
-                    Spacer(Modifier.height(8.dp))
-                    val kcal = ua.tarilka.data.Nutrition.stepsKcal(steps!!, weight ?: profile.weightKg)
-                    Column(Modifier.clickable { stepsDialog = true }) {
-                        NutrientBar("👣 " + stringResource(R.string.steps_title), steps!!.toDouble(), stepsGoal.toDouble(), macros.fiber, unit = "")
-                    }
-                    Text(
-                        (if (LocalShowKcal.current) "≈ ${kcal.f0()} ${stringResource(R.string.unit_kcal)} · " else "") +
-                            stringResource(if (stepsFromHc) R.string.steps_from_hc else R.string.steps_from_sensor),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
-                Spacer(Modifier.height(8.dp))
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        "⚖️ " + (weight?.let { "${it.f1()} ${stringResource(R.string.kg)}" } ?: "—") +
-                            (weightOnDay?.minutes?.let { " · %02d:%02d".format(it / 60, it % 60) } ?: "") +
-                            (trend?.let { "  ·  " + stringResource(R.string.trend_week, (if (it > 0) "+" else "") + it.f1()) } ?: ""),
-                        style = MaterialTheme.typography.bodyMedium.merge(Numbers),
-                        modifier = Modifier.weight(1f),
-                    )
-                    TextButton(onClick = { weightDialog = true }) { Text(stringResource(R.string.weight_record)) }
-                }
-                cycle?.let { c ->
-                    val t = day.toEpochDay()
-                    // Water weight goes up before and in the first days of a period: say so next to the weight.
-                    val cd = c.cycleDay(t)
-                    val nearPeriod = c.inPeriod && (cd ?: 99) <= 3 || c.nextStart?.let { it - t in 0..7 } == true
-                    if (nearPeriod) {
-                        Text(stringResource(R.string.cycle_weight_note), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    }
-                    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.clickable { if (periodsKnown) cycleDialog = true else cycleSetup = true }) {
+            // With protection on, a lost screen lock means a lost key: a backup is the only way back.
+            if (protectedDiary && System.currentTimeMillis() - lastBackup > 30L * 24 * 3600 * 1000) {
+                item {
+                    Section {
                         Text(
-                            "🌸 " + when {
-                                !periodsKnown -> stringResource(R.string.cycle_not_set)
-                                c.late(t) -> stringResource(R.string.cycle_late, dayMonth(c.nextStart!!))
-                                cd != null -> stringResource(R.string.cycle_day, cd) + (c.nextStart?.let { " · " + stringResource(R.string.cycle_next_short, dayMonth(it)) } ?: "")
-                                else -> stringResource(R.string.cycle_title) + " —"
-                            },
+                            if (lastBackup == 0L) stringResource(R.string.backup_never)
+                            else stringResource(R.string.backup_old, java.time.Instant.ofEpochMilli(lastBackup).atZone(java.time.ZoneId.systemDefault()).toLocalDate().format(java.time.format.DateTimeFormatter.ofLocalizedDate(java.time.format.FormatStyle.MEDIUM))),
                             style = MaterialTheme.typography.bodyMedium,
-                            modifier = Modifier.weight(1f),
                         )
-                        if (!periodsKnown) {
-                            TextButton(onClick = { cycleSetup = true }) { Text(stringResource(R.string.cycle_set)) }
-                        } else if (c.inPeriod && c.lastStart != null && t >= c.lastStart) {
-                            // Only on days of the open period: "Ended" on an older day would close an old one.
-                            TextButton(onClick = { vm.periodEnded(day) }) { Text(stringResource(R.string.cycle_ended)) }
-                        } else if (c.nextStart == null || t >= c.nextStart - 5) {
-                            // Around the expected start: one tap.
-                            TextButton(onClick = { vm.periodStarted(day) }) { Text(stringResource(R.string.cycle_started)) }
+                    }
+                }
+            }
+
+            item {
+                Section {
+                    // Under 18 the ring shows protein instead of calories.
+                    val ring: @Composable () -> Unit = {
+                        if (LocalShowKcal.current) CalorieRing(totals.kcal, targets.kcal, warnOver = targets.limit == null)
+                        else CalorieRing(totals.protein, targets.protein, warnOver = false, ofText = stringResource(R.string.ring_protein, targets.protein.f0()))
+                    }
+                    val bars: @Composable (Modifier) -> Unit = { m ->
+                        Column(m, verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            NutrientBar(stringResource(R.string.protein), totals.protein, targets.protein, macros.protein)
+                            if (targets.showKcal) {
+                                NutrientBar(stringResource(R.string.fat), totals.fat, targets.fat, macros.fat)
+                                NutrientBar(stringResource(R.string.carbs), totals.carbs, targets.carbs, macros.carbs)
+                            }
+                            NutrientBar(stringResource(R.string.fiber), totals.fiber, targets.fiber, macros.fiber)
+                        }
+                    }
+                    // Side by side while the bars get room for a word; with a very large font on a narrow phone
+                    // the bars go under the ring, so no word is ever broken.
+                    androidx.compose.foundation.layout.BoxWithConstraints(Modifier.fillMaxWidth()) {
+                        val ringWidth = 132.dp * androidx.compose.ui.platform.LocalDensity.current.fontScale.coerceIn(1f, 1.6f)
+                        if (maxWidth - ringWidth - 16.dp >= 120.dp * androidx.compose.ui.platform.LocalDensity.current.fontScale) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                ring()
+                                Spacer(Modifier.width(16.dp))
+                                bars(Modifier.weight(1f))
+                            }
                         } else {
-                            // Earlier than expected, or another date: the dialog starts with "Started today".
-                            TextButton(onClick = { cycleDialog = true }) { Text(stringResource(R.string.record)) }
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                ring()
+                                Spacer(Modifier.height(12.dp))
+                                bars(Modifier.fillMaxWidth())
+                            }
                         }
                     }
-                }
-                if (workoutsOn) {
-                    val types = androidx.compose.ui.res.stringArrayResource(R.array.workout_types)
-                    val levels = androidx.compose.ui.res.stringArrayResource(R.array.workout_intensity)
+                    Spacer(Modifier.height(12.dp))
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                    Spacer(Modifier.height(10.dp))
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(
-                            "🏃 " + (if (workouts.isEmpty()) stringResource(R.string.workouts_title) + " —" else workouts.map { workoutLine(it, types, levels) }.joinToString("; ")),
-                            style = MaterialTheme.typography.bodyMedium,
-                            modifier = Modifier.weight(1f),
-                        )
-                        TextButton(onClick = { workoutDialog = true }) { Text(stringResource(R.string.add)) }
+                        Column(
+                            Modifier
+                                .weight(1f)
+                                .clickable { fluidDialog = true },
+                        ) {
+                            NutrientBar(
+                                "💧 " + stringResource(R.string.water),
+                                fluidMl / 1000, targets.waterMl / 1000, macros.carbs,
+                                unit = stringResource(R.string.unit_l), decimals = true,
+                            )
+                        }
+                        Spacer(Modifier.width(8.dp))
+                        if (fluids.isNotEmpty()) {
+                            androidx.compose.material3.FilledTonalIconButton(onClick = vm::removeLastFluid) {
+                                Text("−", style = MaterialTheme.typography.titleLarge)
+                            }
+                        }
+                        FilledTonalButton(onClick = { vm.addFluid(250.0) }) { Text(stringResource(R.string.plus_ml, 250)) }
                     }
-                }
-                if (bowelOn) {
-                    val forms = androidx.compose.ui.res.stringArrayResource(R.array.bowel_forms)
-                    Row(verticalAlignment = Alignment.CenterVertically) {
+                    if (stepsEnabled && steps != null) {
+                        Spacer(Modifier.height(8.dp))
+                        val kcal = ua.tarilka.data.Nutrition.stepsKcal(steps!!, weight ?: profile.weightKg)
+                        Column(Modifier.clickable { stepsDialog = true }) {
+                            NutrientBar("👣 " + stringResource(R.string.steps_title), steps!!.toDouble(), stepsGoal.toDouble(), macros.fiber, unit = "")
+                        }
                         Text(
-                            "🌿 " + stringResource(R.string.bowel_short) + ": " + (bowel?.let { b ->
-                                when (b.count) {
-                                    0 -> stringResource(R.string.bowel_none)
-                                    1 -> stringResource(R.string.bowel_once)
-                                    2 -> stringResource(R.string.bowel_twice)
-                                    else -> stringResource(R.string.bowel_3plus)
-                                } +
-                                    // Only an unusual form is named; the usual one needs no label.
-                                    (b.form?.takeIf { it != 1 }?.let { " · " + forms.getOrElse(it) { "" } } ?: "")
-                            } ?: "—"),
-                            style = MaterialTheme.typography.bodyMedium,
-                            modifier = Modifier.weight(1f),
+                            (if (LocalShowKcal.current) "≈ ${kcal.f0()} ${stringResource(R.string.unit_kcal)} · " else "") +
+                                stringResource(if (stepsFromHc) R.string.steps_from_hc else R.string.steps_from_sensor),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
-                        TextButton(onClick = { bowelDialog = true }) { Text(stringResource(R.string.record)) }
                     }
-                }
-                if (sleepOn) {
+                    Spacer(Modifier.height(8.dp))
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        // Hours and how it felt are separate things: "4 h, felt okay" reads fine, "4 h · okay" did not.
-                        val s = sleep
                         Text(
-                            "😴 " + (s?.let {
-                                stringResource(R.string.sleep_line, if (it.hours < 4) "<4" else if (it.hours > 10) ">10" else if (it.hours % 1.0 == 0.0) it.hours.toInt().toString() else it.hours.f1()) +
-                                    (it.quality?.let { q -> SLEEP_FELT.getOrNull(q) }?.let { r -> ", " + stringResource(r) } ?: "") +
-                                    (if (it.fromHc) " · Health Connect" else "")
-                            } ?: stringResource(R.string.sleep_title) + " —"),
+                            "⚖️ " + (weight?.let { "${it.f1()} ${stringResource(R.string.kg)}" } ?: "—") +
+                                (weightOnDay?.minutes?.let { " · %02d:%02d".format(it / 60, it % 60) } ?: "") +
+                                (trend?.let { "  ·  " + stringResource(R.string.trend_week, (if (it > 0) "+" else "") + it.f1()) } ?: ""),
                             style = MaterialTheme.typography.bodyMedium.merge(Numbers),
-                            color = if (s != null && s.hours < 6) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.onSurface,
                             modifier = Modifier.weight(1f),
                         )
-                        TextButton(onClick = { sleepDialog = true }) { Text(stringResource(R.string.record)) }
+                        TextButton(onClick = { weightDialog = true }) { Text(stringResource(R.string.weight_record)) }
                     }
-                }
-            }
-        }
-
-        item {
-            Section(title = stringResource(R.string.recommendations)) {
-                Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                    tips.forEach { TipRow(it) }
-                    activityHint?.let { level ->
-                        val name = stringResource(listOf(R.string.activity_0, R.string.activity_1, R.string.activity_2, R.string.activity_3, R.string.activity_4)[level])
-                        Text(stringResource(R.string.activity_hint, name), style = MaterialTheme.typography.bodyMedium)
-                        Row {
-                            TextButton(onClick = { vm.applyActivityHint(level) }) { Text(stringResource(R.string.update)) }
-                            TextButton(onClick = vm::dismissActivityHint) { Text(stringResource(R.string.not_now)) }
+                    cycle?.let { c ->
+                        val t = day.toEpochDay()
+                        // Water weight goes up before and in the first days of a period: say so next to the weight.
+                        val cd = c.cycleDay(t)
+                        val nearPeriod = c.inPeriod && (cd ?: 99) <= 3 || c.nextStart?.let { it - t in 0..7 } == true
+                        if (nearPeriod) {
+                            Text(stringResource(R.string.cycle_weight_note), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
+                        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.clickable { if (periodsKnown) cycleDialog = true else cycleSetup = true }) {
+                            Text(
+                                "🌸 " + when {
+                                    !periodsKnown -> stringResource(R.string.cycle_not_set)
+                                    c.late(t) -> stringResource(R.string.cycle_late, dayMonth(c.nextStart!!))
+                                    cd != null -> stringResource(R.string.cycle_day, cd) + (c.nextStart?.let { " · " + stringResource(R.string.cycle_next_short, dayMonth(it)) } ?: "")
+                                    else -> stringResource(R.string.cycle_title) + " —"
+                                },
+                                style = MaterialTheme.typography.bodyMedium,
+                                modifier = Modifier.weight(1f),
+                            )
+                            if (!periodsKnown) {
+                                TextButton(onClick = { cycleSetup = true }) { Text(stringResource(R.string.cycle_set)) }
+                            } else if (c.inPeriod && c.lastStart != null && t >= c.lastStart) {
+                                // Only on days of the open period: "Ended" on an older day would close an old one.
+                                TextButton(onClick = { vm.periodEnded(day) }) { Text(stringResource(R.string.cycle_ended)) }
+                            } else if (c.nextStart == null || t >= c.nextStart - 5) {
+                                // Around the expected start: one tap.
+                                TextButton(onClick = { vm.periodStarted(day) }) { Text(stringResource(R.string.cycle_started)) }
+                            } else {
+                                // Earlier than expected, or another date: the dialog starts with "Started today".
+                                TextButton(onClick = { cycleDialog = true }) { Text(stringResource(R.string.record)) }
+                            }
+                        }
+                    }
+                    if (workoutsOn) {
+                        val types = androidx.compose.ui.res.stringArrayResource(R.array.workout_types)
+                        val levels = androidx.compose.ui.res.stringArrayResource(R.array.workout_intensity)
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(
+                                "🏃 " + (if (workouts.isEmpty()) stringResource(R.string.workouts_title) + " —" else workouts.map { workoutLine(it, types, levels) }.joinToString("; ")),
+                                style = MaterialTheme.typography.bodyMedium,
+                                modifier = Modifier.weight(1f),
+                            )
+                            TextButton(onClick = { workoutDialog = true }) { Text(stringResource(R.string.add)) }
+                        }
+                    }
+                    if (bowelOn) {
+                        val forms = androidx.compose.ui.res.stringArrayResource(R.array.bowel_forms)
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(
+                                "🌿 " + stringResource(R.string.bowel_short) + ": " + (bowel?.let { b ->
+                                    when (b.count) {
+                                        0 -> stringResource(R.string.bowel_none)
+                                        1 -> stringResource(R.string.bowel_once)
+                                        2 -> stringResource(R.string.bowel_twice)
+                                        else -> stringResource(R.string.bowel_3plus)
+                                    } +
+                                        // Only an unusual form is named; the usual one needs no label.
+                                        (b.form?.takeIf { it != 1 }?.let { " · " + forms.getOrElse(it) { "" } } ?: "")
+                                } ?: "—"),
+                                style = MaterialTheme.typography.bodyMedium,
+                                modifier = Modifier.weight(1f),
+                            )
+                            TextButton(onClick = { bowelDialog = true }) { Text(stringResource(R.string.record)) }
+                        }
+                    }
+                    if (sleepOn) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            // Hours and how it felt are separate things: "4 h, felt okay" reads fine, "4 h · okay" did not.
+                            val s = sleep
+                            Text(
+                                "😴 " + (s?.let {
+                                    stringResource(R.string.sleep_line, if (it.hours < 4) "<4" else if (it.hours > 10) ">10" else if (it.hours % 1.0 == 0.0) it.hours.toInt().toString() else it.hours.f1()) +
+                                        (it.quality?.let { q -> SLEEP_FELT.getOrNull(q) }?.let { r -> ", " + stringResource(r) } ?: "") +
+                                        (if (it.fromHc) " · Health Connect" else "")
+                                } ?: stringResource(R.string.sleep_title) + " —"),
+                                style = MaterialTheme.typography.bodyMedium.merge(Numbers),
+                                color = if (s != null && s.hours < 6) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.onSurface,
+                                modifier = Modifier.weight(1f),
+                            )
+                            TextButton(onClick = { sleepDialog = true }) { Text(stringResource(R.string.record)) }
                         }
                     }
                 }
             }
-        }
 
-        for (meal in 0..3) {
-            val list = entries.filter { it.meal == meal }
-            item(key = "meal$meal") {
-                MealSection(
-                    meal = meal,
-                    entries = list,
-                    showPhoto = model is ModelStore.State.Ready,
-                    onAdd = { onAdd(meal) },
-                    onPhoto = { onPhoto(meal) },
-                    onEntry = { editing = it },
-                    onDeleteAll = { vm.deleteMeal(meal) },
-                    onDelete = { vm.deleteEntry(it) },
-                    time = if (mealTimesOn && meal != 3 && list.isNotEmpty()) vm.mealTimeOf(meal) else null,
-                    onTime = { vm.setMealTime(meal, it) },
-                    onRepeat = if (list.isEmpty() && !yesterday[meal].isNullOrEmpty()) { { vm.repeatYesterday(meal) } } else null,
-                )
-            }
-        }
-
-        item(key = "note") {
-            Section(
-                modifier = Modifier.clickable { noteDialog = true },
-                title = stringResource(R.string.note_title),
-            ) {
-                Text(
-                    note.ifEmpty { stringResource(R.string.note_hint) },
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = if (note.isEmpty()) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurface,
-                )
-            }
-        }
-
-        item {
-            val withData = week.filter { it.kcal > 0 }
-            if (withData.isNotEmpty()) {
-                Section(title = stringResource(R.string.week_title)) {
-                    val avg = withData.sumOf { it.kcal } / withData.size
-                    val avgP = withData.sumOf { it.protein } / withData.size
-                    // An average of one or two days says nothing new: the bars are enough until then.
-                    if (withData.size >= 3) {
-                        Text(
-                            if (targets.showKcal) stringResource(R.string.week_avg, avg.f0(), targets.kcal.f0(), avgP.f0(), targets.protein.f0())
-                            else stringResource(R.string.week_avg_protein, avgP.f0(), targets.protein.f0()),
-                            style = MaterialTheme.typography.bodyMedium,
-                        )
-                        Spacer(Modifier.height(8.dp))
+            item {
+                Section(title = stringResource(R.string.recommendations)) {
+                    Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                        tips.forEach { TipRow(it) }
+                        activityHint?.let { level ->
+                            val name = stringResource(listOf(R.string.activity_0, R.string.activity_1, R.string.activity_2, R.string.activity_3, R.string.activity_4)[level])
+                            Text(stringResource(R.string.activity_hint, name), style = MaterialTheme.typography.bodyMedium)
+                            Row {
+                                TextButton(onClick = { vm.applyActivityHint(level) }) { Text(stringResource(R.string.update)) }
+                                TextButton(onClick = vm::dismissActivityHint) { Text(stringResource(R.string.not_now)) }
+                            }
+                        }
                     }
-                    if (targets.showKcal) WeekBars(day, week, targets.kcal, warnOver = targets.limit == null)
-                    // Several full days well below what the body needs at rest: a calm word and a pointer to help.
-                    val past = withData.filter { it.day < java.time.LocalDate.now().toEpochDay() }
-                    if (past.size >= 4 && past.sumOf { it.kcal } / past.size < targets.bmr) {
-                        Spacer(Modifier.height(8.dp))
-                        Text(stringResource(R.string.week_under), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.tertiary)
-                    }
-                    habits?.let {
-                        Spacer(Modifier.height(10.dp))
-                        HabitChips(it, sex = profile.sex, pregnant = profile.pregnantOrBreastfeeding, onSaveNote = vm::appendNoteToday, workoutsTracked = vm.workoutsTracked.collectAsState().value)
-                    }
-                    TextButton(onClick = onHistory) { Text(stringResource(R.string.summaries_link)) }
                 }
             }
-        }
-    }
+
+        },
+        side = {
+            for (meal in 0..3) {
+                val list = entries.filter { it.meal == meal }
+                item(key = "meal$meal") {
+                    MealSection(
+                        meal = meal,
+                        entries = list,
+                        showPhoto = model is ModelStore.State.Ready,
+                        onAdd = { onAdd(meal) },
+                        onPhoto = { onPhoto(meal) },
+                        onEntry = { editing = it },
+                        onDeleteAll = { vm.deleteMeal(meal) },
+                        onDelete = { vm.deleteEntry(it) },
+                        time = if (mealTimesOn && meal != 3 && list.isNotEmpty()) vm.mealTimeOf(meal) else null,
+                        onTime = { vm.setMealTime(meal, it) },
+                        onRepeat = if (list.isEmpty() && !yesterday[meal].isNullOrEmpty()) { { vm.repeatYesterday(meal) } } else null,
+                    )
+                }
+            }
+
+            item(key = "note") {
+                Section(
+                    modifier = Modifier.clickable { noteDialog = true },
+                    title = stringResource(R.string.note_title),
+                ) {
+                    Text(
+                        note.ifEmpty { stringResource(R.string.note_hint) },
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = if (note.isEmpty()) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurface,
+                    )
+                }
+            }
+
+        },
+        tail = {
+            item {
+                val withData = week.filter { it.kcal > 0 }
+                if (withData.isNotEmpty()) {
+                    Section(title = stringResource(R.string.week_title)) {
+                        val avg = withData.sumOf { it.kcal } / withData.size
+                        val avgP = withData.sumOf { it.protein } / withData.size
+                        // An average of one or two days says nothing new: the bars are enough until then.
+                        if (withData.size >= 3) {
+                            Text(
+                                if (targets.showKcal) stringResource(R.string.week_avg, avg.f0(), targets.kcal.f0(), avgP.f0(), targets.protein.f0())
+                                else stringResource(R.string.week_avg_protein, avgP.f0(), targets.protein.f0()),
+                                style = MaterialTheme.typography.bodyMedium,
+                            )
+                            Spacer(Modifier.height(8.dp))
+                        }
+                        if (targets.showKcal) WeekBars(day, week, targets.kcal, warnOver = targets.limit == null)
+                        // Several full days well below what the body needs at rest: a calm word and a pointer to help.
+                        val past = withData.filter { it.day < java.time.LocalDate.now().toEpochDay() }
+                        if (past.size >= 4 && past.sumOf { it.kcal } / past.size < targets.bmr) {
+                            Spacer(Modifier.height(8.dp))
+                            Text(stringResource(R.string.week_under), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.tertiary)
+                        }
+                        habits?.let {
+                            Spacer(Modifier.height(10.dp))
+                            HabitChips(it, sex = profile.sex, pregnant = profile.pregnantOrBreastfeeding, onSaveNote = vm::appendNoteToday, workoutsTracked = vm.workoutsTracked.collectAsState().value)
+                        }
+                        TextButton(onClick = onHistory) { Text(stringResource(R.string.summaries_link)) }
+                    }
+                }
+            }
+        },
+    )
 
     if (weightDialog) {
         var text by remember { mutableStateOf(weightOnDay?.kg?.f1() ?: "") }

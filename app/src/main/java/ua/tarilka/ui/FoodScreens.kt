@@ -249,15 +249,19 @@ fun FoodsScreen(vm: MainViewModel, padding: PaddingValues, onEdit: (Food?) -> Un
                 androidx.compose.material3.FilterChip(selected = filter == i, onClick = { filter = i }, label = { Text(stringResource(res)) })
             }
         }
-        LazyColumn(
+        // On a tablet the foods stand in two columns
+        androidx.compose.foundation.layout.BoxWithConstraints(Modifier.fillMaxSize()) {
+        androidx.compose.foundation.lazy.grid.LazyVerticalGrid(
+            columns = androidx.compose.foundation.lazy.grid.GridCells.Fixed(if (twoPanes(maxWidth)) 2 else 1),
             modifier = Modifier.fillMaxSize(),
             contentPadding = PaddingValues(bottom = padding.calculateBottomPadding() + 88.dp),
         ) {
-            items(shown, key = { it.id }) { f ->
+            items(shown.size, key = { shown[it].id }) { i ->
+                val f = shown[i]
                 FoodRow(f, { details = f }, onFavorite = { vm.toggleFavorite(f) })
             }
             if (shown.isEmpty() && filter != 0) {
-                item {
+                item(span = { androidx.compose.foundation.lazy.grid.GridItemSpan(maxLineSpan) }) {
                     Text(
                         stringResource(if (filter == 1) R.string.filter_mine_empty else R.string.filter_favorites_empty),
                         modifier = Modifier.padding(24.dp),
@@ -265,6 +269,7 @@ fun FoodsScreen(vm: MainViewModel, padding: PaddingValues, onEdit: (Food?) -> Un
                     )
                 }
             }
+        }
         }
     }
 

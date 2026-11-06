@@ -144,7 +144,7 @@
     <string name="language">Language</string>
     <string name="lang_system">System</string>
     <string name="about">About</string>
-    <string name="about_text">Tarilka is a free, open-source, offline food and weight tracker. Data stays on your phone. Food values: USDA FoodData Central (public domain), typical Ukrainian labels and recipe calculations; the source is shown for each food. This app is not medical advice; for health conditions, pregnancy or eating disorders please talk to a doctor.</string>
+    <string name="about_text">Tarilka is a free, open-source, offline food and weight tracker. Data stays on your phone. Food values: USDA FoodData Central (public domain), typical Ukrainian labels and recipe calculations; the source is shown for each food. This app is not medical advice; for health conditions, pregnancy or eating disorders please talk to a doctor. The code was written with AI (Claude, Anthropic), directed and tested by the author.</string>
     <string name="about_licences">Licence: GNU GPL version 3 or (at your option) any later version, free software with no warranty. Source code: github.com/marybezuhla/tarilka. Uses Kotlin and kotlinx.coroutines (JetBrains, Apache 2.0); AndroidX, Jetpack Compose, Room, Biometric and Health Connect (Google, Apache 2.0); SQLCipher (© Zetetic LLC, BSD); LiteRT-LM (Google, Apache 2.0). The full list is in NOTICE.md. The optional Gemma model is Google\'s, under the terms on its model page. Food data: U.S. Department of Agriculture, Agricultural Research Service, FoodData Central.</string>
     <string name="water">Fluids</string>
     <string name="water_title">Drinks</string>
