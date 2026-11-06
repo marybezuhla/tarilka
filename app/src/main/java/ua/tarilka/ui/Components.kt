@@ -199,7 +199,7 @@ fun sourceLabel(source: String): String = stringResource(
 fun TimeRow(time: java.time.LocalTime, onChange: (java.time.LocalTime) -> Unit) {
     val context = androidx.compose.ui.platform.LocalContext.current
     TextButton(onClick = {
-        android.app.TimePickerDialog(context, { _, h, m -> onChange(java.time.LocalTime.of(h, m)) }, time.hour, time.minute, true).show()
+        android.app.TimePickerDialog(context, { _, h, m -> onChange(java.time.LocalTime.of(h, m)) }, time.hour, time.minute, true).apply { Protection.secure(this) }.show()
     }) {
         Text(stringResource(R.string.meal_time, "%02d:%02d".format(time.hour, time.minute)))
     }

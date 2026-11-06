@@ -180,6 +180,7 @@ object PdfReport {
             data.cycle?.let { ci ->
                 ci.avgLength?.let { pdf.text(c.getString(R.string.cycle_avg, it, ci.lengths.size), pdf.body) }
                 ci.nextStart?.let { pdf.text(c.getString(R.string.cycle_next, shortDate(it)), pdf.body) }
+                if (ci.paused) pdf.text(c.getString(R.string.cycle_paused), pdf.body)
                 if (ci.irregular) pdf.text(c.getString(R.string.cycle_irregular), pdf.body)
                 if (ci.longGap) pdf.text(c.getString(R.string.cycle_long_gap), pdf.body)
                 if (ci.seeDoctor) {

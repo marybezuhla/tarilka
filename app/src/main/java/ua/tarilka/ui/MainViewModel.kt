@@ -238,9 +238,11 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
 
     val cycle: StateFlow<ua.tarilka.data.CycleInfo?> = combine(
         prefs.cycleEnabled, allPeriods, db.cycle().days(), today,
-        combine(prefs.cycleTypical, prefs.profile) { typical, p -> typical to (p.age < 18) },
-    ) { on, periods, days, t, (typical, teen) ->
-        if (!on) null else ua.tarilka.data.CycleInfo.of(periods, days, t.toEpochDay(), typical.takeIf { it > 0 }, teen = teen)
+        combine(prefs.cycleTypical, prefs.profile) { typical, p -> Triple(typical, p.age < 18, p.pregnantOrBreastfeeding) },
+    ) { on, periods, days, t, (typical, teen, paused) ->
+        if (!on) null
+        else ua.tarilka.data.CycleInfo.of(periods, days, t.toEpochDay(), typical.takeIf { it > 0 }, teen = teen)
+            .let { if (paused) it.paused() else it }
     }.onEach { info ->
         // Reminders read the expected date from preferences (they run without the app open, often while the
         // protected profile is locked). In pregnancy no date is stored, so no cycle reminder can fire.

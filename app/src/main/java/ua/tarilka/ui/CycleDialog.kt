@@ -70,7 +70,8 @@ fun CycleDialog(vm: MainViewModel, onDismiss: () -> Unit) {
                 c.avgLength?.let { Text(stringResource(R.string.cycle_avg, it, c.lengths.size), style = MaterialTheme.typography.bodyMedium) }
                 c.nextStart?.let { Text(stringResource(R.string.cycle_next, shortDate(it)), style = MaterialTheme.typography.bodyMedium) }
                 c.ovulation?.let { Text(stringResource(R.string.cycle_ovulation, shortDate(it - 5), shortDate(it)), style = MaterialTheme.typography.bodyMedium) }
-                if (c.nextStart == null || c.fromTypical) Text(stringResource(R.string.cycle_need_two), style = MaterialTheme.typography.bodySmall)
+                if (c.paused) Text(stringResource(R.string.cycle_paused), style = MaterialTheme.typography.bodyMedium)
+                else if (c.nextStart == null || c.fromTypical) Text(stringResource(R.string.cycle_need_two), style = MaterialTheme.typography.bodySmall)
                 if (c.irregular) Text(stringResource(R.string.cycle_irregular), style = MaterialTheme.typography.bodySmall)
                 if (c.longGap) Text(stringResource(R.string.cycle_long_gap), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.tertiary)
                 Text(stringResource(R.string.cycle_disclaimer), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)

@@ -4,6 +4,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -250,7 +251,9 @@ fun FoodsScreen(vm: MainViewModel, padding: PaddingValues, onEdit: (Food?) -> Un
         else -> results
     }
 
-    Column(Modifier.padding(top = padding.calculateTopPadding())) {
+    // Beside the rail the end of the screen may hold the navigation bar or a camera cutout
+    val dir = androidx.compose.ui.platform.LocalLayoutDirection.current
+    Column(Modifier.padding(top = padding.calculateTopPadding(), end = padding.calculateEndPadding(dir))) {
         SearchField(query, { vm.query.value = it }, Modifier.padding(horizontal = 16.dp, vertical = 8.dp))
         Row(Modifier.padding(horizontal = 16.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             listOf(R.string.filter_all, R.string.filter_mine, R.string.filter_favorites).forEachIndexed { i, res ->

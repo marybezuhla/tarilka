@@ -228,13 +228,13 @@ fun TodayScreen(
                         TextButton(onClick = { weightDialog = true }) { Text(stringResource(R.string.weight_record)) }
                     }
                     // In pregnancy and while breastfeeding the forecast says nothing: no dates, no "late", no reminders
-                    if (cycle != null && profile.pregnantOrBreastfeeding) {
+                    if (cycle?.paused == true) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Text("🌸 " + stringResource(R.string.cycle_paused), style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
                             if (periodsKnown) TextButton(onClick = { cycleDialog = true }) { Text(stringResource(R.string.record)) }
                         }
                     }
-                    cycle?.takeUnless { profile.pregnantOrBreastfeeding }?.let { c ->
+                    cycle?.takeUnless { it.paused }?.let { c ->
                         val t = day.toEpochDay()
                         // Water weight goes up before and in the first days of a period: say so next to the weight.
                         val cd = c.cycleDay(t)
@@ -600,7 +600,7 @@ private fun MealSection(
             // One time for the whole meal: tap to change it for all its foods.
             time?.let { t ->
                 TextButton(onClick = {
-                    android.app.TimePickerDialog(context, { _, h, m -> onTime(java.time.LocalTime.of(h, m)) }, t.hour, t.minute, true).show()
+                    android.app.TimePickerDialog(context, { _, h, m -> onTime(java.time.LocalTime.of(h, m)) }, t.hour, t.minute, true).apply { Protection.secure(this) }.show()
                 }) { Text("%02d:%02d ✎".format(t.hour, t.minute), style = MaterialTheme.typography.labelLarge.merge(Numbers)) }
             }
             if (entries.isNotEmpty() && LocalShowKcal.current) {

@@ -230,6 +230,7 @@ private fun ModelSection(ai: AiViewModel) {
     val importing by ai.importProgress.collectAsState()
     val note by ai.importNote.collectAsState()
     val context = androidx.compose.ui.platform.LocalContext.current
+    val enoughMemory = remember { ModelStore.enoughMemory(totalMemory(context)) }
     var confirmDelete by remember { mutableStateOf(false) }
     var deleteOriginal by remember { mutableStateOf(false) }
     val picker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
@@ -260,7 +261,7 @@ private fun ModelSection(ai: AiViewModel) {
                     }
                 }
                 // A phone with too little memory: say so instead of offering a 2.6 GB download that cannot work
-                !ModelStore.enoughMemory(totalMemory(context)) -> {
+                !enoughMemory -> {
                     Text(stringResource(R.string.ai_low_memory), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
                 else -> {
@@ -421,7 +422,7 @@ private fun RemindersSection(vm: MainViewModel) {
         if (granted) { turnOn(); denied = false } else { pending = turnOn; permission.launch(android.Manifest.permission.POST_NOTIFICATIONS) }
     }
     fun pickTime(initial: java.time.LocalTime, onPicked: (java.time.LocalTime) -> Unit) {
-        android.app.TimePickerDialog(context, { _, h, m -> onPicked(java.time.LocalTime.of(h, m)) }, initial.hour, initial.minute, true).show()
+        android.app.TimePickerDialog(context, { _, h, m -> onPicked(java.time.LocalTime.of(h, m)) }, initial.hour, initial.minute, true).apply { Protection.secure(this) }.show()
     }
     val defaults = listOf(java.time.LocalTime.of(9, 0), java.time.LocalTime.of(14, 0), java.time.LocalTime.of(19, 0))
 

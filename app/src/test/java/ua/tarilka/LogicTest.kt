@@ -405,10 +405,10 @@ class LogicTest {
 
     @Test
     fun aiNeedsASixGigabytePhone() {
-        val gb = 1024L * 1024 * 1024
-        // A 4 GB phone reports about 3.6 GB, a 6 GB one about 5.5 GB
-        assertTrue(!ua.tarilka.ai.ModelStore.enoughMemory(36 * gb / 10))
-        assertTrue(ua.tarilka.ai.ModelStore.enoughMemory(55 * gb / 10))
-        assertTrue(ua.tarilka.ai.ModelStore.enoughMemory(8 * gb))
+        // What Android reports as total memory: a 4 GB phone, two 6 GB phones, an 8 GB one
+        assertTrue(!ua.tarilka.ai.ModelStore.enoughMemory(3_800_000_000L))
+        assertTrue(ua.tarilka.ai.ModelStore.enoughMemory(5_300_000_000L))
+        assertTrue(ua.tarilka.ai.ModelStore.enoughMemory(5_700_000_000L))
+        assertTrue(ua.tarilka.ai.ModelStore.enoughMemory(7_600_000_000L))
     }
 }
