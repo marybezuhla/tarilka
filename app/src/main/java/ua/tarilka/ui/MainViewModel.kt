@@ -83,7 +83,9 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
     val latestWeight: StateFlow<Double?> =
         weights.map { it.lastOrNull()?.kg }.stateIn(viewModelScope, SharingStarted.Eagerly, null)
 
-    val targets: StateFlow<Targets> = combine(profile, latestWeight, prefs.hideKcal) { p, w, hide -> Nutrition.targets(p, w).copy(hideKcal = hide) }
+    val targets: StateFlow<Targets> = combine(profile, latestWeight, prefs.hideKcal, prefs.hideWeight) { p, w, hide, noWeight ->
+        Nutrition.targets(p, w).copy(hideKcal = hide, hideWeight = noWeight)
+    }
         .stateIn(viewModelScope, SharingStarted.Eagerly, Nutrition.targets(Profile(), null))
 
     val entries: StateFlow<List<DiaryEntry>> = day.flatMapLatest { db.diary().forDay(it.toEpochDay()) }
@@ -206,7 +208,14 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
         db.sleep().upsert(ua.tarilka.data.SleepEntry(day.value.toEpochDay(), hours, quality))
     }
 
-    fun deleteSleep() = viewModelScope.launch { db.sleep().delete(day.value.toEpochDay()) }
+    // Every deletion can be undone, as with food and drinks
+    fun deleteSleep() = viewModelScope.launch {
+        val d = day.value.toEpochDay()
+        val old = db.sleep().forDay(d).first() ?: return@launch
+        db.sleep().delete(d)
+        // A new record made meanwhile wins
+        offerUndo(1) { if (db.sleep().forDay(d).first() == null) db.sleep().upsert(old) }
+    }
 
     /** Hours per day for a range: typed-in values, else Health Connect. */
     private suspend fun sleepRange(from: LocalDate, to: LocalDate): Map<Long, Double> {
@@ -317,7 +326,12 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
         db.bowel().upsert(ua.tarilka.data.BowelEntry(day.value.toEpochDay(), count, form.takeIf { count > 0 }))
     }
 
-    fun deleteBowel() = viewModelScope.launch { db.bowel().delete(day.value.toEpochDay()) }
+    fun deleteBowel() = viewModelScope.launch {
+        val d = day.value.toEpochDay()
+        val old = db.bowel().forDay(d).first() ?: return@launch
+        db.bowel().delete(d)
+        offerUndo(1) { if (db.bowel().forDay(d).first() == null) db.bowel().upsert(old) }
+    }
 
     val workouts: StateFlow<List<ua.tarilka.data.WorkoutEntry>> = day.flatMapLatest { db.workouts().forDay(it.toEpochDay()) }
         .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
@@ -326,7 +340,10 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
         db.workouts().insert(ua.tarilka.data.WorkoutEntry(day = day.value.toEpochDay(), type = type, minutes = minutes, intensity = intensity, createdAt = timestampFor(day.value)))
     }
 
-    fun deleteWorkout(w: ua.tarilka.data.WorkoutEntry) = viewModelScope.launch { db.workouts().delete(w) }
+    fun deleteWorkout(w: ua.tarilka.data.WorkoutEntry) = viewModelScope.launch {
+        db.workouts().delete(w)
+        offerUndo(1) { db.workouts().insert(w) }
+    }
 
     /**
      * A suggested activity level for the profile when 3+ weeks of steps and workouts clearly
@@ -1064,6 +1081,8 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
     }
     val hideKcal: StateFlow<Boolean> = prefs.hideKcal
     fun setHideKcal(on: Boolean) = prefs.setHideKcal(on)
+    val hideWeight: StateFlow<Boolean> = prefs.hideWeight
+    fun setHideWeight(on: Boolean) = prefs.setHideWeight(on)
 
     // ---- export / import ----
 

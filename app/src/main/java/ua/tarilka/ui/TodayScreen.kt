@@ -37,6 +37,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -186,7 +187,7 @@ fun TodayScreen(
                         Column(
                             Modifier
                                 .weight(1f)
-                                .clickable { fluidDialog = true },
+                                .clickable(onClickLabel = stringResource(R.string.open_fluids)) { fluidDialog = true },
                         ) {
                             NutrientBar(
                                 "💧 " + stringResource(R.string.water),
@@ -206,7 +207,7 @@ fun TodayScreen(
                     if (stepsEnabled && steps != null) {
                         Spacer(Modifier.height(8.dp))
                         val kcal = ua.tarilka.data.Nutrition.stepsKcal(steps!!, weight ?: profile.weightKg)
-                        Column(Modifier.clickable { stepsDialog = true }) {
+                        Column(Modifier.clickable(onClickLabel = stringResource(R.string.open_steps)) { stepsDialog = true }) {
                             NutrientBar("👣 " + stringResource(R.string.steps_title), steps!!.toDouble(), stepsGoal.toDouble(), macros.fiber, unit = "")
                         }
                         Text(
@@ -217,7 +218,8 @@ fun TodayScreen(
                         )
                     }
                     Spacer(Modifier.height(8.dp))
-                    Row(verticalAlignment = Alignment.CenterVertically) {
+                    // The person may have hidden weight: then no number, trend or button here
+                    if (LocalShowWeight.current) Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(
                             "⚖️ " + (weight?.let { "${it.f1()} ${stringResource(R.string.kg)}" } ?: "—") +
                                 (weightOnDay?.minutes?.let { " · %02d:%02d".format(it / 60, it % 60) } ?: "") +
@@ -239,10 +241,10 @@ fun TodayScreen(
                         // Water weight goes up before and in the first days of a period: say so next to the weight.
                         val cd = c.cycleDay(t)
                         val nearPeriod = c.inPeriod && (cd ?: 99) <= 3 || c.nextStart?.let { it - t in 0..7 } == true
-                        if (nearPeriod) {
+                        if (nearPeriod && LocalShowWeight.current) {
                             Text(stringResource(R.string.cycle_weight_note), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
-                        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.clickable { if (periodsKnown) cycleDialog = true else cycleSetup = true }) {
+                        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.clickable(onClickLabel = stringResource(R.string.open_cycle)) { if (periodsKnown) cycleDialog = true else cycleSetup = true }) {
                             Text(
                                 "🌸 " + when {
                                     !periodsKnown -> stringResource(R.string.cycle_not_set)
@@ -358,7 +360,7 @@ fun TodayScreen(
 
             card("note") {
                 Section(
-                    modifier = Modifier.clickable { noteDialog = true },
+                    modifier = Modifier.clickable(onClickLabel = stringResource(R.string.open_note)) { noteDialog = true },
                     title = stringResource(R.string.note_title),
                 ) {
                     Text(
@@ -389,9 +391,14 @@ fun TodayScreen(
                         if (targets.showKcal) WeekBars(day, week, targets.kcal, warnOver = targets.limit == null)
                         // Several full days well below what the body needs at rest: a calm word and a pointer to help.
                         val past = withData.filter { it.day < java.time.LocalDate.now().toEpochDay() }
-                        if (past.size >= 4 && past.sumOf { it.kcal } / past.size < targets.bmr) {
+                        val pastAvg = if (past.isEmpty()) 0.0 else past.sumOf { it.kcal } / past.size
+                        // Below rest needs, or, for someone who trains a lot, well below what the activity needs
+                        val underRest = past.size >= 4 && pastAvg < targets.bmr
+                        val underActive = past.size >= 4 && profile.activity >= 3 && pastAvg < targets.tdee * 0.7
+                        if (underRest || underActive) {
                             Spacer(Modifier.height(8.dp))
-                            Text(stringResource(R.string.week_under), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.tertiary)
+                            // Training words do not fit pregnancy or breastfeeding: the general note there
+                            Text(stringResource(if (underRest || profile.pregnantOrBreastfeeding) R.string.week_under else R.string.week_under_active), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.tertiary)
                         }
                         habits?.let {
                             Spacer(Modifier.height(10.dp))
@@ -416,7 +423,7 @@ fun TodayScreen(
             onDismissRequest = { weightDialog = false },
             title = { Text(stringResource(R.string.weight_today)) },
             text = {
-                Column {
+                Column(Modifier.verticalScroll(androidx.compose.foundation.rememberScrollState())) {
                     Field(stringResource(R.string.kg), text, { text = it })
                     TimeRow(wTime) { wTime = it }
                     Text(stringResource(R.string.weight_hint), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -429,7 +436,7 @@ fun TodayScreen(
             },
             confirmButton = {
                 TextButton(
-                    enabled = text.toNumber()?.let { it in 25.0..350.0 } == true,
+                    enabled = text.toNumber()?.let { it in ua.tarilka.data.Bounds.WEIGHT_KG } == true,
                     onClick = { text.toNumber()?.let { vm.saveWeight(it, day, wTime) }; weightDialog = false },
                 ) { Text(stringResource(R.string.save)) }
             },
@@ -708,6 +715,7 @@ private fun WeekBars(day: LocalDate, week: List<ua.tarilka.data.DayTotal>, targe
     val color = LocalMacroColors.current.kcal
     val over = MaterialTheme.colorScheme.tertiary
     val track = MaterialTheme.colorScheme.surfaceVariant
+    val line = MaterialTheme.colorScheme.outline
     val max = maxOf((target ?: 0.0) * 1.3, week.maxOfOrNull { it.kcal } ?: 0.0, 1.0)
     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
         for (i in 6 downTo 0) {
@@ -729,7 +737,7 @@ private fun WeekBars(day: LocalDate, week: List<ua.tarilka.data.DayTotal>, targe
                     if (target != null) {
                         val ty = (size.height - (target / max).toFloat() * size.height)
                         drawLine(
-                            androidx.compose.ui.graphics.Color.Gray,
+                            line,
                             androidx.compose.ui.geometry.Offset(0f, ty),
                             androidx.compose.ui.geometry.Offset(size.width, ty),
                             strokeWidth = 2f,
@@ -764,7 +772,7 @@ private fun SleepDialog(
         onDismissRequest = onDismiss,
         title = { Text(stringResource(R.string.sleep_question)) },
         text = {
-            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Column(Modifier.verticalScroll(androidx.compose.foundation.rememberScrollState()), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 androidx.compose.foundation.layout.FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                     // 3.5 stands for "under 4 hours", 11 for "over 10".
                     listOf(3.5, 4.0, 5.0, 6.0, 6.5, 7.0, 7.5, 8.0, 9.0, 10.0, 11.0).forEach { h ->

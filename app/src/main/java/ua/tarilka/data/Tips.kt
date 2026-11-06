@@ -80,7 +80,7 @@ object Tips {
                 dayFinished && steps < 4_000 -> tips += Tip(R.string.tip_steps_low, listOf(steps.toInt()))
             }
         }
-        if (weeklyTrendKg != null && currentWeight != null) {
+        if (weeklyTrendKg != null && currentWeight != null && !targets.hideWeight) {
             val oneTenth = (weeklyTrendKg * 10).roundToInt() / 10.0
             // The goal in use: "Lose" is not used in pregnancy, under 18 or with a low BMI.
             val goal = targets.goal

@@ -26,6 +26,10 @@ object Feedback {
             .appendQueryParameter("title", title)
             .appendQueryParameter("body", body.take(6000))
             .build()
-        runCatching { context.startActivity(Intent(Intent.ACTION_VIEW, uri)) }
+        // No browser on the phone: the text is not lost, it goes to the clipboard and the person is told so
+        runCatching { context.startActivity(Intent(Intent.ACTION_VIEW, uri)) }.onFailure {
+            copyPrivate(context, "$title\n\n$body")
+            android.widget.Toast.makeText(context, ua.tarilka.R.string.feedback_no_browser, android.widget.Toast.LENGTH_LONG).show()
+        }
     }
 }

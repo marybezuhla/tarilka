@@ -1,3 +1,5 @@
+@file:OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
+
 package ua.tarilka.ui
 
 import androidx.compose.foundation.layout.Arrangement
@@ -64,7 +66,7 @@ fun WeightScreen(vm: MainViewModel, padding: PaddingValues) {
                         )
                         Spacer(Modifier.width(12.dp))
                         Button(
-                            enabled = input.toNumber()?.let { it in 25.0..350.0 } == true,
+                            enabled = input.toNumber()?.let { it in ua.tarilka.data.Bounds.WEIGHT_KG } == true,
                             onClick = { input.toNumber()?.let { vm.saveWeight(it) }; input = "" },
                         ) { Text(stringResource(R.string.save)) }
                     }
@@ -80,7 +82,7 @@ fun WeightScreen(vm: MainViewModel, padding: PaddingValues) {
             }
             card("chart") {
                 Section(title = stringResource(R.string.weight_chart)) {
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    androidx.compose.foundation.layout.FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         listOf(30, 90, 365).forEach { d ->
                             FilterChip(
                                 selected = range == d,
@@ -114,6 +116,10 @@ fun WeightScreen(vm: MainViewModel, padding: PaddingValues) {
             }
         },
         side = {
+            // Nothing recorded yet: say where the history will be, instead of an empty column on a tablet
+            if (weights.isEmpty()) card("history_empty") {
+                Text(stringResource(R.string.weight_history_empty), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(8.dp))
+            }
             if (weights.isNotEmpty()) {
                 card("history") { ListHeader(stringResource(R.string.history)) }
                 items(weights.reversed(), key = { it.day }) { w ->
@@ -149,7 +155,7 @@ private fun WaistSection(vm: MainViewModel) {
             Field(stringResource(R.string.waist_cm), input, { input = it }, Modifier.weight(1f))
             Spacer(Modifier.width(12.dp))
             Button(
-                enabled = input.toNumber()?.let { it in 40.0..250.0 } == true,
+                enabled = input.toNumber()?.let { it in ua.tarilka.data.Bounds.WAIST_CM } == true,
                 onClick = { input.toNumber()?.let { vm.saveWaist(it) }; input = "" },
             ) { Text(stringResource(R.string.save)) }
         }

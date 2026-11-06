@@ -260,6 +260,7 @@ private fun PdfDialog(vm: MainViewModel, onDismiss: () -> Unit, onCreate: (PdfRe
         android.app.DatePickerDialog(context, { _, y, m, d -> onPicked(java.time.LocalDate.of(y, m + 1, d)) }, initial.year, initial.monthValue - 1, initial.dayOfMonth)
             .apply { datePicker.maxDate = System.currentTimeMillis(); Protection.secure(this) }.show()
     }
+    val noWeight by vm.hideWeight.collectAsState()
     val names = mapOf(
         ReportPart.SUMMARY to R.string.pdf_part_summary, ReportPart.FOOD to R.string.pdf_part_food,
         ReportPart.REASONS to R.string.pdf_part_reasons, ReportPart.FLUID to R.string.m_fluid,
@@ -295,7 +296,7 @@ private fun PdfDialog(vm: MainViewModel, onDismiss: () -> Unit, onCreate: (PdfRe
                     FilterChip(parts == ReportPresets.CYCLE, { parts = ReportPresets.CYCLE }, { Text(stringResource(R.string.pdf_preset_cycle)) })
                     FilterChip(parts == ReportPresets.ALL, { parts = ReportPresets.ALL }, { Text(stringResource(R.string.pdf_preset_all)) })
                 }
-                ReportPart.entries.forEach { p ->
+                ReportPart.entries.filter { it != ReportPart.WEIGHT || !noWeight }.forEach { p ->
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier.fillMaxWidth().clickable { parts = if (p in parts) parts - p else parts + p },
@@ -306,7 +307,7 @@ private fun PdfDialog(vm: MainViewModel, onDismiss: () -> Unit, onCreate: (PdfRe
                 }
                 Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().clickable { profile = !profile }) {
                     androidx.compose.material3.Checkbox(checked = profile, onCheckedChange = { profile = it })
-                    Text(stringResource(R.string.pdf_with_profile), style = MaterialTheme.typography.bodyMedium)
+                    Text(stringResource(if (noWeight) R.string.pdf_with_profile_no_weight else R.string.pdf_with_profile), style = MaterialTheme.typography.bodyMedium)
                 }
                 Text(stringResource(R.string.pdf_privacy), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }

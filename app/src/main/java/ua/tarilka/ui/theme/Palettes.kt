@@ -128,6 +128,14 @@ fun mix(a: Long, b: Long, t: Double): Long {
     return (0xFFL shl 24) or (m(16) shl 16) or (m(8) shl 8) or m(0)
 }
 
+/** Green, amber and orange for the habit and report levels, never red; brighter for marks, darker for text on light. */
+const val LEVEL_GOOD = 0xFF43A047L
+const val LEVEL_OK = 0xFFFFB300L
+const val LEVEL_WATCH = 0xFFF4511EL
+const val LEVEL_GOOD_TEXT = 0xFF2E7D32L
+const val LEVEL_OK_TEXT = 0xFF8A6100L
+const val LEVEL_WATCH_TEXT = 0xFFC43E12L
+
 /**
  * "Worth attention" (over the target, short sleep, a warning): olive amber by day, warm yellow by night, the
  * same in every theme (the phone's colours too), so it never takes a theme's green or red and stays apart from

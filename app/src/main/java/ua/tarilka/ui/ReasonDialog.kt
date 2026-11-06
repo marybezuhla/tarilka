@@ -18,6 +18,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -39,7 +40,7 @@ fun ReasonDialog(onSave: (reason: Int?, hunger: Int?, hardToStop: Boolean) -> Un
         onDismissRequest = onSkip,
         title = { Text(stringResource(R.string.reason_title)) },
         text = {
-            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Column(Modifier.verticalScroll(androidx.compose.foundation.rememberScrollState()), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                     REASON_NAMES.forEachIndexed { i, res ->
                         FilterChip(selected = reason == i, onClick = { reason = if (reason == i) null else i }, label = { Text(stringResource(res)) })

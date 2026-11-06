@@ -44,7 +44,10 @@ android {
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            // R8: smaller, faster, and no dead code or log calls in what people install
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
             // Built unsigned: CI signs it in a separate step with the Android SDK's apksigner.
         }
     }

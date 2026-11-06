@@ -119,9 +119,10 @@ fun HistoryScreen(vm: MainViewModel, onBack: () -> Unit, onOpen: (LocalDate) -> 
                                 d.day.dayOfWeek.getDisplayName(java.time.format.TextStyle.SHORT, java.util.Locale.getDefault()),
                             style = MaterialTheme.typography.bodyLarge,
                         )
+                        val showWeight = LocalShowWeight.current
                         val parts = buildList {
                             if (d.fluidMl > 0) add("💧 ${(d.fluidMl / 1000).f1()} ${stringResource(R.string.unit_l)}")
-                            d.weight?.let { add("⚖️ ${it.f1()} ${stringResource(R.string.kg)}") }
+                            d.weight?.takeIf { showWeight }?.let { add("⚖️ ${it.f1()} ${stringResource(R.string.kg)}") }
 
                         }
                         if (parts.isNotEmpty()) {

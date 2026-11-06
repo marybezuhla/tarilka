@@ -34,7 +34,9 @@ to_top() {  # label [target y]
   local TARGET="${2:-380}"
   # The options are long: with a large font a short swipe needs many steps to reach the end
   for i in $(seq 1 ${MAX_UP:-15}); do
-    adb shell uiautomator dump /sdcard/ui.xml >/dev/null 2>&1 || true
+    # A failed dump must not leave the previous screen's file behind: that looks like scrolling that never moves
+    adb shell rm -f /sdcard/ui.xml >/dev/null 2>&1 || true; rm -f "$TMP/ui.xml"
+    DUMP_OUT="$(adb shell uiautomator dump /sdcard/ui.xml 2>&1 || true)"
     adb pull /sdcard/ui.xml "$TMP/ui.xml" >/dev/null 2>&1 || true
     if XY=$(python3 "$HERE/find.py" "$TMP/ui.xml" "$1"); then
       Y=${XY#* }
@@ -47,6 +49,9 @@ to_top() {  # label [target y]
   # What the screen showed, for the person reading the log: the picture and the texts it had
   adb exec-out screencap -p > "$OUT/missing.png" || true
   grep -o 'text="[^"]\{1,40\}' "$TMP/ui.xml" | head -40 || true
+  echo "last dump said: $DUMP_OUT"
+  echo "app process: $(adb shell pidof $PKG || echo none)"
+  adb logcat -d -t 80 '*:W' | grep -v -E 'uiautomator|chatty' | tail -40 || true
   echo "::error::'$1' not found while scrolling"; return 1
 }
 # The keyboard, if a search box opened it, is not part of the picture.
@@ -87,7 +92,7 @@ run() {
   shot 06_home_night
   adb shell cmd uimode night no >/dev/null; start_app
   # The whole "Appearance" section, its title just below the status bar; then About
-  tap "$OPTIONS"; to_top "$DAY_THEME" 600; shot 07_themes
+  tap "$OPTIONS"; to_top "$DAY_THEME" 500; shot 07_themes
   to_top "$ABOUT" 380; shot 08_options
 }
 
@@ -98,7 +103,9 @@ review() {
   adb shell settings put system font_scale 1.3; adb shell wm density 480   # about 360 dp wide
   UP_DY=450; MAX_UP=40
   start_app; shot narrow_big_font_home; to_top "$HISTORY" 1200 || true; tap "$HISTORY" || true; sleep 3; shot narrow_big_font_history
-  adb shell input keyevent KEYCODE_BACK; sleep 2; tap "$OPTIONS" || true; to_top "$DAY_THEME" 600 || true; shot narrow_big_font_themes
+  # The options are long; short swipes stall around the protection card in the emulator, a longer one does not.
+  # It cannot skip the title: the visible part of the screen is taller than the swipe.
+  adb shell input keyevent KEYCODE_BACK; sleep 2; tap "$OPTIONS" || true; UP_DY=900 to_top "$DAY_THEME" 600 || true; shot narrow_big_font_themes
   adb shell cmd uimode night yes >/dev/null; start_app; shot narrow_big_font_home_night
   adb shell cmd uimode night no >/dev/null
   # The largest font Android 14 offers: the tab names must still fit

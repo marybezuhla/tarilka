@@ -45,8 +45,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.res.stringResource
@@ -95,7 +97,9 @@ fun FoodRow(food: Food, onClick: () -> Unit, onFavorite: (() -> Unit)? = null) {
             style = MaterialTheme.typography.titleMedium.merge(Numbers),
         )
         if (onFavorite != null) {
-            IconButton(onClick = onFavorite) {
+            // TalkBack hears whether it is in the favourites, not only "Favourite"
+            val state = stringResource(if (food.favorite) R.string.favorite_on else R.string.favorite_off)
+            IconButton(onClick = onFavorite, modifier = Modifier.semantics { stateDescription = state }) {
                 Icon(
                     if (food.favorite) Icons.Filled.Favorite else Icons.Filled.FavoriteBorder,
                     stringResource(R.string.favorite),
@@ -289,7 +293,7 @@ fun FoodsScreen(vm: MainViewModel, padding: PaddingValues, onEdit: (Food?) -> Un
             onDismissRequest = { details = null },
             title = { Text(f.name()) },
             text = {
-                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Column(Modifier.verticalScroll(androidx.compose.foundation.rememberScrollState()), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     Text(stringResource(R.string.per_100g), style = MaterialTheme.typography.labelLarge)
                     if (LocalShowKcal.current) NutrRow(stringResource(R.string.calories), "${f.kcal.f0()} ${stringResource(R.string.unit_kcal)}")
                     NutrRow(stringResource(R.string.protein), "${f.protein.f1()} ${stringResource(R.string.unit_g)}")

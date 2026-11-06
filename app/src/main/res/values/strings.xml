@@ -44,6 +44,12 @@
     <string name="clear">Clear</string>
     <string name="replace">Replace</string>
     <string name="favorite">Favourite</string>
+    <string name="favorite_on">in favourites</string>
+    <string name="favorite_off">not in favourites</string>
+    <string name="open_fluids">open the day\'s drinks</string>
+    <string name="open_steps">open steps</string>
+    <string name="open_note">write a note</string>
+    <string name="open_cycle">open the cycle</string>
 
     <string name="profile_hint">Fill in your profile in Options to get personal calorie and nutrient targets. Until then, average values are used.</string>
     <string name="recommendations">Recommendations</string>
@@ -60,7 +66,7 @@
     <string name="tip_fat_high">Fat is high today (%1$d g). Most often it comes from mayonnaise, sausages, pastries and fried food.</string>
     <string name="tip_balance_good">You got enough protein and fibre today.</string>
     <string name="tip_weight_fast">Weight is dropping fast (%1$.1f kg a week). More than 1%% of body weight a week is a lot; consider eating a bit more or talking to a doctor.</string>
-    <string name="tip_weight_up">Your weight is trending up (%1$.1f kg a week), although the goal is to lose weight. Check portions and snacks.</string>
+    <string name="tip_weight_up">Your weight is going up a little (%1$.1f kg a week). It moves from day to day with water and salt, so look at the trend over several weeks rather than single days.</string>
     <string name="tip_weight_down_good">Your weight is going down gradually (%1$.1f kg a week), at a safe pace.</string>
     <string name="tip_weight_gain_none">The goal is to gain, but weight is not increasing (%1$.1f kg a week). Add a snack or a bigger portion.</string>
 
@@ -87,6 +93,7 @@
     <string name="weight_today">Weight for this day</string>
     <string name="weight_saved_today">Saved today: %1$s kg. Saving again replaces it.</string>
     <string name="weight_chart">Chart</string>
+    <string name="weight_history_empty">Your weight history will be here once you record the first one.</string>
     <string name="days_n">%1$d days</string>
     <string name="trend_week">Trend: %1$s kg a week</string>
     <string name="chart_need_more">Add at least two weigh-ins to see the chart.</string>
@@ -186,6 +193,8 @@
     <string name="theme_zoriana_nich">Starry night</string>
     <string name="hide_kcal">Hide calories</string>
     <string name="hide_kcal_hint">No calorie numbers anywhere: in the diary, history, tips and the report. Protein, fibre, fluids and habits stay. Helpful if counting calories makes eating harder. If food or weight worries you, please talk to a doctor or psychologist.</string>
+    <string name="hide_weight">Hide weight</string>
+    <string name="hide_weight_hint">No Weight tab, no weight number or trend on Today, no weight tips, no weight in history or the report. The weight in your profile can stay: it is only used to work out the targets. Helpful if weighing makes you anxious. Nothing is deleted: switch it off to see your records again.</string>
     <string name="data_title">Data</string>
     <string name="data_hint">Everything is stored only on this phone. Make a backup from time to time, or before switching phones: Android\'s phone-to-phone transfer does not copy Tarilka, only a backup file does.</string>
     <string name="backup_never">There is no backup yet. With protection on, entries cannot be recovered if the key is lost (for example, when the screen lock is removed). Make one in Options → Data.</string>
@@ -404,6 +413,7 @@
     <string name="feedback_title">Feedback</string>
     <string name="feedback_body">Version: %1$s\n\nWhat happened or what you would like:\n\n</string>
     <string name="feedback_hint">The app\'s GitHub page opens (an account is needed). The feedback text is passed to it as the page opens and stays in the browser history; it is published only when you confirm, and shows your account name. Nothing from your diary is added.</string>
+    <string name="feedback_no_browser">Could not open a browser. The feedback text is copied: you can paste it at github.com/marybezuhla/tarilka/issues.</string>
     <string name="send_list">Send the list</string>
     <string name="missing_issue_title">Not found in the database</string>
     <string name="missing_issue_body">Version: %1$s\n\nFoods that were not found (times in brackets):\n%2$s</string>
@@ -606,7 +616,7 @@
     <string name="mi_weight">Weight change along the trend line, kg a week. Weight swings with water and the cycle, so the trend over several weeks matters, not single days. More than 1% of body weight a week is too fast.</string>
     <string name="protect_title">App protection</string>
     <string name="protect_switch">Encrypt the diary and open with fingerprint or PIN</string>
-    <string name="protect_hint">The diary (food, fluids, weight, sleep, cycle, notes), the profile (including pregnancy) and the Not found list are encrypted with a key kept in the phone\'s secure hardware. Tarilka opens with your fingerprint or the phone PIN, so anyone who knows the phone PIN can open Tarilka too. It locks when the screen turns off or after a minute in the background (up to 10 minutes while a file picker or the camera opened by Tarilka is on top). Export and deleting data ask for the fingerprint or PIN again. Not encrypted: settings, the step log, a few of today\'s numbers for reminders, and the expected cycle date if cycle reminders are on. Entries in Health Connect are not covered.</string>
+    <string name="protect_hint">The diary (food, fluids, weight, sleep, cycle, notes), the profile (including pregnancy) and the Not found list are encrypted with a key kept in the phone\'s secure hardware. Tarilka opens with your fingerprint or the phone PIN, so anyone who knows the phone PIN can open Tarilka too. It locks when the screen turns off or after a minute in the background (up to 10 minutes while a file picker or the camera opened by Tarilka is on top). Export and deleting data ask for the fingerprint or PIN again. Not encrypted: settings, the step log, a few of today\'s numbers for reminders, the expected cycle date if cycle reminders are on, the photo portion correction, and a plate photo while the AI reads it. Entries in Health Connect are not covered.</string>
     <string name="protect_on_title">Turn on protection?</string>
     <string name="protect_on_text">⚠ Important: if you ever remove the phone\'s screen lock completely (PIN and fingerprint), Android destroys the key and the diary can no longer be opened, only restored from a backup. Adding a new fingerprint does not reset the key.\n\nSo first make an encrypted backup: Options → Data → Export backup.\n\nEntries in Health Connect are not covered by this protection.</string>
     <string name="protect_on_confirm">Turn on</string>
@@ -643,6 +653,7 @@
     <string name="pdf_part_activity">Steps and workouts</string>
     <string name="pdf_part_notes">Notes</string>
     <string name="pdf_with_profile">Add the profile (sex, age, height, weight, targets)</string>
+    <string name="pdf_with_profile_no_weight">Add the profile (sex, age, height, targets)</string>
     <string name="pdf_privacy">The report is made on the phone. The PDF is not encrypted: once saved or sent it is an ordinary file. For more than 31 days it shows one line per day instead of the full menu; bowel, workouts and Why I eat then appear only in the summary.</string>
     <string name="pdf_create">Create</string>
     <string name="pdf_saved">PDF report saved.</string>
@@ -652,6 +663,8 @@
     <string name="pdf_created">made %1$s</string>
     <string name="pdf_profile">%1$s, %2$d y, %3$d cm, %4$s kg · targets: %5$s kcal, protein %6$s g, fluids %7$s L</string>
     <string name="pdf_profile_no_kcal">%1$s, %2$d y, %3$d cm, %4$s kg · targets: protein %5$s g, fluids %6$s L</string>
+    <string name="pdf_profile_no_weight">%1$s, %2$d y, %3$d cm · targets: %4$s kcal, protein %5$s g, fluids %6$s L</string>
+    <string name="pdf_profile_no_weight_kcal">%1$s, %2$d y, %3$d cm · targets: protein %4$s g, fluids %5$s L</string>
     <string name="pdf_by_day">Day by day</string>
     <string name="pdf_col_date">Date</string>
     <string name="pdf_col_protein">Protein, g</string>
@@ -742,6 +755,7 @@
     <string name="bmi_pregnant">BMI %1$s. In pregnancy we do not rate BMI: the body is changing, and that is normal.</string>
     <string name="audit_pregnant">In pregnancy, while breastfeeding and under 18, the safest choice is no alcohol at all. If stopping is hard, tell your doctor: it is common, and help is available.</string>
     <string name="week_under">If everything is logged, this week you ate clearly less on average than your body uses even at rest. Long-term undereating takes energy, muscle and sleep, and often leads to overeating. If this comes from worries about weight or food, talk to a doctor or a psychologist: help works.</string>
+    <string name="week_under_active">If everything is logged, this week you ate clearly less on average than your activity needs. When the body is short of energy for long while training, strength, bones and hormones suffer (known as RED-S). Eat enough on training days; if this comes from worries about weight or food, talk to a doctor or a psychologist.</string>
     <string name="targets_text_teen">Protein %1$s g · fibre %2$s g a day. Under 18 we do not show a calorie target: needs differ a lot while the body is growing. Go by hunger and fullness, regular meals and a variety of foods.</string>
     <string name="targets_text_hidden">Protein %1$s g · fibre %2$s g a day. Calories are hidden: go by hunger and fullness, regular meals and a variety of foods.</string>
     <string name="reminders_cycle_title">Cycle reminders</string>
