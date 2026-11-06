@@ -26,6 +26,7 @@
     public static int i(...);
 }
 
-# Line numbers stay in the rare crash report the person may send
+# Shrink and optimise, but keep the names: the code is open anyway, and a crash report the person sends
+# must be readable without a mapping file
+-dontobfuscate
 -keepattributes SourceFile,LineNumberTable
--renamesourcefileattribute SourceFile

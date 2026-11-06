@@ -307,7 +307,7 @@ private fun PdfDialog(vm: MainViewModel, onDismiss: () -> Unit, onCreate: (PdfRe
                 }
                 Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().clickable { profile = !profile }) {
                     androidx.compose.material3.Checkbox(checked = profile, onCheckedChange = { profile = it })
-                    Text(stringResource(R.string.pdf_with_profile), style = MaterialTheme.typography.bodyMedium)
+                    Text(stringResource(if (noWeight) R.string.pdf_with_profile_no_weight else R.string.pdf_with_profile), style = MaterialTheme.typography.bodyMedium)
                 }
                 Text(stringResource(R.string.pdf_privacy), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }

@@ -213,7 +213,8 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
         val d = day.value.toEpochDay()
         val old = db.sleep().forDay(d).first() ?: return@launch
         db.sleep().delete(d)
-        offerUndo(1) { db.sleep().upsert(old) }
+        // A new record made meanwhile wins
+        offerUndo(1) { if (db.sleep().forDay(d).first() == null) db.sleep().upsert(old) }
     }
 
     /** Hours per day for a range: typed-in values, else Health Connect. */
@@ -329,7 +330,7 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
         val d = day.value.toEpochDay()
         val old = db.bowel().forDay(d).first() ?: return@launch
         db.bowel().delete(d)
-        offerUndo(1) { db.bowel().upsert(old) }
+        offerUndo(1) { if (db.bowel().forDay(d).first() == null) db.bowel().upsert(old) }
     }
 
     val workouts: StateFlow<List<ua.tarilka.data.WorkoutEntry>> = day.flatMapLatest { db.workouts().forDay(it.toEpochDay()) }

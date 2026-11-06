@@ -397,7 +397,8 @@ fun TodayScreen(
                         val underActive = past.size >= 4 && profile.activity >= 3 && pastAvg < targets.tdee * 0.7
                         if (underRest || underActive) {
                             Spacer(Modifier.height(8.dp))
-                            Text(stringResource(if (underRest) R.string.week_under else R.string.week_under_active), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.tertiary)
+                            // Training words do not fit pregnancy or breastfeeding: the general note there
+                            Text(stringResource(if (underRest || profile.pregnantOrBreastfeeding) R.string.week_under else R.string.week_under_active), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.tertiary)
                         }
                         habits?.let {
                             Spacer(Modifier.height(10.dp))

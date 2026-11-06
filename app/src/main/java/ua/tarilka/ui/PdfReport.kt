@@ -79,9 +79,15 @@ object PdfReport {
             val sex = c.getString(if (p.sex == Sex.FEMALE) R.string.female else R.string.male)
             val kg = (data.days.lastOrNull { it.weight != null }?.weight?.kg ?: p.weightKg).f1()
             // Without calories the line does not name them at all, not even as a dash
+            // Hidden weight stays out of the profile line too
+            val water = (t.waterMl / 1000).f1()
             pdf.text(
-                if (t.showKcal) c.getString(R.string.pdf_profile, sex, p.age, p.heightCm, kg, t.kcal.f0(), t.protein.f0(), (t.waterMl / 1000).f1())
-                else c.getString(R.string.pdf_profile_no_kcal, sex, p.age, p.heightCm, kg, t.protein.f0(), (t.waterMl / 1000).f1()),
+                when {
+                    t.hideWeight && t.showKcal -> c.getString(R.string.pdf_profile_no_weight, sex, p.age, p.heightCm, t.kcal.f0(), t.protein.f0(), water)
+                    t.hideWeight -> c.getString(R.string.pdf_profile_no_weight_kcal, sex, p.age, p.heightCm, t.protein.f0(), water)
+                    t.showKcal -> c.getString(R.string.pdf_profile, sex, p.age, p.heightCm, kg, t.kcal.f0(), t.protein.f0(), water)
+                    else -> c.getString(R.string.pdf_profile_no_kcal, sex, p.age, p.heightCm, kg, t.protein.f0(), water)
+                },
                 pdf.body,
             )
         }

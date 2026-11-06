@@ -17,7 +17,7 @@ keytool -genkeypair -keystore "$TMP/smoke.jks" -storepass smokeonly -keypass smo
 
 adb uninstall "$PKG" >/dev/null 2>&1 || true
 adb install "$TMP/smoke.apk" >/dev/null
-adb logcat -c
+adb logcat -b all -c
 
 tap() {
   for i in 1 2 3 4 5; do
@@ -28,7 +28,8 @@ tap() {
   done
   echo "::error::'$1' not found on screen (release build)"; return 1
 }
-crashed() { adb logcat -d -b crash | grep -q "$PKG"; }
+# Read first, then look: grep -q on a pipe can end it early, and pipefail would turn that into a failure
+crashed() { local L; L="$(adb logcat -d -b crash || true)"; case "$L" in *"$PKG"*) return 0 ;; esac; return 1; }
 alive() { [ -n "$(adb shell pidof "$PKG" | tr -d '\r')" ]; }
 
 check() {

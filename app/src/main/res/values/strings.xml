@@ -653,6 +653,7 @@
     <string name="pdf_part_activity">Steps and workouts</string>
     <string name="pdf_part_notes">Notes</string>
     <string name="pdf_with_profile">Add the profile (sex, age, height, weight, targets)</string>
+    <string name="pdf_with_profile_no_weight">Add the profile (sex, age, height, targets)</string>
     <string name="pdf_privacy">The report is made on the phone. The PDF is not encrypted: once saved or sent it is an ordinary file. For more than 31 days it shows one line per day instead of the full menu; bowel, workouts and Why I eat then appear only in the summary.</string>
     <string name="pdf_create">Create</string>
     <string name="pdf_saved">PDF report saved.</string>
@@ -662,6 +663,8 @@
     <string name="pdf_created">made %1$s</string>
     <string name="pdf_profile">%1$s, %2$d y, %3$d cm, %4$s kg · targets: %5$s kcal, protein %6$s g, fluids %7$s L</string>
     <string name="pdf_profile_no_kcal">%1$s, %2$d y, %3$d cm, %4$s kg · targets: protein %5$s g, fluids %6$s L</string>
+    <string name="pdf_profile_no_weight">%1$s, %2$d y, %3$d cm · targets: %4$s kcal, protein %5$s g, fluids %6$s L</string>
+    <string name="pdf_profile_no_weight_kcal">%1$s, %2$d y, %3$d cm · targets: protein %4$s g, fluids %5$s L</string>
     <string name="pdf_by_day">Day by day</string>
     <string name="pdf_col_date">Date</string>
     <string name="pdf_col_protein">Protein, g</string>
@@ -752,7 +755,7 @@
     <string name="bmi_pregnant">BMI %1$s. In pregnancy we do not rate BMI: the body is changing, and that is normal.</string>
     <string name="audit_pregnant">In pregnancy, while breastfeeding and under 18, the safest choice is no alcohol at all. If stopping is hard, tell your doctor: it is common, and help is available.</string>
     <string name="week_under">If everything is logged, this week you ate clearly less on average than your body uses even at rest. Long-term undereating takes energy, muscle and sleep, and often leads to overeating. If this comes from worries about weight or food, talk to a doctor or a psychologist: help works.</string>
-    <string name="week_under_active">If everything is logged, this week you ate clearly less on average than your activity needs. When the body is short of energy for long while training, strength, bones, hormones and the cycle suffer (known as RED-S). Eat enough on training days; if this comes from worries about weight or food, talk to a doctor or a psychologist.</string>
+    <string name="week_under_active">If everything is logged, this week you ate clearly less on average than your activity needs. When the body is short of energy for long while training, strength, bones and hormones suffer (known as RED-S). Eat enough on training days; if this comes from worries about weight or food, talk to a doctor or a psychologist.</string>
     <string name="targets_text_teen">Protein %1$s g · fibre %2$s g a day. Under 18 we do not show a calorie target: needs differ a lot while the body is growing. Go by hunger and fullness, regular meals and a variety of foods.</string>
     <string name="targets_text_hidden">Protein %1$s g · fibre %2$s g a day. Calories are hidden: go by hunger and fullness, regular meals and a variety of foods.</string>
     <string name="reminders_cycle_title">Cycle reminders</string>
