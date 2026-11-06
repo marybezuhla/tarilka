@@ -92,7 +92,7 @@ run() {
   shot 06_home_night
   adb shell cmd uimode night no >/dev/null; start_app
   # The whole "Appearance" section, its title just below the status bar; then About
-  tap "$OPTIONS"; to_top "$DAY_THEME" 600; shot 07_themes
+  tap "$OPTIONS"; to_top "$DAY_THEME" 500; shot 07_themes
   to_top "$ABOUT" 380; shot 08_options
 }
 
