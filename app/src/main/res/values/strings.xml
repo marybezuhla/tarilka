@@ -116,6 +116,7 @@
 
     <string name="ai_title">On-device AI</string>
     <string name="ai_explain">Recognises food on photos. Runs entirely on the phone. The model is about 2.6 GB and is only needed for photos; everything else works without it.</string>
+    <string name="ai_low_memory">This phone has too little memory to recognise food in photos: 6 GB or more is needed. Everything else in Tarilka works as usual.</string>
     <string name="ai_ready">Model ready (%1$d MB)</string>
     <string name="ai_import">Choose a model file…</string>
     <string name="ai_importing">Copying the model…</string>
@@ -144,9 +145,10 @@
     <string name="language">Language</string>
     <string name="lang_system">System</string>
     <string name="about">About</string>
-    <string name="about_text">Tarilka is a free, open-source, offline food and weight tracker. Data stays on your phone. Food values: USDA FoodData Central (public domain), typical Ukrainian labels and recipe calculations; the source is shown for each food. This app is not medical advice; for health conditions, pregnancy or eating disorders please talk to a doctor.</string>
+    <string name="about_text">Tarilka is a free, open-source, offline food and weight tracker. Data stays on your phone. Food values: USDA FoodData Central (public domain), typical Ukrainian labels and recipe calculations; the source is shown for each food. This app is not medical advice; for health conditions, pregnancy or eating disorders please talk to a doctor. The code was written with AI (Claude, Anthropic), directed and tested by the author.</string>
     <string name="about_licences">Licence: GNU GPL version 3 or (at your option) any later version, free software with no warranty. Source code: github.com/marybezuhla/tarilka. Uses Kotlin and kotlinx.coroutines (JetBrains, Apache 2.0); AndroidX, Jetpack Compose, Room, Biometric and Health Connect (Google, Apache 2.0); SQLCipher (© Zetetic LLC, BSD); LiteRT-LM (Google, Apache 2.0). The full list is in NOTICE.md. The optional Gemma model is Google\'s, under the terms on its model page. Food data: U.S. Department of Agriculture, Agricultural Research Service, FoodData Central.</string>
     <string name="water">Fluids</string>
+    <string name="fluid_remove_last">Remove the last drink</string>
     <string name="water_title">Drinks</string>
     <string name="water_hint">Water, tea, coffee and other drinks. Juice, kefir and other drinks logged as food are counted automatically.</string>
     <string name="unit_l">L</string>
@@ -212,7 +214,7 @@
     <string name="password_repeat">Repeat password</string>
     <string name="password_hint">The file is encrypted with the password (AES-256) and can be restored only with it. A forgotten password cannot be recovered. Several random words are the strongest and easiest to remember.</string>
     <string name="password_enter">This backup is encrypted. Enter its password.</string>
-    <string name="password_wrong">Wrong password.</string>
+    <string name="password_wrong">Wrong password, or the file is damaged.</string>
     <string name="unlock">Open</string>
     <string name="export_plain">Save without password</string>
     <string name="export_encrypted">Save encrypted</string>
@@ -277,11 +279,11 @@
     <string name="summaries_few">Not enough entries yet: at least 3 days are needed.</string>
     <string name="habit_veg">🥦 Vegetables and fruit: %1$s of 400 g</string>
     <string name="habit_veg_info">Average vegetables and fruit a day (potatoes and dried fruit not counted). The WHO recommends at least 400 g.</string>
-    <string name="habit_sweets">🍬 Sweets: %1$s%% of calories</string>
-    <string name="habit_sweets_info">Calories from sweets, pastries and sugary drinks (juice included), with the fat and flour in them. The WHO advises that free sugars (added sugar, honey, syrups, juice) give under 10% of calories, ideally under 5%; the sugar itself is less than these calories, so this is a rough guide.</string>
-    <string name="habit_late">🌙 After 22:00: %1$s%% of calories</string>
+    <string name="habit_sweets">🍬 Sweets: %1$s%% of food</string>
+    <string name="habit_sweets_info">Share of food (by energy) from sweets, pastries and sugary drinks (juice included), with the fat and flour in them. The WHO advises that free sugars (added sugar, honey, syrups, juice) give under 10% of calories, ideally under 5%; the sugar itself is less than these calories, so this is a rough guide.</string>
+    <string name="habit_late">🌙 After 22:00: %1$s%% of food</string>
     <string name="habit_late_none">🌙 Nothing after 22:00</string>
-    <string name="habit_late_info">Share of calories eaten after 22:00, by the time of the meal; you can set or correct it by tapping an entry.</string>
+    <string name="habit_late_info">Share of the day\'s food (by energy) eaten after 22:00, by the time of the meal; you can set or correct it by tapping an entry.</string>
     <string name="habit_alcohol">🍷 Alcohol: %1$s drinks/week · %2$d days</string>
     <string name="habit_alcohol_info">A standard drink has 10 g of alcohol: about 250 ml of beer, 100 ml of wine or 30 ml of spirits. There is no safe amount of alcohol (WHO), so less is better.</string>
     <string name="habit_fastfood">🍔 Fast food: %1$d days</string>
@@ -463,6 +465,7 @@
     <string name="off">Off</string>
     <string name="days_before">%1$d d before</string>
     <string name="cycle_title">Cycle</string>
+    <string name="cycle_paused">Cycle on pause: no forecast in pregnancy or while breastfeeding</string>
     <string name="cycle_hint">A row on Today: cycle day and the approximate next start. Started is one tap; flow and pain are optional. Explains weight and appetite changes. If another app writes your cycle to Health Connect, Tarilka can read it (with your permission).</string>
     <string name="cycle_day">Cycle day %1$d</string>
     <string name="cycle_next_short">next ~%1$s</string>
@@ -589,7 +592,7 @@
     <string name="mv_kcal">%1$s of %2$s kcal</string>
     <string name="mv_grams">%1$s of %2$s g</string>
     <string name="mv_litres">%1$s of %2$s L</string>
-    <string name="mv_pct_kcal">%1$s%% of calories</string>
+    <string name="mv_pct_kcal">%1$s%% of food</string>
     <string name="mv_sleep">%1$s h on average</string>
     <string name="mv_of">%1$s of %2$s</string>
     <string name="mv_activity">%1$s of %2$s min/wk</string>
@@ -648,6 +651,7 @@
     <string name="pdf_period">%1$s – %2$s (%3$d days)</string>
     <string name="pdf_created">made %1$s</string>
     <string name="pdf_profile">%1$s, %2$d y, %3$d cm, %4$s kg · targets: %5$s kcal, protein %6$s g, fluids %7$s L</string>
+    <string name="pdf_profile_no_kcal">%1$s, %2$d y, %3$d cm, %4$s kg · targets: protein %5$s g, fluids %6$s L</string>
     <string name="pdf_by_day">Day by day</string>
     <string name="pdf_col_date">Date</string>
     <string name="pdf_col_protein">Protein, g</string>

@@ -116,6 +116,7 @@
 
     <string name="ai_title">ШІ на телефоні</string>
     <string name="ai_explain">Розпізнає їжу на фото. Працює повністю на телефоні. Модель займає близько 2,6 ГБ і потрібна лише для фото, усе інше працює без неї.</string>
+    <string name="ai_low_memory">На цьому телефоні замало оперативної памʼяті для розпізнавання фото: потрібно від 6 ГБ. Усе інше в Тарілці працює як завжди.</string>
     <string name="ai_ready">Модель готова (%1$d МБ)</string>
     <string name="ai_import">Обрати файл моделі…</string>
     <string name="ai_importing">Копіюю модель…</string>
@@ -144,9 +145,10 @@
     <string name="language">Мова</string>
     <string name="lang_system">Як у системі</string>
     <string name="about">Про застосунок</string>
-    <string name="about_text">Тарілка — безкоштовний офлайн-трекер харчування й ваги з відкритим кодом. Дані залишаються на вашому телефоні. Харчова цінність: USDA FoodData Central (суспільне надбання), типові етикетки українських продуктів і розрахунки за рецептами; джерело вказано для кожного продукту. Застосунок не замінює лікаря; при захворюваннях, вагітності чи розладах харчової поведінки порадьтеся з фахівцем.</string>
+    <string name="about_text">Тарілка — безкоштовний офлайн-трекер харчування й ваги з відкритим кодом. Дані залишаються на вашому телефоні. Харчова цінність: USDA FoodData Central (суспільне надбання), типові етикетки українських продуктів і розрахунки за рецептами; джерело вказано для кожного продукту. Застосунок не замінює лікаря; при захворюваннях, вагітності чи розладах харчової поведінки порадьтеся з фахівцем. Код написано за допомогою ШІ (Claude, Anthropic) під керівництвом і з тестуванням авторки.</string>
     <string name="about_licences">Ліцензія: GNU GPL версії 3 або (на ваш вибір) будь-якої пізнішої версії, вільна програма без жодних гарантій. Сирцевий код: github.com/marybezuhla/tarilka. Використано: Kotlin і kotlinx.coroutines (JetBrains, Apache 2.0); AndroidX, Jetpack Compose, Room, Biometric і Health Connect (Google, Apache 2.0); SQLCipher (© Zetetic LLC, BSD); LiteRT-LM (Google, Apache 2.0). Повний перелік — у NOTICE.md. Модель Gemma (за бажанням) належить Google і має умови, вказані на сторінці моделі. Дані про продукти: U.S. Department of Agriculture, Agricultural Research Service, FoodData Central.</string>
     <string name="water">Рідина</string>
+    <string name="fluid_remove_last">Прибрати останній напій</string>
     <string name="water_title">Напої</string>
     <string name="water_hint">Вода, чай, кава та інші напої. Сік, кефір та інші напої, записані як їжа, враховуються автоматично.</string>
     <string name="unit_l">л</string>
@@ -212,7 +214,7 @@
     <string name="password_repeat">Повторіть пароль</string>
     <string name="password_hint">Файл шифрується паролем (AES-256), і відновити його можна лише з ним. Забутий пароль відновити неможливо. Найнадійніше й легко запамʼятати — кілька випадкових слів.</string>
     <string name="password_enter">Ця копія зашифрована. Введіть її пароль.</string>
-    <string name="password_wrong">Неправильний пароль.</string>
+    <string name="password_wrong">Неправильний пароль або файл пошкоджено.</string>
     <string name="unlock">Відкрити</string>
     <string name="export_plain">Зберегти без пароля</string>
     <string name="export_encrypted">Зберегти зашифрованою</string>
@@ -277,11 +279,11 @@
     <string name="summaries_few">Поки замало записів: потрібно хоча б 3 дні.</string>
     <string name="habit_veg">🥦 Овочі й фрукти: %1$s з 400 г</string>
     <string name="habit_veg_info">Скільки в середньому овочів і фруктів на день (картоплю й сушені фрукти не враховано). ВООЗ радить щонайменше 400 г.</string>
-    <string name="habit_sweets">🍬 Солодке: %1$s%% калорій</string>
-    <string name="habit_sweets_info">Калорії із солодощів, випічки й солодких напоїв (зокрема соків), разом із жиром і борошном у них. ВООЗ радить, щоб вільні цукри (доданий цукор, мед, сиропи, соки) давали до 10% калорій, а краще до 5%; самого цукру в цих калоріях менше, тож це грубий орієнтир.</string>
-    <string name="habit_late">🌙 Після 22:00: %1$s%% калорій</string>
+    <string name="habit_sweets">🍬 Солодке: %1$s%% раціону</string>
+    <string name="habit_sweets_info">Частка раціону (за енергією) із солодощів, випічки й солодких напоїв (зокрема соків), разом із жиром і борошном у них. ВООЗ радить, щоб вільні цукри (доданий цукор, мед, сиропи, соки) давали до 10% калорій, а краще до 5%; самого цукру в цих калоріях менше, тож це грубий орієнтир.</string>
+    <string name="habit_late">🌙 Після 22:00: %1$s%% раціону</string>
     <string name="habit_late_none">🌙 Без їжі після 22:00</string>
-    <string name="habit_late_info">Частка калорій, зʼїдених після 22:00. Визначається за часом прийому їжі: його можна вказати або виправити, натиснувши на запис.</string>
+    <string name="habit_late_info">Частка раціону (за енергією), зʼїденого після 22:00. Визначається за часом прийому їжі: його можна вказати або виправити, натиснувши на запис.</string>
     <string name="habit_alcohol">🍷 Алкоголь: %1$s порц./тиж. · %2$d дн.</string>
     <string name="habit_alcohol_info">Стандартна порція — 10 г спирту: приблизно 250 мл пива, 100 мл вина або 30 мл міцного напою. Безпечної кількості алкоголю немає (ВООЗ), тож що менше, то краще.</string>
     <string name="habit_fastfood">🍔 Фастфуд: %1$d дн.</string>
@@ -463,6 +465,7 @@
     <string name="off">Вимк.</string>
     <string name="days_before">за %1$d дн.</string>
     <string name="cycle_title">Цикл</string>
+    <string name="cycle_paused">Цикл на паузі: під час вагітності й годування груддю прогнозу немає</string>
     <string name="cycle_hint">Рядок на екрані «Сьогодні»: день циклу й приблизна дата наступного. Позначка «Почалася» — один дотик; рясність і біль — за бажанням. Пояснює коливання ваги й апетиту. Якщо інший застосунок записує цикл у Health Connect, Тарілка може його прочитати (за вашим дозволом).</string>
     <string name="cycle_day">День циклу %1$d</string>
     <string name="cycle_next_short">наступний ~%1$s</string>
@@ -589,7 +592,7 @@
     <string name="mv_kcal">%1$s з %2$s ккал</string>
     <string name="mv_grams">%1$s з %2$s г</string>
     <string name="mv_litres">%1$s з %2$s л</string>
-    <string name="mv_pct_kcal">%1$s%% калорій</string>
+    <string name="mv_pct_kcal">%1$s%% раціону</string>
     <string name="mv_sleep">%1$s год у середньому</string>
     <string name="mv_of">%1$s з %2$s</string>
     <string name="mv_activity">%1$s з %2$s хв/тиж</string>
@@ -648,6 +651,7 @@
     <string name="pdf_period">%1$s – %2$s (днів: %3$d)</string>
     <string name="pdf_created">створено %1$s</string>
     <string name="pdf_profile">%1$s, %2$d р., %3$d см, %4$s кг · норма: %5$s ккал, білок %6$s г, рідина %7$s л</string>
+    <string name="pdf_profile_no_kcal">%1$s, %2$d р., %3$d см, %4$s кг · норма: білок %5$s г, рідина %6$s л</string>
     <string name="pdf_by_day">За днями</string>
     <string name="pdf_col_date">Дата</string>
     <string name="pdf_col_protein">Білок, г</string>

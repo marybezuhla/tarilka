@@ -54,7 +54,7 @@ fun CycleDialog(vm: MainViewModel, onDismiss: () -> Unit) {
         android.app.DatePickerDialog(
             context, { _, y, m, d -> onPicked(LocalDate.of(y, m + 1, d)) },
             selected.year, selected.monthValue - 1, selected.dayOfMonth,
-        ).apply { datePicker.maxDate = System.currentTimeMillis() }.show()
+        ).apply { datePicker.maxDate = System.currentTimeMillis(); Protection.secure(this) }.show()
     }
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -70,7 +70,8 @@ fun CycleDialog(vm: MainViewModel, onDismiss: () -> Unit) {
                 c.avgLength?.let { Text(stringResource(R.string.cycle_avg, it, c.lengths.size), style = MaterialTheme.typography.bodyMedium) }
                 c.nextStart?.let { Text(stringResource(R.string.cycle_next, shortDate(it)), style = MaterialTheme.typography.bodyMedium) }
                 c.ovulation?.let { Text(stringResource(R.string.cycle_ovulation, shortDate(it - 5), shortDate(it)), style = MaterialTheme.typography.bodyMedium) }
-                if (c.nextStart == null || c.fromTypical) Text(stringResource(R.string.cycle_need_two), style = MaterialTheme.typography.bodySmall)
+                if (c.paused) Text(stringResource(R.string.cycle_paused), style = MaterialTheme.typography.bodyMedium)
+                else if (c.nextStart == null || c.fromTypical) Text(stringResource(R.string.cycle_need_two), style = MaterialTheme.typography.bodySmall)
                 if (c.irregular) Text(stringResource(R.string.cycle_irregular), style = MaterialTheme.typography.bodySmall)
                 if (c.longGap) Text(stringResource(R.string.cycle_long_gap), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.tertiary)
                 Text(stringResource(R.string.cycle_disclaimer), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -148,7 +149,7 @@ fun CycleSetupDialog(vm: MainViewModel, onDismiss: () -> Unit) {
                 androidx.compose.material3.OutlinedButton(onClick = {
                     val d = start ?: LocalDate.now()
                     android.app.DatePickerDialog(context, { _, y, m, dd -> start = LocalDate.of(y, m + 1, dd) }, d.year, d.monthValue - 1, d.dayOfMonth)
-                        .apply { datePicker.maxDate = System.currentTimeMillis() }.show()
+                        .apply { datePicker.maxDate = System.currentTimeMillis(); Protection.secure(this) }.show()
                 }) { Text(start?.let { shortDate(it.toEpochDay()) } ?: stringResource(R.string.choose_date)) }
                 Text(stringResource(R.string.cycle_setup_period), style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold)
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {

@@ -74,13 +74,12 @@ object PdfReport {
         if (withProfile) {
             val p = data.profile
             val t = data.targets
+            val sex = c.getString(if (p.sex == Sex.FEMALE) R.string.female else R.string.male)
+            val kg = (data.days.lastOrNull { it.weight != null }?.weight?.kg ?: p.weightKg).f1()
+            // Without calories the line does not name them at all, not even as a dash
             pdf.text(
-                c.getString(
-                    R.string.pdf_profile,
-                    c.getString(if (p.sex == Sex.FEMALE) R.string.female else R.string.male), p.age, p.heightCm,
-                    (data.days.lastOrNull { it.weight != null }?.weight?.kg ?: p.weightKg).f1(),
-                    if (t.showKcal) t.kcal.f0() else "—", t.protein.f0(), (t.waterMl / 1000).f1(),
-                ),
+                if (t.showKcal) c.getString(R.string.pdf_profile, sex, p.age, p.heightCm, kg, t.kcal.f0(), t.protein.f0(), (t.waterMl / 1000).f1())
+                else c.getString(R.string.pdf_profile_no_kcal, sex, p.age, p.heightCm, kg, t.protein.f0(), (t.waterMl / 1000).f1()),
                 pdf.body,
             )
         }
@@ -181,6 +180,7 @@ object PdfReport {
             data.cycle?.let { ci ->
                 ci.avgLength?.let { pdf.text(c.getString(R.string.cycle_avg, it, ci.lengths.size), pdf.body) }
                 ci.nextStart?.let { pdf.text(c.getString(R.string.cycle_next, shortDate(it)), pdf.body) }
+                if (ci.paused) pdf.text(c.getString(R.string.cycle_paused), pdf.body)
                 if (ci.irregular) pdf.text(c.getString(R.string.cycle_irregular), pdf.body)
                 if (ci.longGap) pdf.text(c.getString(R.string.cycle_long_gap), pdf.body)
                 if (ci.seeDoctor) {

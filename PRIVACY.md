@@ -13,6 +13,8 @@
 - **Health Connect** — лише те, що ви там дозволили: Тарілка пише харчування, рідину й вагу та читає кроки, сон і цикл. Записи в Health Connect бачать застосунки, яким ви дали там доступ.
 - **GitHub** — лише коли ви самі натискаєте «Написати відгук» чи «Надіслати список»: відкривається браузер із готовим текстом, і GitHub бачить його вже під час відкриття сторінки, а браузер запамʼятовує адресу. Опубліковано буде лише після вашого підтвердження, від вашого акаунта.
 - **Hugging Face** — лише якщо ви самі відкриваєте сторінку моделі ШІ, щоб її завантажити (у версії з GitHub).
+- **Сайти зі «Слова від авторки»** (офіційні збори на підтримку України) — лише коли ви самі відкриваєте посилання: як і будь-який сайт, вони бачать адресу, з якої ви заходите.
+- **Клавіатура** не вчиться на тому, що ви пишете в Тарілці (нотатки, пошук, назви продуктів): застосунок просить її про це в кожному полі.
 - Аналітики, реклами, акаунтів і звітів про збої назовні немає.
 
 **Як усе стерти**
@@ -34,6 +36,8 @@ Tarilka has no internet permission: it sends nothing and downloads nothing by it
 - **Health Connect**: only what you allowed there. Tarilka writes nutrition, fluids and weight and reads steps, sleep and cycle. Records in Health Connect are visible to apps you gave access there.
 - **GitHub**: only when you tap Send feedback or Send the list yourself. The browser opens with the text filled in; GitHub sees it as soon as the page opens, and the browser remembers the address. Nothing is published until you confirm it, from your own account.
 - **Hugging Face**: only if you open the AI model's page yourself to download it (GitHub version).
+- **The sites in the author's letter** (official fundraisers for Ukraine): only when you open a link yourself; like any site, they see the address you come from.
+- **The keyboard** does not learn from what you type in Tarilka (notes, searches, food names): the app asks it not to in every field.
 - No analytics, ads, accounts or crash reports sent anywhere.
 
 **How to erase everything**

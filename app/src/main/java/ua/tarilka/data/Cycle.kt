@@ -48,7 +48,12 @@ data class CycleInfo(
     val heavyOrPainful: Boolean,
     /** A gap over 60 days between two recent starts: forgotten, or a real long pause. Ask, don't count it as a cycle. */
     val longGap: Boolean = false,
+    /** Pregnancy or breastfeeding: the records stay, but there is no forecast (see [paused]). */
+    val paused: Boolean = false,
 ) {
+    /** The same cycle with no expected dates, ovulation or "late": they would be wrong now and could hurt. */
+    fun paused(): CycleInfo = copy(nextStart = null, ovulation = null, longGap = false, fromTypical = false, paused = true)
+
     fun cycleDay(today: Long): Int? = lastStart?.let { (today - it + 1).toInt() }?.takeIf { it in 1..120 }
     /** The expected start passed by 2+ days without a new entry: ask, don't conclude. */
     fun late(today: Long): Boolean = nextStart != null && today >= nextStart + 2 && today - nextStart <= MAX_GAP

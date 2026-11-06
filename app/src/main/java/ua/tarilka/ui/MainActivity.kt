@@ -14,6 +14,8 @@ import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationRail
+import androidx.compose.material3.NavigationRailItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -29,7 +31,22 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsetsSides
+import androidx.compose.foundation.layout.displayCutout
+import androidx.compose.foundation.layout.union
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ScaffoldDefaults
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.ui.Modifier
+import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -62,26 +79,28 @@ class MainActivity : AppCompatActivity() {
             val hideKcal by prefs.hideKcal.collectAsState()
             LaunchedEffect(protectedOn, noShots) { Protection.applyRecents(this@MainActivity) }
             TarilkaTheme(day = look.day, night = look.night) {
-                // Opened by Health Connect to explain why Tarilka asks for access: only the explanation, no diary.
-                if (healthRationale) {
-                    androidx.compose.material3.AlertDialog(
-                        onDismissRequest = { finish() },
-                        title = { androidx.compose.material3.Text(stringResource(R.string.hc_privacy_title)) },
-                        text = { androidx.compose.material3.Text(stringResource(R.string.hc_privacy)) },
-                        confirmButton = { androidx.compose.material3.TextButton(onClick = { finish() }) { androidx.compose.material3.Text(stringResource(R.string.close)) } },
-                    )
-                    return@TarilkaTheme
-                }
-                androidx.compose.runtime.CompositionLocalProvider(LocalShowKcal provides (profile.age >= 18 && !hideKcal), LocalTeen provides (profile.age < 18)) {
-                if (dbBroken) {
-                    DbBrokenScreen()
-                } else if (db == null) {
-                    // Locked (or being converted): the screens' view models go, they held the closed database.
-                    LaunchedEffect(Unit) { viewModelStore.clear() }
-                    LockScreen(onUnlock = { Protection.unlock(this) }, onStartFresh = { Protection.startFresh(this) })
-                } else {
-                    AppRoot()
-                }
+                NoKeyboardLearning {
+                    // Opened by Health Connect to explain why Tarilka asks for access: only the explanation, no diary.
+                    if (healthRationale) {
+                        androidx.compose.material3.AlertDialog(
+                            onDismissRequest = { finish() },
+                            title = { androidx.compose.material3.Text(stringResource(R.string.hc_privacy_title)) },
+                            text = { androidx.compose.material3.Text(stringResource(R.string.hc_privacy)) },
+                            confirmButton = { androidx.compose.material3.TextButton(onClick = { finish() }) { androidx.compose.material3.Text(stringResource(R.string.close)) } },
+                        )
+                        return@NoKeyboardLearning
+                    }
+                    androidx.compose.runtime.CompositionLocalProvider(LocalShowKcal provides (profile.age >= 18 && !hideKcal), LocalTeen provides (profile.age < 18)) {
+                    if (dbBroken) {
+                        DbBrokenScreen()
+                    } else if (db == null) {
+                        // Locked (or being converted): the screens' view models go, they held the closed database.
+                        LaunchedEffect(Unit) { viewModelStore.clear() }
+                        LockScreen(onUnlock = { Protection.unlock(this) }, onStartFresh = { Protection.startFresh(this) })
+                    } else {
+                        AppRoot()
+                    }
+                    }
                 }
             }
         }
@@ -304,44 +323,83 @@ private fun Tabs(vm: MainViewModel, ai: AiViewModel, tab: Int, onTab: (Int) -> U
             vm.undoShown(seq)
         }
     }
-    Scaffold(
-        snackbarHost = { androidx.compose.material3.SnackbarHost(snackbar) },
-        floatingActionButton = {
-            if (tab == 2) {
-                ExtendedFloatingActionButton(
-                    onClick = { push(Overlay.EditFood(null)) },
-                    icon = { Icon(Icons.Filled.Add, null) },
-                    text = { Text(stringResource(R.string.new_food)) },
-                )
+    BoxWithConstraints {
+        // At the bottom on a phone, at the side on a wide screen
+        val wide = maxWidth >= RAIL_FROM
+        Row(Modifier.fillMaxSize()) {
+            if (wide) TabRail(tab, onTab)
+            Scaffold(
+                modifier = Modifier.weight(1f),
+                // Beside the rail the left edge is already kept clear
+                contentWindowInsets = if (wide) WindowInsets.systemBars.union(WindowInsets.displayCutout).only(WindowInsetsSides.Vertical + WindowInsetsSides.End)
+                else ScaffoldDefaults.contentWindowInsets,
+                snackbarHost = { SnackbarHost(snackbar) },
+                floatingActionButton = {
+                    if (tab == 2) {
+                        ExtendedFloatingActionButton(
+                            onClick = { push(Overlay.EditFood(null)) },
+                            icon = { Icon(Icons.Filled.Add, null) },
+                            text = { Text(stringResource(R.string.new_food)) },
+                        )
+                    }
+                },
+                bottomBar = { if (!wide) TabBar(tab, onTab) },
+            ) { pad ->
+                Box(Modifier.fillMaxSize()) {
+                    when (tab) {
+                        0 -> TodayScreen(vm, ai, pad, onAdd = { push(Overlay.AddFood(it)) }, onPhoto = {
+                            // A typed list left from before must not stand in for the camera.
+                            if (ai.photo.value.fromText) ai.resetPhoto()
+                            push(Overlay.Photo(it))
+                        }, onHistory = { push(Overlay.History) })
+                        1 -> WeightScreen(vm, pad)
+                        2 -> FoodsScreen(vm, pad, onEdit = { push(Overlay.EditFood(it)) })
+                        else -> SettingsScreen(vm, ai, pad)
+                    }
+                    // Behind the clock and battery: a scrolled list does not run under them
+                    Box(
+                        Modifier.fillMaxWidth().height(pad.calculateTopPadding())
+                            .background(MaterialTheme.colorScheme.background),
+                    )
+                }
             }
-        },
-        bottomBar = {
-            NavigationBar {
-                NavigationBarItem(tab == 0, { onTab(0) }, { Icon(Icons.Filled.Home, null) }, label = { Text(stringResource(R.string.tab_today)) })
-                NavigationBarItem(tab == 1, { onTab(1) }, { Icon(painterResource(R.drawable.ic_scale), null) }, label = { Text(stringResource(R.string.tab_weight)) })
-                NavigationBarItem(tab == 2, { onTab(2) }, { Icon(Icons.AutoMirrored.Filled.List, null) }, label = { Text(stringResource(R.string.tab_foods)) })
-                NavigationBarItem(tab == 3, { onTab(3) }, { Icon(Icons.Filled.Settings, null) }, label = { Text(stringResource(R.string.tab_options), maxLines = 1) })
-            }
-        },
-    ) { pad ->
-        androidx.compose.foundation.layout.Box(androidx.compose.ui.Modifier.fillMaxSize()) {
-            when (tab) {
-                0 -> TodayScreen(vm, ai, pad, onAdd = { push(Overlay.AddFood(it)) }, onPhoto = {
-                    // A typed list left from before must not stand in for the camera.
-                    if (ai.photo.value.fromText) ai.resetPhoto()
-                    push(Overlay.Photo(it))
-                }, onHistory = { push(Overlay.History) })
-                1 -> WeightScreen(vm, pad)
-                2 -> FoodsScreen(vm, pad, onEdit = { push(Overlay.EditFood(it)) })
-                else -> SettingsScreen(vm, ai, pad)
-            }
-            // Behind the clock and battery: a scrolled list does not run under them
-            androidx.compose.foundation.layout.Box(
-                androidx.compose.ui.Modifier.fillMaxWidth().height(pad.calculateTopPadding())
-                    .background(androidx.compose.material3.MaterialTheme.colorScheme.background),
-            )
         }
     }
+}
+
+private val TAB_NAMES = listOf(R.string.tab_today, R.string.tab_weight, R.string.tab_foods, R.string.tab_options)
+
+@Composable
+private fun TabBar(tab: Int, onTab: (Int) -> Unit) {
+    NavigationBar {
+        TAB_NAMES.forEachIndexed { i, name ->
+            NavigationBarItem(tab == i, { onTab(i) }, { TabIcon(i) }, label = { TabLabel(stringResource(name)) })
+        }
+    }
+}
+
+/** The tabs at the side, in the middle of the height, clear of the status, navigation and camera bars. */
+@Composable
+private fun TabRail(tab: Int, onTab: (Int) -> Unit) {
+    NavigationRail(
+        Modifier.fillMaxHeight(),
+        windowInsets = WindowInsets.systemBars.union(WindowInsets.displayCutout)
+            .only(WindowInsetsSides.Vertical + WindowInsetsSides.Start),
+    ) {
+        Spacer(Modifier.weight(1f))
+        TAB_NAMES.forEachIndexed { i, name ->
+            NavigationRailItem(tab == i, { onTab(i) }, { TabIcon(i) }, label = { TabLabel(stringResource(name)) })
+        }
+        Spacer(Modifier.weight(1f))
+    }
+}
+
+@Composable
+private fun TabIcon(i: Int) = when (i) {
+    0 -> Icon(Icons.Filled.Home, null)
+    1 -> Icon(painterResource(R.drawable.ic_scale), null)
+    2 -> Icon(Icons.AutoMirrored.Filled.List, null)
+    else -> Icon(Icons.Filled.Settings, null)
 }
 
 /**
@@ -356,7 +414,7 @@ private fun DbBrokenScreen() {
         androidx.activity.result.contract.ActivityResultContracts.CreateDocument("application/zip"),
     ) { uri ->
         if (uri != null) saved = runCatching {
-            context.contentResolver.openOutputStream(uri)!!.use { out ->
+            context.contentResolver.openOutputStream(uri, "wt")!!.use { out ->
                 java.util.zip.ZipOutputStream(out).use { zip ->
                     val main = context.getDatabasePath(ua.tarilka.data.AppDatabase.NAME)
                     // The -wal file holds the latest changes; both are needed to read the diary.

@@ -28,6 +28,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
@@ -84,7 +86,8 @@ fun Section(
         Column(Modifier.padding(16.dp)) {
             if (title != null) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(title, style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
+                    // A heading, so TalkBack can jump from card to card
+                    Text(title, style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f).semantics { heading() })
                     trailing?.invoke()
                 }
                 Spacer(Modifier.height(8.dp))
@@ -196,7 +199,7 @@ fun sourceLabel(source: String): String = stringResource(
 fun TimeRow(time: java.time.LocalTime, onChange: (java.time.LocalTime) -> Unit) {
     val context = androidx.compose.ui.platform.LocalContext.current
     TextButton(onClick = {
-        android.app.TimePickerDialog(context, { _, h, m -> onChange(java.time.LocalTime.of(h, m)) }, time.hour, time.minute, true).show()
+        android.app.TimePickerDialog(context, { _, h, m -> onChange(java.time.LocalTime.of(h, m)) }, time.hour, time.minute, true).apply { Protection.secure(this) }.show()
     }) {
         Text(stringResource(R.string.meal_time, "%02d:%02d".format(time.hour, time.minute)))
     }
