@@ -8,7 +8,7 @@ on:
       - scripts/build_foods.py
 
 permissions:
-  contents: write # only to push the result to the foods-generated branch
+  contents: read
 
 # bash with pipefail: a failing step before "| tee" must not pass unnoticed
 defaults:
@@ -16,6 +16,7 @@ defaults:
     shell: bash
 
 jobs:
+  # Downloads and builds with read-only rights; only the small job below may write, and it runs no downloaded code
   build:
     runs-on: ubuntu-latest
     steps:
@@ -25,16 +26,34 @@ jobs:
       - name: Download USDA SR Legacy (public domain)
         run: |
           curl -fsSL -o "$RUNNER_TEMP/sr.zip" https://fdc.nal.usda.gov/fdc-datasets/FoodData_Central_sr_legacy_food_csv_2018-04.zip
-          sha256sum "$RUNNER_TEMP/sr.zip" | tee -a "$GITHUB_STEP_SUMMARY"
+          # The 2018 release does not change: any other file is refused
+          echo "b80817294b8850530aaedf2e515c02593b1824f763a0ff356e5c2081643e6fd0  $RUNNER_TEMP/sr.zip" | sha256sum -c - | tee -a "$GITHUB_STEP_SUMMARY"
       - name: Build foods.csv
         run: |
           python3 scripts/build_foods.py "$RUNNER_TEMP/sr.zip" --report food-report.md || true
           python3 scripts/check_foods.py | tee -a food-report.md || true
           cat food-report.md >> "$GITHUB_STEP_SUMMARY"
+          mkdir -p out && cp app/src/main/assets/foods.csv food-report.md out/
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: foods
+          path: out/
+          retention-days: 3
+
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # only to push the result to the foods-generated branch
+    steps:
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: foods
+          path: out
       - name: Save result for review (branch foods-generated)
         env:
           TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          mkdir -p "$RUNNER_TEMP/out" && cp app/src/main/assets/foods.csv food-report.md "$RUNNER_TEMP/out/" && cd "$RUNNER_TEMP/out"
+          cd out
           git init -q && git checkout -q -b foods-generated && git add . && git -c user.name=ci -c user.email=ci@localhost commit -qm "generated foods"
           git push -qf "https://x-access-token:$TOKEN@github.com/${{ github.repository }}" foods-generated

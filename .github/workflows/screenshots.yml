@@ -1,6 +1,7 @@
 name: Screenshots
 
-# Store screenshots of the real app on an emulator, with the invented demo diary (debug build only).
+# Store screenshots of the real app on an emulator, with the invented demo diary (debug build only),
+# and a start of both release builds (R8 on) to catch anything the shrinking breaks.
 # The pictures are printed into the log (base64), checked by a person, and copied into fastlane/ by hand.
 on:
   workflow_dispatch:
@@ -29,11 +30,11 @@ jobs:
         with:
           gradle-version: "8.14.3"
 
-      - name: Build the debug app (F-Droid variant)
+      - name: Build the debug app (F-Droid variant) and both release builds
         shell: bash
         run: |
           set -o pipefail
-          gradle --no-daemon assembleFdroidDebug 2>&1 | tail -40
+          gradle --no-daemon assembleFdroidDebug assembleFdroidRelease assembleFullRelease 2>&1 | tail -40
 
       - name: Start an emulator
         shell: bash
@@ -61,6 +62,12 @@ jobs:
 
       - name: Take the screenshots
         run: bash scripts/screenshots/shoot.sh app/build/outputs/apk/fdroid/debug/app-fdroid-debug.apk
+
+      # R8 only acts on release builds: run both, as people get them, and fail on any crash
+      - name: Check the release builds start and open every tab
+        shell: bash
+        run: |
+          for f in fdroid full; do bash scripts/screenshots/smoke_release.sh "app/build/outputs/apk/$f/release/app-$f-release-unsigned.apk"; done
 
       - name: Print the screenshots (base64 between markers)
         if: always()

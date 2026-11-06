@@ -42,8 +42,9 @@ object Backup {
     }
 
     /** Looks only at the start of the file (the format comes first), so a large backup is not parsed twice. */
-    fun isEncrypted(text: String): Boolean =
-        text.take(400).contains("\"$ENCRYPTED\"") && runCatching { JSONObject(text).optString("format") == ENCRYPTED }.getOrDefault(false)
+    fun isEncrypted(text: String): Boolean = ENCRYPTED_HEAD.containsMatchIn(text.take(400))
+
+    private val ENCRYPTED_HEAD = Regex("\"format\"\\s*:\\s*\"" + Regex.escape(ENCRYPTED) + "\"")
 
     /** Throws if the password is wrong (GCM checks integrity). */
     fun decrypt(text: String, password: String): String {
@@ -59,9 +60,16 @@ object Backup {
     }
 
     private fun key(password: String, salt: ByteArray, iterations: Int): javax.crypto.SecretKey {
-        val spec = javax.crypto.spec.PBEKeySpec(password.toCharArray(), salt, iterations, 256)
-        val raw = javax.crypto.SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256").generateSecret(spec).encoded
-        return javax.crypto.spec.SecretKeySpec(raw, "AES")
+        val chars = password.toCharArray()
+        val spec = javax.crypto.spec.PBEKeySpec(chars, salt, iterations, 256)
+        try {
+            val raw = javax.crypto.SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256").generateSecret(spec).encoded
+            return javax.crypto.spec.SecretKeySpec(raw, "AES")
+        } finally {
+            // The password does not stay in these copies once the key is made
+            spec.clearPassword()
+            chars.fill('\u0000')
+        }
     }
 
     data class Summary(val diary: Int, val fluids: Int, val weights: Int, val foods: Int)
@@ -236,7 +244,7 @@ object Backup {
                         foodId = foodId, nameUk = e.text("nameUk", 1000), nameEn = e.text("nameEn", 1000),
                         grams = e.amount("grams", 10_000.0), kcal = e.amount("kcal", 1_000_000.0), protein = e.amount("protein", 100_000.0),
                         fat = e.amount("fat", 100_000.0), carbs = e.amount("carbs", 100_000.0), fiber = e.amount("fiber", 100_000.0, 0.0),
-                        fromAi = e.optBoolean("fromAi"), createdAt = e.optLong("createdAt", System.currentTimeMillis()),
+                        fromAi = e.optBoolean("fromAi"), createdAt = e.time("createdAt", e.day("day")),
                         // Values out of range (an edited file, a newer version) are dropped, never shown.
                         reason = e.optInt("reason", -1).takeIf { it in Reasons.ALL },
                         hunger = e.optInt("hunger", -1).takeIf { it in 1..5 },
@@ -282,7 +290,7 @@ object Backup {
                         type = e.optInt("type", Workouts.TYPES.size - 1).coerceIn(0, Workouts.TYPES.size - 1),
                         minutes = e.optInt("minutes", 30).coerceIn(1, 600),
                         intensity = e.optInt("intensity", 1).coerceIn(0, 2),
-                        createdAt = e.optLong("createdAt", System.currentTimeMillis()),
+                        createdAt = e.time("createdAt", e.day("day")),
                     )
                 })
             }
@@ -411,3 +419,14 @@ private fun JSONObject.day(key: String): Long {
 }
 
 private val FIRST_DAY = LocalDate.of(2000, 1, 1).toEpochDay()
+
+/**
+ * When an entry was made, as stored in a backup. Out of range (before 2000, over a year ahead) or missing:
+ * noon of the entry's [day], so the CSV and PDF never show a strange hour.
+ */
+private fun JSONObject.time(key: String, day: Long): Long {
+    val noon = LocalDate.ofEpochDay(day).atTime(12, 0).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
+    val first = LocalDate.ofEpochDay(FIRST_DAY).atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
+    val last = LocalDate.now().plusYears(1).atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
+    return optLong(key, noon).takeIf { it in first..last } ?: noon
+}

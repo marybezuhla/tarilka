@@ -5,6 +5,7 @@ import org.junit.Test
 import ua.tarilka.ui.theme.Theme
 import ua.tarilka.ui.theme.attention
 import ua.tarilka.ui.theme.contrast
+import ua.tarilka.ui.theme.mix
 import ua.tarilka.ui.theme.readableArgb
 
 /** Every theme's text reads on its cards and on the page behind them (WCAG AA, at least 4.5:1). */
@@ -29,6 +30,26 @@ class PaletteTest {
             check(t, "error", p.error, *bgs)
             check(t, "warning", p.attention(t.dark), *bgs, "fields" to p.surfaceVariant)
             check(t, "button text", p.onPrimary, "button" to p.primary)
+        }
+    }
+
+    /**
+     * The colours as the app shows them (Theme.kt): small print is strengthened towards the text colour, and
+     * chosen chips, the "New food" button and the selected tab sit on tinted containers.
+     */
+    @Test
+    fun textReadsAsShownAndOnContainers() {
+        for (t in themes) {
+            val p = t.palette!!
+            val shownSmall = mix(p.onSurfaceVariant, p.onSurface, 0.45)
+            val warn = p.attention(t.dark)
+            val containers = arrayOf(
+                "accent container" to mix(p.surface, p.primary, 0.2),
+                "second container" to mix(p.surface, p.secondary, 0.25),
+                "warning container" to mix(p.surface, warn, 0.2),
+            )
+            check(t, "text", p.onSurface, *containers)
+            check(t, "small print as shown", shownSmall, "cards" to p.surface, "page" to p.background, "fields" to p.surfaceVariant, *containers)
         }
     }
 
