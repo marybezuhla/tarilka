@@ -53,8 +53,8 @@ fun SettingsScreen(vm: MainViewModel, ai: AiViewModel, padding: PaddingValues) {
         padding,
         header = { Text(stringResource(R.string.tab_options), style = MaterialTheme.typography.titleLarge, modifier = Modifier.padding(vertical = 8.dp)) },
         main = {
-            item { ProfileSection(profile, hideKcal = vm.hideKcal.collectAsState().value, onSave = vm::saveProfile) }
-            item {
+            card("profile") { ProfileSection(profile, hideKcal = vm.hideKcal.collectAsState().value, onSave = vm::saveProfile) }
+            card("targets") {
                 Section(title = stringResource(R.string.your_targets)) {
                     Text(
                         if (targets.showKcal) {
@@ -79,18 +79,18 @@ fun SettingsScreen(vm: MainViewModel, ai: AiViewModel, padding: PaddingValues) {
                     if (profile.isSet) BmiLine(targets.bmi, profile.age, profile.sex == ua.tarilka.data.Sex.FEMALE && profile.pregnant)
                 }
             }
-            item { ActivitySection(vm) }
-            item { SelfSection(vm) }
-            item { RemindersSection(vm) }
-            if (ua.tarilka.ai.AiRuntime.AVAILABLE) item { ModelSection(ai) }
-            item { MissingSection(vm) }
+            card("activity") { ActivitySection(vm) }
+            card("self") { SelfSection(vm) }
+            card("reminders") { RemindersSection(vm) }
+            if (ua.tarilka.ai.AiRuntime.AVAILABLE) card("model") { ModelSection(ai) }
+            card("missing") { MissingSection(vm) }
         },
         side = {
-            item { DataSection(vm) }
-            item { ProtectionSection() }
-            item { AppearanceSection(vm) }
-            item { LanguageSection() }
-            item {
+            card("data") { DataSection(vm) }
+            card("protection") { ProtectionSection() }
+            card("appearance") { AppearanceSection(vm) }
+            card("language") { LanguageSection() }
+            card("about") {
                 Section(title = stringResource(R.string.about)) {
                     val context = androidx.compose.ui.platform.LocalContext.current
                     val title = stringResource(R.string.feedback_title)
@@ -102,8 +102,8 @@ fun SettingsScreen(vm: MainViewModel, ai: AiViewModel, padding: PaddingValues) {
                 }
             }
             // The author's letter and how to support Ukraine, as in the author's other apps
-            item { AuthorLetter() }
-            item {
+            card("letter") { AuthorLetter() }
+            card("support") {
                 val context = androidx.compose.ui.platform.LocalContext.current
                 SupportUkraine(open = { url ->
                     // In the browser; a phone without one simply opens nothing

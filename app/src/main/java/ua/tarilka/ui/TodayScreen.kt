@@ -121,7 +121,7 @@ fun TodayScreen(
         header = { DayHeader(day, onPrev = { vm.shiftDay(-1) }, onNext = { vm.shiftDay(1) }, onToday = vm::today, onHistory = onHistory) },
         main = {
             if (!profile.isSet) {
-                item {
+                card("profile_hint") {
                     Section {
                         Text(stringResource(R.string.profile_hint), style = MaterialTheme.typography.bodyMedium)
                     }
@@ -130,7 +130,7 @@ fun TodayScreen(
 
             // With protection on, a lost screen lock means a lost key: a backup is the only way back.
             if (protectedDiary && System.currentTimeMillis() - lastBackup > 30L * 24 * 3600 * 1000) {
-                item {
+                card("backup_hint") {
                     Section {
                         Text(
                             if (lastBackup == 0L) stringResource(R.string.backup_never)
@@ -141,7 +141,7 @@ fun TodayScreen(
                 }
             }
 
-            item {
+            card("summary") {
                 Section {
                     // Under 18 the ring shows protein instead of calories.
                     val ring: @Composable () -> Unit = {
@@ -308,7 +308,7 @@ fun TodayScreen(
                 }
             }
 
-            item {
+            card("tips") {
                 Section(title = stringResource(R.string.recommendations)) {
                     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                         tips.forEach { TipRow(it) }
@@ -328,7 +328,7 @@ fun TodayScreen(
         side = {
             for (meal in 0..3) {
                 val list = entries.filter { it.meal == meal }
-                item(key = "meal$meal") {
+                card("meal$meal") {
                     MealSection(
                         meal = meal,
                         entries = list,
@@ -345,7 +345,7 @@ fun TodayScreen(
                 }
             }
 
-            item(key = "note") {
+            card("note") {
                 Section(
                     modifier = Modifier.clickable { noteDialog = true },
                     title = stringResource(R.string.note_title),
@@ -360,7 +360,7 @@ fun TodayScreen(
 
         },
         tail = {
-            item {
+            card("week") {
                 val withData = week.filter { it.kcal > 0 }
                 if (withData.isNotEmpty()) {
                     Section(title = stringResource(R.string.week_title)) {

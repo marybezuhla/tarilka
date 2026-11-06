@@ -3,11 +3,11 @@ package ua.tarilka.ui
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
@@ -17,9 +17,14 @@ import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.saveable.SaveableStateHolder
+import androidx.compose.runtime.saveable.rememberSaveableStateHolder
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -41,9 +46,21 @@ fun twoPanesFit(widthDp: Float, fontScale: Float): Boolean = widthDp >= 300f * f
 @Composable
 fun twoPanes(width: Dp): Boolean = twoPanesFit(width.value, LocalDensity.current.fontScale)
 
+/** Keeps each card's state (half-filled fields, an open "Save as") when it moves to the other column. */
+private val LocalCards = staticCompositionLocalOf<SaveableStateHolder?> { null }
+
+/**
+ * One card of a [CardColumns] screen. Its [key] names it: when the screen turns and the cards move between
+ * one and two columns, the card finds its state again, including a file the system "Save as" is still writing.
+ */
+fun LazyListScope.card(key: String, content: @Composable () -> Unit) = item(key = key) {
+    val cards = LocalCards.current
+    if (cards == null) content() else cards.SaveableStateProvider(key, content)
+}
+
 /**
  * A screen of cards. On a phone one list, in this order: [header], [main], [side], [tail].
- * On a wide screen [header] stays on top, [main] and [tail] go on the left and [side] on the right,
+ * On a wide screen [header], [main] and [tail] go on the left and [side] on the right,
  * each column scrolling on its own.
  */
 @Composable
@@ -54,34 +71,34 @@ fun CardColumns(
     side: LazyListScope.() -> Unit,
     tail: LazyListScope.() -> Unit = {},
 ) {
+    val dir = LocalLayoutDirection.current
+    val start = padding.calculateStartPadding(dir)
+    val end = padding.calculateEndPadding(dir)
     val top = padding.calculateTopPadding() + 8.dp
     val bottom = padding.calculateBottomPadding() + 24.dp
     val gap = Arrangement.spacedBy(12.dp)
-    BoxWithConstraints(Modifier.fillMaxSize(), contentAlignment = Alignment.TopCenter) {
-        if (!twoPanes(maxWidth)) {
-            LazyColumn(
-                modifier = Modifier.fillMaxHeight().widthIn(max = COLUMN_MAX),
-                contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = top, bottom = bottom),
-                verticalArrangement = gap,
-            ) {
-                if (header != null) item(key = "header") { header() }
-                main()
-                side()
-                tail()
-            }
-        } else {
-            Column(Modifier.fillMaxSize().padding(top = top)) {
-                // Not scrolled with either column: the day and its arrows stay in reach
-                if (header != null) Box(Modifier.padding(horizontal = 16.dp)) { header() }
-                Row(Modifier.fillMaxSize().padding(horizontal = 8.dp)) {
-                    val pad = PaddingValues(start = 8.dp, end = 8.dp, top = 12.dp, bottom = bottom)
-                    LazyColumn(Modifier.weight(1f).fillMaxHeight(), contentPadding = pad, verticalArrangement = gap) {
-                        main()
-                        tail()
-                    }
-                    LazyColumn(Modifier.weight(1f).fillMaxHeight(), contentPadding = pad, verticalArrangement = gap) {
-                        side()
-                    }
+    CompositionLocalProvider(LocalCards provides rememberSaveableStateHolder()) {
+        BoxWithConstraints(Modifier.fillMaxSize().padding(start = start, end = end)) {
+            val two = twoPanes(maxWidth)
+            // The first list is the same in both layouts, so it keeps its place in the list when the screen turns
+            Row(Modifier.fillMaxSize().padding(horizontal = if (two) 8.dp else 0.dp), horizontalArrangement = Arrangement.Center) {
+                val inner = if (two) 8.dp else 16.dp
+                LazyColumn(
+                    modifier = (if (two) Modifier.weight(1f) else Modifier.widthIn(max = COLUMN_MAX).fillMaxWidth()).fillMaxHeight(),
+                    contentPadding = PaddingValues(start = inner, end = inner, top = top, bottom = bottom),
+                    verticalArrangement = gap,
+                ) {
+                    if (header != null) item(key = "header") { header() }
+                    main()
+                    if (!two) side()
+                    tail()
+                }
+                if (two) {
+                    LazyColumn(
+                        Modifier.weight(1f).fillMaxHeight(),
+                        contentPadding = PaddingValues(start = inner, end = inner, top = top, bottom = bottom),
+                        verticalArrangement = gap,
+                    ) { side() }
                 }
             }
         }

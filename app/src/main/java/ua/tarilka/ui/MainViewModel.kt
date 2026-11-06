@@ -244,7 +244,7 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
     }.onEach { info ->
         // Reminders read the expected date from preferences (they run without the app open, often while the
         // protected profile is locked). In pregnancy no date is stored, so no cycle reminder can fire.
-        val next = if (prefs.profile.value.pregnant) -1 else info?.nextStart ?: -1
+        val next = if (prefs.profile.value.pregnantOrBreastfeeding) -1 else info?.nextStart ?: -1
         if (next != prefs.cycleNext) {
             prefs.cycleNext = next
             val app = getApplication<Application>()
@@ -256,7 +256,7 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
     }.stateIn(viewModelScope, SharingStarted.Eagerly, null)
 
     /** The expected start for the cycle reminders, stored only while one of them is on (see Prefs.cycleNext). */
-    fun syncCycleNext() { prefs.cycleNext = if (prefs.profile.value.pregnant) -1 else cycle.value?.nextStart ?: -1 }
+    fun syncCycleNext() { prefs.cycleNext = if (prefs.profile.value.pregnantOrBreastfeeding) -1 else cycle.value?.nextStart ?: -1 }
 
     val periodDays: StateFlow<List<ua.tarilka.data.PeriodDay>> = db.cycle().days()
         .stateIn(viewModelScope, SharingStarted.Eagerly, emptyList())
@@ -1040,10 +1040,10 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     fun saveProfile(p: Profile) {
-        val wasPregnant = profile.value.pregnant
+        val wasPaused = profile.value.pregnantOrBreastfeeding
         prefs.saveProfile(p)
-        // Pregnancy switches the cycle reminders off and on.
-        if (p.pregnant != wasPregnant) runCatching {
+        // Pregnancy and breastfeeding switch the cycle reminders off and on.
+        if (p.pregnantOrBreastfeeding != wasPaused) runCatching {
             syncCycleNext()
             ua.tarilka.notify.Reminders.schedule(getApplication(), only = ua.tarilka.notify.Reminders.CYCLE_BEFORE)
             ua.tarilka.notify.Reminders.schedule(getApplication(), only = ua.tarilka.notify.Reminders.CYCLE_LATE)
@@ -1167,6 +1167,9 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
     fun confirmImport() = viewModelScope.launch {
         val (text, _) = pendingImport.value ?: return@launch
         pendingImport.value = null
+        // An Undo from before the restore would bring an old entry back into the restored diary
+        undoAction = null
+        undoEvent.value = null
         dataMessage.value = runCatching {
             val s = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Default) {
                 // Diary entries find their foods by code: the built-in foods must be there first (right after install they may not be yet)

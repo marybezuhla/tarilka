@@ -51,7 +51,7 @@ fun WeightScreen(vm: MainViewModel, padding: PaddingValues) {
         padding,
         header = { Text(stringResource(R.string.tab_weight), style = MaterialTheme.typography.titleLarge, modifier = Modifier.padding(vertical = 8.dp)) },
         main = {
-            item {
+            card("today") {
                 Section(title = stringResource(R.string.weight_today)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Field(
@@ -76,7 +76,7 @@ fun WeightScreen(vm: MainViewModel, padding: PaddingValues) {
                     }
                 }
             }
-            item {
+            card("chart") {
                 Section(title = stringResource(R.string.weight_chart)) {
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         listOf(30, 90, 365).forEach { d ->
@@ -97,8 +97,8 @@ fun WeightScreen(vm: MainViewModel, padding: PaddingValues) {
                     }
                 }
             }
-            item { WaistSection(vm) }
-            item {
+            card("waist") { WaistSection(vm) }
+            card("energy") {
                 Section(title = stringResource(R.string.energy_title)) {
                     if (targets.showKcal) {
                         Text(
@@ -113,7 +113,7 @@ fun WeightScreen(vm: MainViewModel, padding: PaddingValues) {
         },
         side = {
             if (weights.isNotEmpty()) {
-                item { ListHeader(stringResource(R.string.history)) }
+                card("history") { ListHeader(stringResource(R.string.history)) }
                 items(weights.reversed(), key = { it.day }) { w ->
                     Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
                         Column(Modifier.weight(1f)) {

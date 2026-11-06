@@ -46,6 +46,7 @@ import androidx.compose.material3.ScaffoldDefaults
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.ui.Modifier
 import androidx.compose.foundation.layout.only
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -329,7 +330,7 @@ private fun Tabs(vm: MainViewModel, ai: AiViewModel, tab: Int, onTab: (Int) -> U
             Scaffold(
                 modifier = Modifier.weight(1f),
                 // Beside the rail the left edge is already kept clear
-                contentWindowInsets = if (wide) WindowInsets.systemBars.only(WindowInsetsSides.Vertical + WindowInsetsSides.End)
+                contentWindowInsets = if (wide) WindowInsets.safeDrawing.only(WindowInsetsSides.Vertical + WindowInsetsSides.End)
                 else ScaffoldDefaults.contentWindowInsets,
                 snackbarHost = { SnackbarHost(snackbar) },
                 floatingActionButton = {

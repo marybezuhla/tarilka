@@ -76,7 +76,7 @@ object Reminders {
         // so morning steps are not lost when the app is opened later. Not needed with Health Connect.
         set(STEPS, if (prefs.stepsEnabled && (context.applicationContext as TarilkaApp).stepSensor.present) next(STEPS_TIME) else null)
         // No cycle reminders in pregnancy or while breastfeeding: they would be wrong, and can hurt after a loss.
-        val cycleNext = prefs.cycleNext.takeIf { prefs.cycleEnabled.value && it > 0 && !prefs.profile.value.pregnant }
+        val cycleNext = prefs.cycleNext.takeIf { prefs.cycleEnabled.value && it > 0 && !prefs.profile.value.pregnantOrBreastfeeding }
         fun once(at: LocalDateTime?) = at?.takeIf { it.isAfter(now) }
         set(CYCLE_BEFORE, cycleNext?.takeIf { prefs.cycleRemindDays > 0 }?.let { once(LocalDate.ofEpochDay(it - prefs.cycleRemindDays).atTime(9, 0)) })
         set(CYCLE_LATE, cycleNext?.takeIf { prefs.cycleLateRemind }?.let { once(LocalDate.ofEpochDay(it + 2).atTime(10, 0)) })
@@ -121,13 +121,13 @@ object Reminders {
             SLEEP -> context.getString(R.string.remind_sleep)
             WEEKLY -> context.getString(R.string.remind_weekly)
             CYCLE_BEFORE -> {
-                if (app.prefs.profile.value.pregnant) return
+                if (app.prefs.profile.value.pregnantOrBreastfeeding) return
                 val left = app.prefs.cycleNext - today
                 if (left !in 1..3) return
                 context.getString(R.string.remind_cycle_soon, left.toInt())
             }
             CYCLE_LATE -> {
-                if (app.prefs.profile.value.pregnant) return
+                if (app.prefs.profile.value.pregnantOrBreastfeeding) return
                 // Still the same expected date: no new start was marked since.
                 if (app.prefs.cycleNext <= 0 || today < app.prefs.cycleNext + 2) return
                 context.getString(R.string.remind_cycle_late)
