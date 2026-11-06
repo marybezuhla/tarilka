@@ -10,4 +10,4 @@
 <li><b>Fluids, steps, weight, waist;</b> optionally sleep, Why I eat, workouts, bowel, cycle, reminders.</li>
 </ul>
 <p>This build has no on-device AI: the version that recognises food on photos (Gemma) is available on GitHub.</p>
-<p>Advice is general and does not replace a doctor.</p>
+<p>Advice is general and does not replace a doctor. Requires Android 12 or newer.</p>

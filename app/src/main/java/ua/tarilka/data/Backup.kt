@@ -306,7 +306,7 @@ object Backup {
                 for (i in 0 until arr.length()) {
                     val e = arr.getJSONObject(i)
                     val cm = e.optDouble("cm", -1.0)
-                    if (cm in 40.0..250.0) db.waist().upsert(WaistEntry(e.day("day"), cm))
+                    if (cm in Bounds.WAIST_CM) db.waist().upsert(WaistEntry(e.day("day"), cm))
                 }
             }
             o.optJSONArray("weights")?.let { arr ->
@@ -314,7 +314,7 @@ object Backup {
                     val e = arr.getJSONObject(i)
                     // Weights out of a human range (a damaged or edited file) are skipped, never shown.
                     val kg = e.optDouble("kg", -1.0)
-                    if (kg in 20.0..400.0) db.weights().upsert(WeightEntry(e.day("day"), kg, e.optInt("minutes", -1).takeIf { it in 0..1439 }))
+                    if (kg in Bounds.WEIGHT_KG) db.weights().upsert(WeightEntry(e.day("day"), kg, e.optInt("minutes", -1).takeIf { it in 0..1439 }))
                 }
             }
         }
@@ -343,7 +343,7 @@ object Backup {
                         // Values out of range (a damaged file) fall back to the defaults.
                         age = p.optInt("age", 30).takeIf { it in 14..100 } ?: 30,
                         heightCm = p.optInt("heightCm", 165).takeIf { it in 120..230 } ?: 165,
-                        weightKg = p.optDouble("weightKg", 65.0).takeIf { it in 30.0..300.0 } ?: 65.0,
+                        weightKg = p.optDouble("weightKg", 65.0).takeIf { it in Bounds.PROFILE_WEIGHT_KG } ?: 65.0,
                         activity = p.optInt("activity", 1).coerceIn(0, 4),
                         goal = runCatching { Goal.valueOf(p.getString("goal")) }.getOrDefault(Goal.MAINTAIN),
                         customKcal = if (p.isNull("customKcal")) null else p.optInt("customKcal").takeIf { it in 800..6000 },

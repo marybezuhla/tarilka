@@ -135,7 +135,7 @@ private fun ProfileSection(profile: Profile, hideKcal: Boolean = false, onSave: 
     val weightN = weight.toNumber()
     val valid = ageN != null && ageN in 14..100 &&
         heightN != null && heightN in 120..230 &&
-        weightN != null && weightN in 30.0..300.0
+        weightN != null && weightN in ua.tarilka.data.Bounds.PROFILE_WEIGHT_KG
 
     Section(title = stringResource(R.string.profile)) {
         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -161,10 +161,17 @@ private fun ProfileSection(profile: Profile, hideKcal: Boolean = false, onSave: 
                     Text(stringResource(R.string.breastfeeding), style = MaterialTheme.typography.bodyMedium)
                 }
             }
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Field(stringResource(R.string.age), age, { age = it }, Modifier.weight(1f))
-                Field(stringResource(R.string.height_cm), height, { height = it }, Modifier.weight(1f))
-                Field(stringResource(R.string.weight_kg), weight, { weight = it }, Modifier.weight(1f))
+            // Side by side; with a large font one under another, so each label is read whole
+            if (androidx.compose.ui.platform.LocalDensity.current.fontScale > 1.25f) {
+                Field(stringResource(R.string.age), age, { age = it })
+                Field(stringResource(R.string.height_cm), height, { height = it })
+                Field(stringResource(R.string.weight_kg), weight, { weight = it })
+            } else {
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Field(stringResource(R.string.age), age, { age = it }, Modifier.weight(1f))
+                    Field(stringResource(R.string.height_cm), height, { height = it }, Modifier.weight(1f))
+                    Field(stringResource(R.string.weight_kg), weight, { weight = it }, Modifier.weight(1f))
+                }
             }
             Text(stringResource(R.string.activity), style = MaterialTheme.typography.labelLarge)
             val labels = listOf(

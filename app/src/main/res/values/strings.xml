@@ -44,6 +44,12 @@
     <string name="clear">Clear</string>
     <string name="replace">Replace</string>
     <string name="favorite">Favourite</string>
+    <string name="favorite_on">in favourites</string>
+    <string name="favorite_off">not in favourites</string>
+    <string name="open_fluids">open the day\'s drinks</string>
+    <string name="open_steps">open steps</string>
+    <string name="open_note">write a note</string>
+    <string name="open_cycle">open the cycle</string>
 
     <string name="profile_hint">Fill in your profile in Options to get personal calorie and nutrient targets. Until then, average values are used.</string>
     <string name="recommendations">Recommendations</string>
@@ -87,6 +93,7 @@
     <string name="weight_today">Weight for this day</string>
     <string name="weight_saved_today">Saved today: %1$s kg. Saving again replaces it.</string>
     <string name="weight_chart">Chart</string>
+    <string name="weight_history_empty">Your weight history will be here once you record the first one.</string>
     <string name="days_n">%1$d days</string>
     <string name="trend_week">Trend: %1$s kg a week</string>
     <string name="chart_need_more">Add at least two weigh-ins to see the chart.</string>
@@ -406,6 +413,7 @@
     <string name="feedback_title">Feedback</string>
     <string name="feedback_body">Version: %1$s\n\nWhat happened or what you would like:\n\n</string>
     <string name="feedback_hint">The app\'s GitHub page opens (an account is needed). The feedback text is passed to it as the page opens and stays in the browser history; it is published only when you confirm, and shows your account name. Nothing from your diary is added.</string>
+    <string name="feedback_no_browser">Could not open a browser. The feedback text is copied: you can paste it at github.com/marybezuhla/tarilka/issues.</string>
     <string name="send_list">Send the list</string>
     <string name="missing_issue_title">Not found in the database</string>
     <string name="missing_issue_body">Version: %1$s\n\nFoods that were not found (times in brackets):\n%2$s</string>
@@ -608,7 +616,7 @@
     <string name="mi_weight">Weight change along the trend line, kg a week. Weight swings with water and the cycle, so the trend over several weeks matters, not single days. More than 1% of body weight a week is too fast.</string>
     <string name="protect_title">App protection</string>
     <string name="protect_switch">Encrypt the diary and open with fingerprint or PIN</string>
-    <string name="protect_hint">The diary (food, fluids, weight, sleep, cycle, notes), the profile (including pregnancy) and the Not found list are encrypted with a key kept in the phone\'s secure hardware. Tarilka opens with your fingerprint or the phone PIN, so anyone who knows the phone PIN can open Tarilka too. It locks when the screen turns off or after a minute in the background (up to 10 minutes while a file picker or the camera opened by Tarilka is on top). Export and deleting data ask for the fingerprint or PIN again. Not encrypted: settings, the step log, a few of today\'s numbers for reminders, and the expected cycle date if cycle reminders are on. Entries in Health Connect are not covered.</string>
+    <string name="protect_hint">The diary (food, fluids, weight, sleep, cycle, notes), the profile (including pregnancy) and the Not found list are encrypted with a key kept in the phone\'s secure hardware. Tarilka opens with your fingerprint or the phone PIN, so anyone who knows the phone PIN can open Tarilka too. It locks when the screen turns off or after a minute in the background (up to 10 minutes while a file picker or the camera opened by Tarilka is on top). Export and deleting data ask for the fingerprint or PIN again. Not encrypted: settings, the step log, a few of today\'s numbers for reminders, the expected cycle date if cycle reminders are on, the photo portion correction, and a plate photo while the AI reads it. Entries in Health Connect are not covered.</string>
     <string name="protect_on_title">Turn on protection?</string>
     <string name="protect_on_text">⚠ Important: if you ever remove the phone\'s screen lock completely (PIN and fingerprint), Android destroys the key and the diary can no longer be opened, only restored from a backup. Adding a new fingerprint does not reset the key.\n\nSo first make an encrypted backup: Options → Data → Export backup.\n\nEntries in Health Connect are not covered by this protection.</string>
     <string name="protect_on_confirm">Turn on</string>

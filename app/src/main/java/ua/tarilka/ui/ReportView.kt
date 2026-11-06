@@ -40,9 +40,9 @@ import ua.tarilka.ui.theme.readable
 
 /** Green / amber / orange, never red: the same colours as the badges. */
 fun levelColor(level: Level): Color = when (level) {
-    Level.GOOD -> Color(0xFF43A047)
-    Level.OK -> Color(0xFFFFB300)
-    Level.WATCH -> Color(0xFFF4511E)
+    Level.GOOD -> Color(ua.tarilka.ui.theme.LEVEL_GOOD)
+    Level.OK -> Color(ua.tarilka.ui.theme.LEVEL_OK)
+    Level.WATCH -> Color(ua.tarilka.ui.theme.LEVEL_WATCH)
 }
 
 /** The same colours for text: darker on a light background so they stay readable (WCAG AA). */
@@ -50,9 +50,9 @@ fun levelColor(level: Level): Color = when (level) {
 fun levelTextColor(level: Level): Color = MaterialTheme.colorScheme.readable(
     if (MaterialTheme.colorScheme.surface.luminance() < 0.5f) levelColor(level)
     else when (level) {
-        Level.GOOD -> Color(0xFF2E7D32)
-        Level.OK -> Color(0xFF8A6100)
-        Level.WATCH -> Color(0xFFC43E12)
+        Level.GOOD -> Color(ua.tarilka.ui.theme.LEVEL_GOOD_TEXT)
+        Level.OK -> Color(ua.tarilka.ui.theme.LEVEL_OK_TEXT)
+        Level.WATCH -> Color(ua.tarilka.ui.theme.LEVEL_WATCH_TEXT)
     },
 )
 

@@ -38,7 +38,7 @@ fun BowelDialog(initial: BowelEntry?, onSave: (Int, Int?) -> Unit, onDelete: () 
         onDismissRequest = onDismiss,
         title = { Text(stringResource(R.string.bowel_title)) },
         text = {
-            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Column(Modifier.verticalScroll(androidx.compose.foundation.rememberScrollState()), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                     listOf(0, 1, 2, 3).forEach { n ->
                         FilterChip(

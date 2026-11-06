@@ -19,10 +19,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import ua.tarilka.R
@@ -41,7 +41,7 @@ fun StepsDialog(vm: MainViewModel, onDismiss: () -> Unit) {
         onDismissRequest = onDismiss,
         title = { Text(stringResource(R.string.steps_title)) },
         text = {
-            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Column(Modifier.verticalScroll(androidx.compose.foundation.rememberScrollState()), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     FilterChip(selected = days == 7, onClick = { days = 7 }, label = { Text(stringResource(R.string.period_week)) })
                     FilterChip(selected = days == 30, onClick = { days = 30 }, label = { Text(stringResource(R.string.period_month)) })
@@ -74,6 +74,7 @@ fun StepsDialog(vm: MainViewModel, onDismiss: () -> Unit) {
 private fun StepBars(values: List<Long>, goal: Int) {
     val color = LocalMacroColors.current.fiber
     val track = MaterialTheme.colorScheme.surfaceVariant
+    val line = MaterialTheme.colorScheme.outline
     val max = maxOf(goal * 1.3, (values.maxOrNull() ?: 0L).toDouble())
     Canvas(
         Modifier
@@ -90,6 +91,6 @@ private fun StepBars(values: List<Long>, goal: Int) {
             drawRect(color, Offset(x, size.height - h), Size(w, h))
         }
         val y = size.height - (goal / max).toFloat() * size.height
-        drawLine(Color.Gray, Offset(0f, y), Offset(size.width, y), strokeWidth = 2f)
+        drawLine(line, Offset(0f, y), Offset(size.width, y), strokeWidth = 2f)
     }
 }

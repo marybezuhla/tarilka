@@ -50,6 +50,7 @@ import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import ua.tarilka.R
@@ -200,106 +201,112 @@ private fun AppRoot() {
 
     BackHandler(enabled = stack.isNotEmpty()) { pop() }
 
-    when (val top = stack.lastOrNull()) {
-        is Overlay.AddFood -> {
-            // Stays open after each food, so several can be added in a row; "Done" goes back.
-            val added = androidx.compose.runtime.saveable.rememberSaveable(top) { mutableStateOf(listOf<String>()) }
-            AddFoodScreen(
-            vm = vm,
-            title = stringResource(R.string.add_to, mealName(top.meal)),
-            onBack = ::pop,
-            added = added.value,
-            onDone = { vm.query.value = ""; pop() },
-            onPicked = { food, grams ->
-                vm.addFood(food, grams, top.meal)
-                vm.query.value = ""
-                added.value = added.value + food.name()
-            },
-            onCreateFood = { push(Overlay.EditFood(null)) },
-            // Breakfast/lunch/dinner that already have a time keep it; only a new meal or a snack asks.
-            mealTime = if (vm.mealTimes.collectAsState().value && (top.meal == 3 || vm.mealTimeOf(top.meal) == null)) vm.defaultTime(top.meal) else null,
-            onPickedAt = { food, grams, time ->
-                vm.addFood(food, grams, top.meal, time)
-                vm.query.value = ""
-                added.value = added.value + food.name()
-            },
-            onTextList = { text ->
-                ai.analyzeText(text)
-                vm.query.value = ""
-                pop()
-                push(Overlay.Photo(top.meal))
-            },
-            )
-        }
+    // Screens on top of the tabs keep a readable width on a tablet, centred
+    val top = stack.lastOrNull()
+    Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background), contentAlignment = androidx.compose.ui.Alignment.TopCenter) {
+        Box(if (top == null) Modifier.fillMaxSize() else Modifier.widthIn(max = OVERLAY_MAX).fillMaxSize()) {
+            when (top) {
+                is Overlay.AddFood -> {
+                    // Stays open after each food, so several can be added in a row; "Done" goes back.
+                    val added = androidx.compose.runtime.saveable.rememberSaveable(top) { mutableStateOf(listOf<String>()) }
+                    AddFoodScreen(
+                    vm = vm,
+                    title = stringResource(R.string.add_to, mealName(top.meal)),
+                    onBack = ::pop,
+                    added = added.value,
+                    onDone = { vm.query.value = ""; pop() },
+                    onPicked = { food, grams ->
+                        vm.addFood(food, grams, top.meal)
+                        vm.query.value = ""
+                        added.value = added.value + food.name()
+                    },
+                    onCreateFood = { push(Overlay.EditFood(null)) },
+                    // Breakfast/lunch/dinner that already have a time keep it; only a new meal or a snack asks.
+                    mealTime = if (vm.mealTimes.collectAsState().value && (top.meal == 3 || vm.mealTimeOf(top.meal) == null)) vm.defaultTime(top.meal) else null,
+                    onPickedAt = { food, grams, time ->
+                        vm.addFood(food, grams, top.meal, time)
+                        vm.query.value = ""
+                        added.value = added.value + food.name()
+                    },
+                    onTextList = { text ->
+                        ai.analyzeText(text)
+                        vm.query.value = ""
+                        pop()
+                        push(Overlay.Photo(top.meal))
+                    },
+                    )
+                }
 
-        is Overlay.Photo -> PhotoScreen(
-            vm = vm,
-            ai = ai,
-            initialMeal = top.meal,
-            onBack = ::pop,
-            onSetupModel = { stack.clear(); tab = 3 },
-            onReplace = { i ->
-                // For a food the database lacks, start the search with the name the AI gave.
-                ai.photo.value.items.getOrNull(i)?.takeIf { it.food == null }?.let { vm.query.value = it.detected.nameEn }
-                push(Overlay.PickForPhoto(i))
-            },
-            onAddItem = { push(Overlay.PickForPhoto(null)) },
-            onCamera = { meal ->
-                pendingMeal = meal
-                // A phone without a camera app: say so instead of closing.
-                runCatching { camera.launch(ua.tarilka.ai.PhotoUtil.captureUri(context)) }
-                    .onFailure { android.widget.Toast.makeText(context, R.string.no_camera, android.widget.Toast.LENGTH_LONG).show() }
-            },
-            onGallery = { meal ->
-                pendingMeal = meal
-                gallery.launch(
-                    androidx.activity.result.PickVisualMediaRequest(
-                        androidx.activity.result.contract.ActivityResultContracts.PickVisualMedia.ImageOnly,
-                    ),
+                is Overlay.Photo -> PhotoScreen(
+                    vm = vm,
+                    ai = ai,
+                    initialMeal = top.meal,
+                    onBack = ::pop,
+                    onSetupModel = { stack.clear(); tab = 3 },
+                    onReplace = { i ->
+                        // For a food the database lacks, start the search with the name the AI gave.
+                        ai.photo.value.items.getOrNull(i)?.takeIf { it.food == null }?.let { vm.query.value = it.detected.nameEn }
+                        push(Overlay.PickForPhoto(i))
+                    },
+                    onAddItem = { push(Overlay.PickForPhoto(null)) },
+                    onCamera = { meal ->
+                        pendingMeal = meal
+                        // A phone without a camera app: say so instead of closing.
+                        runCatching { camera.launch(ua.tarilka.ai.PhotoUtil.captureUri(context)) }
+                            .onFailure { android.widget.Toast.makeText(context, R.string.no_camera, android.widget.Toast.LENGTH_LONG).show() }
+                    },
+                    onGallery = { meal ->
+                        pendingMeal = meal
+                        gallery.launch(
+                            androidx.activity.result.PickVisualMediaRequest(
+                                androidx.activity.result.contract.ActivityResultContracts.PickVisualMedia.ImageOnly,
+                            ),
+                        )
+                    },
                 )
-            },
-        )
 
-        is Overlay.PickForPhoto -> AddFoodScreen(
-            vm = vm,
-            title = stringResource(R.string.choose_food),
-            onBack = ::pop,
-            askGrams = false,
-            onPicked = { food, _ ->
-                if (top.index != null) ai.replaceFood(top.index, food) else ai.addManualItem(food)
-                vm.query.value = ""
-                pop()
-            },
-            onCreateFood = { push(Overlay.EditFood(null)) },
-        )
+                is Overlay.PickForPhoto -> AddFoodScreen(
+                    vm = vm,
+                    title = stringResource(R.string.choose_food),
+                    onBack = ::pop,
+                    askGrams = false,
+                    onPicked = { food, _ ->
+                        if (top.index != null) ai.replaceFood(top.index, food) else ai.addManualItem(food)
+                        vm.query.value = ""
+                        pop()
+                    },
+                    onCreateFood = { push(Overlay.EditFood(null)) },
+                )
 
-        is Overlay.EditFood -> EditFoodScreen(
-            draft = top.draft,
-            vm = vm,
-            onBack = ::pop,
-            onSave = { vm.saveFood(it); pop() },
-            onAddIngredient = { push(Overlay.PickIngredient(top.draft)) },
-        )
+                is Overlay.EditFood -> EditFoodScreen(
+                    draft = top.draft,
+                    vm = vm,
+                    onBack = ::pop,
+                    onSave = { vm.saveFood(it); pop() },
+                    onAddIngredient = { push(Overlay.PickIngredient(top.draft)) },
+                )
 
-        is Overlay.PickIngredient -> AddFoodScreen(
-            vm = vm,
-            title = stringResource(R.string.add_ingredient),
-            onBack = ::pop,
-            onPicked = { food, grams ->
-                top.draft.items.add(ua.tarilka.data.RecipeItem(food, grams))
-                vm.query.value = ""
-                pop()
-            },
-            onCreateFood = { push(Overlay.EditFood(null)) },
-        )
+                is Overlay.PickIngredient -> AddFoodScreen(
+                    vm = vm,
+                    title = stringResource(R.string.add_ingredient),
+                    onBack = ::pop,
+                    onPicked = { food, grams ->
+                        top.draft.items.add(ua.tarilka.data.RecipeItem(food, grams))
+                        vm.query.value = ""
+                        pop()
+                    },
+                    onCreateFood = { push(Overlay.EditFood(null)) },
+                )
 
-        Overlay.History -> HistoryScreen(
-            vm = vm,
-            onBack = ::pop,
-            onOpen = { d -> vm.day.value = d; tab = 0; stack.clear() },
-        )
+                Overlay.History -> HistoryScreen(
+                    vm = vm,
+                    onBack = ::pop,
+                    onOpen = { d -> vm.day.value = d; tab = 0; stack.clear() },
+                )
 
-        null -> Tabs(vm, ai, tab, onTab = { tab = it }, push = ::push)
+                null -> Tabs(vm, ai, tab, onTab = { tab = it }, push = ::push)
+            }
+        }
     }
 }
 
@@ -368,6 +375,9 @@ private fun Tabs(vm: MainViewModel, ai: AiViewModel, tab: Int, onTab: (Int) -> U
         }
     }
 }
+
+/** Screens on top of the tabs (adding food, a photo, history) are never wider than this. */
+private val OVERLAY_MAX = 720.dp
 
 private val TAB_NAMES = listOf(R.string.tab_today, R.string.tab_weight, R.string.tab_foods, R.string.tab_options)
 

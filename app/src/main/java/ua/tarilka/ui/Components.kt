@@ -1,3 +1,5 @@
+@file:OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
+
 package ua.tarilka.ui
 
 import androidx.compose.foundation.Canvas
@@ -27,6 +29,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
@@ -228,7 +231,7 @@ fun GramsDialog(
         onDismissRequest = onDismiss,
         title = { Text(title) },
         text = {
-            Column {
+            Column(Modifier.verticalScroll(androidx.compose.foundation.rememberScrollState())) {
                 OutlinedTextField(
                     value = text,
                     onValueChange = { text = it },
@@ -240,7 +243,8 @@ fun GramsDialog(
                 val portion = food?.portionG
                 if (food != null && portion != null) {
                     Spacer(Modifier.height(8.dp))
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    // Wraps to a second line with a large font instead of running off the edge
+                    androidx.compose.foundation.layout.FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         val unit = food.portionName() ?: stringResource(R.string.portion)
                         val g = stringResource(R.string.unit_g)
                         AssistChip(onClick = { text = portion.f0() }, label = { Text("≈ 1 $unit (${portion.f0()} $g)") })
@@ -346,9 +350,9 @@ fun FluidDialog(
         onDismissRequest = onDismiss,
         title = { Text(stringResource(R.string.water_title)) },
         text = {
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Column(Modifier.verticalScroll(androidx.compose.foundation.rememberScrollState()), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text(stringResource(R.string.water_hint), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                androidx.compose.foundation.layout.FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                     listOf(150, 250, 330, 500).forEach { ml ->
                         AssistChip(onClick = { onAdd(ml.toDouble()) }, label = { Text("$ml") })
                     }
